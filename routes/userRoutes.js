@@ -13,7 +13,7 @@ router.post(
   myMulter(fileValidation.image).single('image'),
   authController.signup
 );
-router.patch('/confirmEmail/:token', authController.confirmEmail);
+router.get('/confirmEmail/:token', authController.confirmEmail);
 router.post('/login', authController.login);
 router.post('/forgotPassword', authController.forgotPassword);
 router.patch('/resetPassword/:token', authController.resetPassword);
@@ -22,8 +22,11 @@ router.post('/reActivateAccount', authController.reActivateAccount);
 // Protect all routes after this middleware
 router.use(authController.protect);
 
-router.patch('/updateMe', myMulter(fileValidation.image).single('image'),
-userController.UpdateMe);
+router.patch(
+  '/updateMe',
+  myMulter(fileValidation.image).single('image'),
+  userController.UpdateMe
+);
 router.patch('/updatePassword', authController.updatePassword);
 router.get('/me', userController.getMe, userController.Getuser);
 router.delete('/deleteMe', userController.deleteMe, userController.deleteuser);
