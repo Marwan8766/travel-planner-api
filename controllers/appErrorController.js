@@ -52,6 +52,7 @@ module.exports = async (err, req, res, next) => {
   // DEFINING a default err.statusCode if there isnot   500:INTERNAL SERVER ERROR
   err.statusCode = err.statusCode || 500;
   err.status = err.status || 'error';
+  console.error('error', err);
   console.log('checked error type');
   console.log(process.env.STATE);
   console.log(process.env.DATABASE);
