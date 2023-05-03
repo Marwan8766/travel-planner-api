@@ -22,11 +22,11 @@ exports.signup = catchAsync(async (req, res, next) => {
   const userExist = await User.findOne({ email: req.body.email }).select(
     '+emailConfirmed'
   );
-  let image= "";
+  let image = '';
   if (req.file) {
     const file = req.file;
-  console.log(file);
-    console.log(cloudinary)
+    console.log(file);
+    console.log(cloudinary);
     cloudinary.config({
       cloud_name: process.env.cloud_name,
       api_key: process.env.api_key,
@@ -37,16 +37,16 @@ exports.signup = catchAsync(async (req, res, next) => {
       folder: `gallery/profile`,
     });
     const { secure_url } = result;
-     image = secure_url;
+    image = secure_url;
   }
-  
+
   console.log(userExist);
   if (userExist) {
     // check if email is confirmed
     if (userExist.emailConfirmed === true)
       return next(new AppError('This email already exists', 400));
     // check if emailConfirmationToken is valid
-    if (userExist.emailConfirmTokenExpires > Date.now())
+    if (userExist.emailConfirmTokenExpires < Date.now())
       return next(
         new AppError(
           'Open the link that was sent to your Email to verify your Email',
@@ -115,10 +115,12 @@ exports.signup = catchAsync(async (req, res, next) => {
   };
 
   try {
-    await sendMail(optionsObj);
+    let emailForUser = await sendMail(optionsObj);
 
     if (updatedNewUser.stripeAccountId && updatedNewUser.role === 'company')
-      await sendMail(optionsObj2);
+      emailForUser = await sendMail(optionsObj2);
+
+    console.log('email for user', emailForUser);
 
     res.status(200).json({
       status: 'success',
@@ -128,7 +130,10 @@ exports.signup = catchAsync(async (req, res, next) => {
     // newUser.emailConfirmToken = undefined;
     // newUser.emailConfirmTokenExpires = undefined;
     // await newUser.save({ validateModifiedOnly: true });
-    await User.findByIdAndDelete(newUser._id);
+    console.log('error deleting user now... as the email isnot sent');
+    const deletedUSer = await User.findByIdAndDelete(newUser._id);
+    if (!deletedUSer)
+      console.log('Error couldnot delete user for error in sending email');
     return next(new AppError('There was an error sending the email', 500));
   }
 });

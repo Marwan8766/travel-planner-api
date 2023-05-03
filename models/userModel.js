@@ -110,12 +110,12 @@ userSchema.pre('save', function (next) {
     return next(
       new AppError(
         'only companies are allowed to add website , address or overview',
-       400
+        400
       )
     );
   next();
 });
- 
+
 userSchema.pre('save', async function (next) {
   const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
