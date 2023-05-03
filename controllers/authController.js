@@ -46,7 +46,7 @@ exports.signup = catchAsync(async (req, res, next) => {
     if (userExist.emailConfirmed === true)
       return next(new AppError('This email already exists', 400));
     // check if emailConfirmationToken is valid
-    if (userExist.emailConfirmTokenExpires < Date.now())
+    if (userExist.emailConfirmTokenExpires > Date.now())
       return next(
         new AppError(
           'Open the link that was sent to your Email to verify your Email',
