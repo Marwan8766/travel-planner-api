@@ -46,13 +46,13 @@ exports.signup = catchAsync(async (req, res, next) => {
     if (userExist.emailConfirmed === true)
       return next(new AppError('This email already exists', 400));
     // check if emailConfirmationToken is valid
-    if (userExist.emailConfirmTokenExpires < Date.now())
-      return next(
-        new AppError(
-          'Open the link that was sent to your Email to verify your Email',
-          400
-        )
-      );
+    // if (userExist.emailConfirmTokenExpires < Date.now())
+    //   return next(
+    //     new AppError(
+    //       'Open the link that was sent to your Email to verify your Email',
+    //       400
+    //     )
+    //   );
     // if email isnot confirmed and token is expired delete that user
     await User.findOneAndDelete({ email: req.body.email });
   }
