@@ -17,7 +17,7 @@ const signToken = (id) =>
   });
 
 exports.signup = catchAsync(async (req, res, next) => {
-  console.log('SIGNUP FROM USERS ENDPOINT');
+  console.log('SIGNUP FROM USERS ENDPOINT...');
   // check if user already exists
   const userExist = await User.findOne({ email: req.body.email }).select(
     '+emailConfirmed'
