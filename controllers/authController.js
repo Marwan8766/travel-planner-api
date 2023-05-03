@@ -104,15 +104,17 @@ exports.signup = catchAsync(async (req, res, next) => {
     });
   }
   console.log('acc link: ', accountLink);
+  let optionsObj2;
 
-  const optionsObj2 = {
-    email: newUser.email,
-    subject:
-      'Your stripe account link, please open and continue activating your account to be able to sell your services and receive money',
-    html: `<h1>open this url and activate your stripe account</h1><a href="${accountLink.url}"> Click Here </a>
+  if (updatedNewUser.stripeAccountId && updatedNewUser.role === 'company')
+    optionsObj2 = {
+      email: newUser.email,
+      subject:
+        'Your stripe account link, please open and continue activating your account to be able to sell your services and receive money',
+      html: `<h1>open this url and activate your stripe account</h1><a href="${accountLink.url}"> Click Here </a>
     <a href="${accountLink.url}"></a>
     `,
-  };
+    };
 
   try {
     let emailForUser = await sendMail(optionsObj);
