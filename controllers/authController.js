@@ -209,6 +209,32 @@ exports.login = catchAsync(async (req, res, next) => {
   });
 });
 
+exports.logout = catchAsync(async (req, res, next) => {
+  const user = req.user;
+
+  // find all tokens associated with that user
+  const tokens = await Token.find({ userId: user._id });
+  // check if the tokens array isnot empty
+  if (tokens.length > 0) {
+    // loop over the tokens
+    for (let i = 0; i < tokens.length; i++) {
+      // add each token to expire list
+      const blackListToken = await blacklistToken.create({
+        token: tokens[i].token,
+        expiresAt: Number(tokens[i].expiresAt),
+      });
+      // check that each token is added else return with error
+      if (!blackListToken)
+        return next(new AppError('Error while logging out', 400));
+    }
+    // delete all tokrns associated with that user from tokens collection
+    const deletedTokens = await Token.deleteMany({ userId: user._id });
+    // if there was an error return next
+    if (!deletedTokens)
+      return next(new AppError('Error while logging out', 400));
+  }
+});
+
 exports.forgotPassword = catchAsync(async (req, res, next) => {
   // GET user based on POSTed email
   const user = await User.findOne({ email: req.body.email });
@@ -421,7 +447,7 @@ exports.protect = catchAsync(async (req, res, next) => {
     req.headers.authorization.startsWith('Bearer')
   )
     token = req.headers.authorization.split(' ')[1];
-  else if (req.cookies.jwt) token = req.cookies.jwt;
+  // else if (req.cookies.jwt) token = req.cookies.jwt;
 
   if (!token)
     return next(new AppError("You aren't logged in, please login first", 401));

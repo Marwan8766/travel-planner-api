@@ -22,6 +22,8 @@ router.post('/reActivateAccount', authController.reActivateAccount);
 // Protect all routes after this middleware
 router.use(authController.protect);
 
+router.post('/logout', authController.logout);
+
 router.patch(
   '/updateMe',
   myMulter(fileValidation.image).single('image'),

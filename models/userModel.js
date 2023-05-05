@@ -68,6 +68,19 @@ const userSchema = new mongoose.Schema({
   stripeAccountId: String,
   country: String,
   city: String,
+
+  ratingsAverage: {
+    type: Number,
+    default: 4.5,
+    min: [1, 'rating avg must be above 1.0'],
+    max: [5, 'rating avg must be below 5.0'],
+    set: (val) => Math.round(val * 10) / 10, // 4.666 , 64.6 , 47 , 4.7
+  },
+  ratingsQuantity: {
+    type: Number,
+    default: 0,
+  },
+
   passwordChangedAt: Date,
   passwordResetToken: String,
   passwordResetExpires: Date,

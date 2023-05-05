@@ -16,12 +16,23 @@ router.use(authController.protect);
 router.use(authController.restrictTo('admin', 'company'));
 
 // check that the company created that tour or tripProgram is the one updating it or it is the admin who is updating
-router.use(availabilityController.restrictAvailability);
 
-router.post('/:id', availabilityController.createAvailability);
+router.post(
+  '/:id',
+  availabilityController.restrictAvailability,
+  availabilityController.createAvailability
+);
 
-router.patch('/:id', availabilityController.updateAvailability);
+router.patch(
+  '/:id',
+  availabilityController.restrictAvailability,
+  availabilityController.updateAvailability
+);
 
-router.delete('/:id', availabilityController.deleteAvailability);
+router.delete(
+  '/:id',
+  availabilityController.restrictAvailability,
+  availabilityController.deleteAvailability
+);
 
 module.exports = router;

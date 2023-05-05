@@ -7,8 +7,7 @@ const TripProgram = require('../models/tripProgramsmodel');
 // Create availability for a tour or trip program
 exports.createAvailability = async (req, res, next) => {
   const { startDate, endDate, availableSeats } = req.body;
-  const { id } = req.params;
-  const { itemType } = req;
+  const { itemType, item } = req;
 
   // Create availability for each date between startDate and endDate
   for (
@@ -18,14 +17,14 @@ exports.createAvailability = async (req, res, next) => {
   ) {
     if (itemType === 'tour') {
       await Availability.create({
-        tour: id,
+        tour: item._id,
         date,
         availableSeats,
       });
     }
     if (itemType === 'tripProgram') {
       await Availability.create({
-        tripProgram: id,
+        tripProgram: item._id,
         date,
         availableSeats,
       });
@@ -190,7 +189,7 @@ exports.restrictAvailability = catchAsync(async (req, res, next) => {
 
   // add the type to the request
   req.itemType = type;
-
+  req.item = item;
   // check if the user is the admin
   if (req.user.role === 'admin') return next();
 

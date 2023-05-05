@@ -4,20 +4,33 @@ const authController = require('../controllers/authController');
 
 const { myMulter, fileValidation } = require('../utils/multer');
 
-
 const router = express.Router();
 
-router.get('/',tourController.GetAllTour)
-router.get ('/:id',tourController.GetTour)
+router.get('/', tourController.GetAllTour);
+router.get('/:id', tourController.GetTour);
 
+router.post(
+  '/',
+  myMulter(fileValidation.image).single('image'),
+  authController.protect,
+  authController.restrictTo('company'),
+  tourController.createTour
+);
 
-router.post('/', myMulter(fileValidation.image).single('image'),authController.protect,authController.restrictTo('company'),
-tourController.createTour);
+router
+  .route('/:id')
+  .delete(authController.protect, tourController.deleteTour)
+  .patch(
+    authController.protect,
+    authController.restrictTo('company'),
+    tourController.Updatetour
+  );
 
-
-router.route('/:id')
-.delete(authController.protect,tourController.deleteTour)
-.patch(authController.protect, authController.restrictTo('company'),tourController.Updatetour)
+router.get(
+  '/me',
+  authController.protect,
+  authController.restrictTo('company'),
+  tourController.getAllMyTours
+);
 
 module.exports = router;
-
