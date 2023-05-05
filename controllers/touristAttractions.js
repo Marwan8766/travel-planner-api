@@ -24,6 +24,10 @@ exports.createTouristAttractions = catchAsync(async (req, res, next) => {
 
   // Create an array of TouristAttraction documents
   const touristAttractionsDocs = uniqueAttractions.map((attraction) => {
+    const regex = /@(-?\d+\.\d+),(-?\d+\.\d+)/;
+    const match = attraction.url.match(regex);
+    const [_, lat, lng] = match;
+
     return {
       name: attraction.name,
       link: attraction.link,
@@ -32,6 +36,10 @@ exports.createTouristAttractions = catchAsync(async (req, res, next) => {
       description: attraction.description,
       image: attraction.image,
       open_close_times: attraction.open_close_times,
+      location: {
+        type: 'Point',
+        coordinates: [parseFloat(lng), parseFloat(lat)],
+      },
       city: cityId,
     };
   });

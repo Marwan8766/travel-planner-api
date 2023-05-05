@@ -9,8 +9,18 @@ const touristAttractionSchema = new mongoose.Schema({
   description: { type: String },
   image: { type: String },
   open_close_times: { type: mongoose.Schema.Types.Mixed },
+  location: {
+    type: {
+      type: String,
+      default: 'Point',
+      enum: ['Point'],
+    },
+    coordinates: [Number],
+  },
   city: { type: mongoose.Schema.Types.ObjectId, ref: 'City', required: true }, // Reference to City document
 });
+
+touristAttractionSchema.index({ location: '2dsphere' });
 
 const TouristAttraction = mongoose.model(
   'TouristAttraction',

@@ -44,10 +44,17 @@ const reviewSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
-
-reviewSchema.index({ tour: 1, user: 1 }, { unique: true });
-reviewSchema.index({ tripProgram: 1, user: 1 }, { unique: true });
-reviewSchema.index({ company: 1, user: 1 }, { unique: true });
+reviewSchema.index(
+  {
+    user: 1,
+    $or: [
+      { tour: { $exists: true } },
+      { tripProgram: { $exists: true } },
+      { company: { $exists: true } },
+    ],
+  },
+  { unique: true }
+);
 
 reviewSchema.pre('save', function (next) {
   // Check that the review belongs to only one of tour, tripProgram, or company
