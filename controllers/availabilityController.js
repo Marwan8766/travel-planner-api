@@ -190,6 +190,7 @@ exports.restrictAvailability = catchAsync(async (req, res, next) => {
     );
 
   // add the type to the request
+  console.log('doooooneee');
   req.itemType = type;
   req.item = item;
   // check if the user is the admin
