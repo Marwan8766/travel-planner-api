@@ -3,6 +3,7 @@ const catchAsync = require('../utils/catchAsync');
 const Availability = require('../models/availabilityModel');
 const Tour = require('../models/tourModel');
 const TripProgram = require('../models/tripProgramsmodel');
+const mongoose = require('mongoose');
 
 // Create availability for a tour or trip program
 exports.createAvailability = async (req, res, next) => {
@@ -40,15 +41,14 @@ exports.createAvailability = async (req, res, next) => {
 // update availabilty based on tour or tripProgram and date
 exports.updateAvailability = catchAsync(async (req, res, next) => {
   const { date, availableSeats, newDate } = req.body;
-  const { id } = req.params;
   const { itemType } = req;
 
   const query = {};
 
   if (itemType === 'tour') {
-    query.tour = id;
+    query.tour = item._id;
   } else if (itemType === 'tripProgram') {
-    query.tripProgram = id;
+    query.tripProgram = item._id;
   }
 
   query.date = date;
@@ -78,15 +78,14 @@ exports.updateAvailability = catchAsync(async (req, res, next) => {
 
 exports.deleteAvailability = catchAsync(async (req, res, next) => {
   const { date } = req.body;
-  const { id } = req.params;
   const { itemType } = req;
 
   const query = {};
 
   if (itemType === 'tour') {
-    query.tour = id;
+    query.tour = item._id;
   } else if (itemType === 'tripProgram') {
-    query.tripProgram = id;
+    query.tripProgram = item._id;
   }
 
   query.date = date;
@@ -172,7 +171,8 @@ exports.getAvailability = catchAsync(async (req, res, next) => {
 
 exports.restrictAvailability = catchAsync(async (req, res, next) => {
   // get the item id from params
-  const id = req.params.id;
+  const id = mongoose.Types.ObjectId(req.params.id);
+
   let type;
 
   // search with the id in tour and in tripProgram
