@@ -9,6 +9,9 @@ router.get(
   touristAttractionsController.getAllAttractionsInCity
 );
 
-router.post('/', touristAttractionsController.createTouristAttractions);
+router.post(
+  '/:cityId/city',
+  touristAttractionsController.createTouristAttractions
+);
 
 module.exports = router;

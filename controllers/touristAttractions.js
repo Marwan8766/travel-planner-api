@@ -5,7 +5,8 @@ const City = require('../models/cityModel');
 const TouristAttraction = require('../models/touristAttractionModel');
 
 exports.createTouristAttractions = catchAsync(async (req, res, next) => {
-  const { cityId, attractions = [] } = req.body;
+  const { attractions = [] } = req.body;
+  const { cityId } = req.params;
 
   // Filter out duplicate attractions based on the 'name' field
   const uniqueAttractions = attractions.reduce(
@@ -58,7 +59,7 @@ exports.createTouristAttractions = catchAsync(async (req, res, next) => {
 });
 
 exports.getAllAttractionsInCity = catchAsync(async (req, res, next) => {
-  const { cityId } = req.body;
+  const { cityId } = req.params;
 
   if (!cityId) return next(new AppError('cityId isnot provided', 400));
 
