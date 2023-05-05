@@ -27,8 +27,10 @@ exports.createTouristAttractions = catchAsync(async (req, res, next) => {
   const touristAttractionsDocs = uniqueAttractions.map((attraction) => {
     const regex = /@(-?\d+\.\d+),(-?\d+\.\d+)/;
     const match = attraction.url.match(regex);
+    console.log(`match ${match}`);
     const lat = match[1];
     const lng = match[2];
+    console.log(`lat: ${lat}, lng ${lng}`);
 
     return {
       name: attraction.name,
