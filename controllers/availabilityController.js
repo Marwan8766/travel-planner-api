@@ -171,7 +171,9 @@ exports.getAvailability = catchAsync(async (req, res, next) => {
 
 exports.restrictAvailability = catchAsync(async (req, res, next) => {
   // get the item id from params
+  console.log(`id:  ${req.params.id}`);
   const id = mongoose.Types.ObjectId(req.params.id);
+  console.log(`id object:  ${id}`);
 
   let type;
 
