@@ -41,7 +41,7 @@ exports.createAvailability = async (req, res, next) => {
 // update availabilty based on tour or tripProgram and date
 exports.updateAvailability = catchAsync(async (req, res, next) => {
   const { date, availableSeats, newDate } = req.body;
-  const { itemType } = req;
+  const { itemType, item } = req;
 
   const query = {};
 
@@ -78,7 +78,7 @@ exports.updateAvailability = catchAsync(async (req, res, next) => {
 
 exports.deleteAvailability = catchAsync(async (req, res, next) => {
   const { date } = req.body;
-  const { itemType } = req;
+  const { itemType, item } = req;
 
   const query = {};
 
@@ -105,19 +105,22 @@ exports.deleteAvailability = catchAsync(async (req, res, next) => {
 
 exports.getAvailabilities = catchAsync(async (req, res, next) => {
   const { startDate, endDate } = req.query;
-  const { id, itemType } = req.params;
+  const { id } = req.params;
 
   const query = {};
 
-  if (itemType === 'tour') {
-    const tour = await Tour.findById(id);
-    if (!tour) return next(new AppError('Tour not found', 404));
-    query.tour = id;
-  } else if (itemType === 'tripProgram') {
-    const tripProgram = await TripProgram.findById(id);
-    if (!tripProgram) return next(new AppError('Trip program not found', 404));
-    query.tripProgram = id;
+  let item = await Tour.findById(id);
+  if (item) {
+    query.tour = item._id;
+  } else {
+    item = await TripProgram.findById(id);
+    query.tripProgram = item._id;
   }
+
+  if (!item)
+    return next(
+      new AppError('Couldnot find the item in the availability', 404)
+    );
 
   if (startDate && endDate) {
     query.date = {
@@ -140,19 +143,22 @@ exports.getAvailabilities = catchAsync(async (req, res, next) => {
 
 exports.getAvailability = catchAsync(async (req, res, next) => {
   const { date } = req.body;
-  const { id, itemType } = req.params;
+  const { id } = req.params;
 
   const query = {};
 
-  if (itemType === 'tour') {
-    const tour = await Tour.findById(id);
-    if (!tour) return next(new AppError('Tour not found', 404));
+  let item = await Tour.findById(id);
+  if (item) {
     query.tour = id;
-  } else if (itemType === 'tripProgram') {
-    const tripProgram = await TripProgram.findById(id);
-    if (!tripProgram) return next(new AppError('Trip program not found', 404));
-    query.tripProgram = id;
+  } else {
+    item = await TripProgram.findById(id);
+    query.tripProgram = item._id;
   }
+
+  if (!item)
+    return next(
+      new AppError('Couldnot find the item in the availability', 404)
+    );
 
   query.date = date;
 
