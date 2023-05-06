@@ -76,8 +76,8 @@ const tripProgram = new mongoose.Schema({
   },
 });
 
-tourSchema.index({ price: 1, ratingsAverage: -1 });
-tourSchema.index({ startLocation: '2dsphere' });
+tripProgram.index({ price: 1, ratingsAverage: -1 });
+tripProgram.index({ startLocation: '2dsphere' });
 
 tripProgram.pre(/^find/, function (next) {
   this.populate({
