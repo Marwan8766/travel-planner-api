@@ -106,13 +106,13 @@ app.use('/api/v1/test', async (req, res) => {
   const cityObj = await plannedTripController.getCityRadius('cairo');
   const { lat, lng, radius } = cityObj;
   console.log('destreuctured...');
-  const tours = TouristAttraction.find({
+  const touristAttractions = await TouristAttraction.find({
     location: { $geoWithin: { $centerSphere: [[lng, lat], radius] } },
   });
   console.log('done');
   res.status(200).json({
     message: 'This is a test response.',
-    tours,
+    touristAttractions,
   });
 });
 
