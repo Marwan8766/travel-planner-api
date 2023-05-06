@@ -5,9 +5,9 @@ const authController = require('../controllers/authController');
 
 const router = express.Router();
 
-router.get('/:id/:itemType', availabilityController.getAvailabilities);
+router.get('/:id', availabilityController.getAvailabilities);
 
-router.get('/:id/:itemType/item', availabilityController.getAvailability);
+router.get('/:id/item', availabilityController.getAvailability);
 
 // Protect all routes after this middleware
 router.use(authController.protect);
