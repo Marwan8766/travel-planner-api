@@ -255,6 +255,8 @@ exports.getCityRadius = async function (cityName) {
       `https://nominatim.openstreetmap.org/search?q=${cityName}&format=json&limit=1`
     );
     console.log(`response ${response}`);
+    console.log(`res.data.lng ${response.data[0].lng}`);
+    console.log(`res.data.lat ${response.data[0].lat}`);
     const { lat, lng, osm_id } = response.data[0];
     const cityBoundaryResponse = await axios.get(
       `https://nominatim.openstreetmap.org/reverse?format=json&osm_type=R&osm_id=${osm_id}&polygon_geojson=1`
