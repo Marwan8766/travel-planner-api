@@ -1,6 +1,8 @@
 const PlannedTrip = require('../models/plannedTripsModel');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
+const axios = require('axios');
+const geojsonArea = require('geojson-area');
 
 exports.getPlannedTrips = catchAsync(async (req, res, next) => {
   const plannedTrips = await PlannedTrip.find({ user: req.user._id });
@@ -245,3 +247,31 @@ exports.addCustomActivity = catchAsync(async (req, res, next) => {
     },
   });
 });
+
+exports.getCityRadius = async function (cityName) {
+  try {
+    // Fetch the city boundary from OpenStreetMap
+    const response = await axios.get(
+      `https://nominatim.openstreetmap.org/search?q=${cityName}&format=json&limit=1`
+    );
+    console.log(`response ${response}`);
+    const { lat, lon, osm_id } = response.data[0];
+    const cityBoundaryResponse = await axios.get(
+      `https://nominatim.openstreetmap.org/reverse?format=json&osm_type=R&osm_id=${osm_id}&polygon_geojson=1`
+    );
+    console.log(`city bound ${cityBoundaryResponse}`);
+
+    // Calculate the area of the city boundary polygon
+    const cityBoundary = cityBoundaryResponse.data.geojson;
+    const area = geojsonArea.geometry(cityBoundary);
+
+    // Calculate the radius of a circle with the same area as the city boundary polygon
+    const radius = Math.sqrt(area / Math.PI);
+
+    console.log(`radius ${radius}`);
+
+    return radius;
+  } catch (error) {
+    console.error(error);
+  }
+};

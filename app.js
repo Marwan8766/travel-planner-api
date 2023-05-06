@@ -95,11 +95,13 @@ const availabilityRouter = require('./routes/availabilityRouter');
 const cartRouter = require('./routes/cartRouter');
 const catchAsync = require('./utils/catchAsync');
 const User = require('./models/userModel');
+const plannedTripController = require('./controllers/plannedTripsController');
 
 app.use(express.json());
 
 app.use('/api/v1/test', (req, res) => {
   console.log('Test route accessed!');
+  plannedTripController.getCityRadius('cairo');
   res.status(200).json({ message: 'This is a test response.' });
 });
 app.use(
