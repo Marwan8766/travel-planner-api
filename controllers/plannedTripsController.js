@@ -255,11 +255,13 @@ exports.getCityRadius = async function (cityName) {
       `https://nominatim.openstreetmap.org/search?q=${cityName}&format=json&limit=1`
     );
     console.log(`response ${response}`);
-    const { lat, lon, osm_id } = response.data[0];
+    const { lat, lng, osm_id } = response.data[0];
     const cityBoundaryResponse = await axios.get(
       `https://nominatim.openstreetmap.org/reverse?format=json&osm_type=R&osm_id=${osm_id}&polygon_geojson=1`
     );
     console.log(`city bound ${cityBoundaryResponse}`);
+
+    console.log(`lat = ${lat} and lng = ${lng}`);
 
     // Calculate the area of the city boundary polygon
     const cityBoundary = cityBoundaryResponse.data.geojson;
@@ -268,9 +270,18 @@ exports.getCityRadius = async function (cityName) {
     // Calculate the radius of a circle with the same area as the city boundary polygon
     const radius = Math.sqrt(area / Math.PI);
 
+    // Convert radius to radians
+    const radiusInRadians = radius / 6371;
+
     console.log(`radius ${radius}`);
 
-    return radius;
+    console.log(`radius in radians ${radiusInRadians}`);
+
+    return {
+      radius: radiusInRadians,
+      lat,
+      lng,
+    };
   } catch (error) {
     console.error(error);
   }

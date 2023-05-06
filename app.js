@@ -96,14 +96,21 @@ const cartRouter = require('./routes/cartRouter');
 const catchAsync = require('./utils/catchAsync');
 const User = require('./models/userModel');
 const plannedTripController = require('./controllers/plannedTripsController');
+const Tour = require('./models/tourModel');
+const TouristAttraction = require('./models/touristAttractionModel');
 
 app.use(express.json());
 
-app.use('/api/v1/test', (req, res) => {
+app.use('/api/v1/test', async (req, res) => {
   console.log('Test route accessed!');
-  plannedTripController.getCityRadius('cairo');
-  res.status(200).json({ message: 'This is a test response.' });
+  const cityObj = await plannedTripController.getCityRadius('cairo');
+  const { lat, lng, radius } = cityObj;
+  const tours = TouristAttraction.find({
+    location: { $geoWithin: { $centerSphere: [[lng, lat], radius] } },
+  });
+  res.status(200).json({ message: 'This is a test response.', tours });
 });
+
 app.use(
   '/api/v1/testUsers',
   catchAsync(async (req, res, next) => {
