@@ -25,3 +25,5 @@ availabilitySchema.pre('save', function (next) {
 });
 
 const Availability = mongoose.model('Availability', availabilitySchema);
+
+module.exports = Availability;

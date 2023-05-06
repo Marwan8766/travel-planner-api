@@ -5,22 +5,20 @@ const AppError = require('../utils/appError');
 const cloudinary = require('cloudinary').v2;
 const mongoose = require('mongoose');
 
-
-
 exports.createTripProgram = catchAsync(async (req, res, next) => {
-  const {name,price,summary,description,startLocations,locations,tour} = req.body
+  const { name, price, summary, description, startLocations, locations, tour } =
+    req.body;
 
-const ObjectId = mongoose.Types.ObjectId;
+  const ObjectId = mongoose.Types.ObjectId;
 
+  const tourIds = tour.split(','); // assuming tour is a comma-separated string of IDs
+  const tourObjectIds = tourIds.map((id) => mongoose.Types.ObjectId(id));
 
-const tourIds = tour.split(','); // assuming tour is a comma-separated string of IDs
-const tourObjectIds = tourIds.map(id => mongoose.Types.ObjectId(id));
-
-  let image= "";
+  let image = '';
   if (req.file) {
     const file = req.file;
-  console.log(file);
-    console.log(cloudinary)
+    console.log(file);
+    console.log(cloudinary);
     cloudinary.config({
       cloud_name: process.env.cloud_name,
       api_key: process.env.api_key,
@@ -31,16 +29,22 @@ const tourObjectIds = tourIds.map(id => mongoose.Types.ObjectId(id));
       folder: `gallery/profile`,
     });
     const { secure_url } = result;
-     image = secure_url;
+    image = secure_url;
   }
 
-
-  const company = req.user._id
+  const company = req.user._id;
   const doc = await TripProgram.create({
-    name,price,summary,description,image,startLocations,locations,tour:tourObjectIds,company
-  }
-  );
-   res.status(201).json({
+    name,
+    price,
+    summary,
+    description,
+    image,
+    startLocations,
+    locations,
+    tour: tourObjectIds,
+    company,
+  });
+  res.status(201).json({
     status: 'success',
     data: {
       data: doc,
@@ -49,7 +53,10 @@ const tourObjectIds = tourIds.map(id => mongoose.Types.ObjectId(id));
 });
 
 exports.deleteTripProgram = catchAsync(async (req, res, next) => {
-  const doc = await TripProgram.findOneAndDelete({_id:req.params.id,company:req.user._id});
+  const doc = await TripProgram.findOneAndDelete({
+    _id: req.params.id,
+    company: req.user._id,
+  });
   if (!doc) return next(new AppError('No document found for that ID', 404));
   res.status(204).json({
     status: 'success',
@@ -58,14 +65,15 @@ exports.deleteTripProgram = catchAsync(async (req, res, next) => {
 });
 
 exports.UpdateTripProgram = catchAsync(async (req, res, next) => {
-  const {name,price,summary,description,startLocations,locations,tour} = req.body
+  const { name, price, summary, description, startLocations, locations, tour } =
+    req.body;
   const tourIds = tour.split(','); // assuming tour is a comma-separated string of IDs
-const tourObjectIds = tourIds.map(id => mongoose.Types.ObjectId(id));
+  const tourObjectIds = tourIds.map((id) => mongoose.Types.ObjectId(id));
   let image = undefined;
   if (req.file) {
     const file = req.file;
-  console.log(file);
-    console.log(cloudinary)
+    console.log(file);
+    console.log(cloudinary);
     cloudinary.config({
       cloud_name: process.env.cloud_name,
       api_key: process.env.api_key,
@@ -76,12 +84,13 @@ const tourObjectIds = tourIds.map(id => mongoose.Types.ObjectId(id));
       folder: `gallery/profile`,
     });
     const { secure_url } = result;
-     image = secure_url;
-
+    image = secure_url;
   }
 
-
-  const doc = await TripProgram.findOne({_id:req.params.id,company:req.user._id});
+  const doc = await TripProgram.findOne({
+    _id: req.params.id,
+    company: req.user._id,
+  });
   if (!doc) return next(new AppError('No document found for that ID', 404));
   doc.name = name ? name : doc.name;
   doc.price = price ? price : doc.price;
@@ -90,11 +99,12 @@ const tourObjectIds = tourIds.map(id => mongoose.Types.ObjectId(id));
   doc.image = image ? image : doc.image;
   doc.startLocations = startLocations ? startLocations : doc.startLocations;
   doc.locations = locations ? locations : doc.locations;
-  doc.tour = tour ? tourObjectIds : doc.tour; 
+  doc.tour = tour ? tourObjectIds : doc.tour;
 
-  const tripProgram = await doc.save({ validateModifiedOnly: true }); 
-  if (!tripProgram) return next(new AppError('Error updating the tripProgram', 400)); 
-  
+  const tripProgram = await doc.save({ validateModifiedOnly: true });
+  if (!tripProgram)
+    return next(new AppError('Error updating the tripProgram', 400));
+
   res.status(200).json({
     status: 'success',
     data: {
@@ -104,25 +114,40 @@ const tourObjectIds = tourIds.map(id => mongoose.Types.ObjectId(id));
 });
 
 exports.GetAllTripProgram = catchAsync(async (req, res, next) => {
-    const doc = await TripProgram.find().populate('tour').populate('company');
-    // Send response
-    res.status(200).json({
-      status: 'success',
-      result: doc.length,
-      data: {
-        data: doc,
-      },
-    });
+  const doc = await TripProgram.find().populate('tour').populate('company');
+  // Send response
+  res.status(200).json({
+    status: 'success',
+    result: doc.length,
+    data: {
+      data: doc,
+    },
   });
+});
 
 exports.GetTripProgram = catchAsync(async (req, res, next) => {
-    let query = TripProgram.findById(req.params.id).populate('tour').populate('company');
-    const doc = await query;
-    if (!doc) return next(new AppError('No document found for that ID', 404));
-    res.status(200).json({
-      status: 'success',
-      data: {
-        data: doc,
-      },
-    });
+  let query = TripProgram.findById(req.params.id)
+    .populate('tour')
+    .populate('company');
+  const doc = await query;
+  if (!doc) return next(new AppError('No document found for that ID', 404));
+  res.status(200).json({
+    status: 'success',
+    data: {
+      data: doc,
+    },
   });
+});
+
+exports.getAllMyTripPrograms = catchAsync(async (req, res, next) => {
+  const tripPrograms = await TripProgram.find({ company: req.user._id });
+  if (tripPrograms.length === 0)
+    return next(new AppError('No tripPrograms found', 404));
+  res.status(200).json({
+    status: 'success',
+    resultLength: tripPrograms.length,
+    data: {
+      tripPrograms,
+    },
+  });
+});

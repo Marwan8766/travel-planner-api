@@ -76,8 +76,10 @@ const tripProgram = new mongoose.Schema({
   },
 });
 
+tourSchema.index({ price: 1, ratingsAverage: -1 });
+tourSchema.index({ startLocation: '2dsphere' });
 
-tripProgram.pre(/^find/, function(next) {
+tripProgram.pre(/^find/, function (next) {
   this.populate({
     path: 'tour',
     select: '-__v',
@@ -85,7 +87,6 @@ tripProgram.pre(/^find/, function(next) {
 
   next();
 });
-
 
 const TripProgram = mongoose.model('TripProgram', tripProgram);
 module.exports = TripProgram;

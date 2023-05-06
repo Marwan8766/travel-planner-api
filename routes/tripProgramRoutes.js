@@ -5,21 +5,33 @@ const authController = require('../controllers/authController');
 
 const router = express.Router();
 
-router.get('/',tripProgramController.GetAllTripProgram);
+router.get('/', tripProgramController.GetAllTripProgram);
 
-router.get ('/:id',tripProgramController.GetTripProgram);
+router.get('/:id', tripProgramController.GetTripProgram);
 
 router.use(authController.protect);
-router.use(authController.restrictTo('admin','company'));
+router.use(authController.restrictTo('admin', 'company'));
 
-router.route('/')
-.post(myMulter(fileValidation.image).single('image'),
-tripProgramController.createTripProgram)
+router
+  .route('/')
+  .post(
+    myMulter(fileValidation.image).single('image'),
+    tripProgramController.createTripProgram
+  );
 
-router.route('/:id')
-.delete(tripProgramController.deleteTripProgram)
-.patch(myMulter(fileValidation.image).single('image'),
-tripProgramController.UpdateTripProgram)
+router
+  .route('/:id')
+  .delete(tripProgramController.deleteTripProgram)
+  .patch(
+    myMulter(fileValidation.image).single('image'),
+    tripProgramController.UpdateTripProgram
+  );
 
+router.get(
+  '/me',
+  authController.protect,
+  authController.restrictTo('company'),
+  tripProgramController.getAllMyTripPrograms
+);
 
 module.exports = router;
