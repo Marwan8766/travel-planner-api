@@ -8,7 +8,7 @@ const router = express.Router();
 router.get('/', tripProgramController.GetAllTripProgram);
 
 router.get(
-  '/me',
+  '/company/me',
   authController.protect,
   authController.restrictTo('company'),
   tripProgramController.getAllMyTripPrograms

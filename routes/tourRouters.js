@@ -9,7 +9,7 @@ const router = express.Router();
 router.get('/', tourController.GetAllTour);
 
 router.get(
-  '/me',
+  '/company/me',
   authController.protect,
   authController.restrictTo('company'),
   tourController.getAllMyTours
