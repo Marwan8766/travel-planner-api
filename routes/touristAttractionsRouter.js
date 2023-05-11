@@ -4,6 +4,8 @@ const { route } = require('./countryRouter.js');
 
 const router = express.Router();
 
+router.get('/', touristAttractionsController.getAllAttractions);
+
 router.get(
   '/:cityId/city',
   touristAttractionsController.getAllAttractionsInCity

@@ -82,3 +82,15 @@ exports.getAllAttractionsInCity = catchAsync(async (req, res, next) => {
     },
   });
 });
+
+exports.getAllAttractions = catchAsync(async (req,res,next)=>{
+  const attractions = await TouristAttraction.find();
+  if(attractions.length === 0) return next (new AppError('No attractions was found',404));
+  res.status(200).json({
+    status:'success',
+    dataLength: attractions.length,
+    data:{
+      data:attractions,
+    }
+  })
+});

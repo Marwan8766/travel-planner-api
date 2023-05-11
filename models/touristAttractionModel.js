@@ -22,6 +22,15 @@ const touristAttractionSchema = new mongoose.Schema({
 
 touristAttractionSchema.index({ location: '2dsphere' });
 
+touristAttractionSchema.pre(/^find/, function (next) {
+  this.populate({
+    path: 'city',
+    select: '-__v',
+  });
+
+  next();
+});
+
 const TouristAttraction = mongoose.model(
   'TouristAttraction',
   touristAttractionSchema
