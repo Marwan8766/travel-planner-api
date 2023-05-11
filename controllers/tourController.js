@@ -5,16 +5,11 @@ const AppError = require('../utils/appError');
 const cloudinary = require('cloudinary').v2;
 
 exports.createTour = catchAsync(async (req, res, next) => {
-  const {
-    name,
-    price,
-    summary,
-    description,
-    priceDiscount,
-    imageCover,
-    startLocations,
-    locations,
-  } = req.body;
+  let { name, price, summary, description, startLocations, locations } =
+    req.body;
+
+  startLocations = JSON.parse(startLocations);
+  locations = JSON.parse(locations);
 
   let image = '';
   if (req.file) {
@@ -102,9 +97,9 @@ exports.Updatetour = catchAsync(async (req, res, next) => {
   new_tour.description = description ? description : new_tour.description;
   new_tour.image = image ? image : new_tour.image;
   new_tour.startLocations = startLocations
-    ? startLocations
+    ? JSON.parse(startLocations)
     : new_tour.startLocations;
-  new_tour.locations = locations ? locations : new_tour.locations;
+  new_tour.locations = locations ? JSON.parse(locations) : new_tour.locations;
 
   const tour = await new_tour.save({ validateModifiedOnly: true });
   if (!tour) return next(new AppError('Error updating the tour', 400));

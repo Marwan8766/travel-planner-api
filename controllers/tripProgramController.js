@@ -6,8 +6,11 @@ const cloudinary = require('cloudinary').v2;
 const mongoose = require('mongoose');
 
 exports.createTripProgram = catchAsync(async (req, res, next) => {
-  const { name, price, summary, description, startLocations, locations, tour } =
+  let { name, price, summary, description, startLocations, locations, tour } =
     req.body;
+
+  startLocations = JSON.parse(startLocations);
+  locations = JSON.parse(locations);
 
   const ObjectId = mongoose.Types.ObjectId;
 
@@ -97,8 +100,10 @@ exports.UpdateTripProgram = catchAsync(async (req, res, next) => {
   doc.summary = summary ? summary : doc.summary;
   doc.description = description ? description : doc.description;
   doc.image = image ? image : doc.image;
-  doc.startLocations = startLocations ? startLocations : doc.startLocations;
-  doc.locations = locations ? locations : doc.locations;
+  doc.startLocations = startLocations
+    ? JSON.parse(startLocations)
+    : doc.startLocations;
+  doc.locations = locations ? JSON.parse(locations) : doc.locations;
   doc.tour = tour ? tourObjectIds : doc.tour;
 
   const tripProgram = await doc.save({ validateModifiedOnly: true });
