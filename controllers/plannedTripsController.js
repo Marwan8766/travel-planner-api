@@ -3,6 +3,8 @@ const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 const axios = require('axios');
 const geojsonArea = require('geojson-area');
+const touristAttractionModel = require('../models/touristAttractionModel');
+const tourModel = require('../models/tourModel');
 
 exports.getPlannedTrips = catchAsync(async (req, res, next) => {
   const plannedTrips = await PlannedTrip.find({ user: req.user._id });
@@ -254,16 +256,11 @@ exports.getCityRadius = async function (cityName) {
     const response = await axios.get(
       `https://nominatim.openstreetmap.org/search?q=${cityName}&format=json&limit=1`
     );
-    console.log(`response ${response}`);
-    console.log(`res.data.lng ${response.data[0].lon}`);
-    console.log(`res.data.lat ${response.data[0].lat}`);
+
     const { lat, lon, osm_id } = response.data[0];
     const cityBoundaryResponse = await axios.get(
       `https://nominatim.openstreetmap.org/reverse?format=json&osm_type=R&osm_id=${osm_id}&polygon_geojson=1`
     );
-    console.log(`city bound ${cityBoundaryResponse}`);
-
-    console.log(`lat = ${lat} and lng = ${lon}`);
 
     // Calculate the area of the city boundary polygon
     const cityBoundary = cityBoundaryResponse.data.geojson;
@@ -275,10 +272,6 @@ exports.getCityRadius = async function (cityName) {
     // Convert radius to radians
     const radiusInRadians = radius / 6371;
 
-    console.log(`radius ${radius}`);
-
-    console.log(`radius in radians ${radiusInRadians}`);
-
     return {
       radius: radiusInRadians,
       lat,
@@ -288,3 +281,31 @@ exports.getCityRadius = async function (cityName) {
     console.error(error);
   }
 };
+
+exports.getAttractionsWithinCity = async function (cityName) {
+  try {
+    const cityObj = await getCityRadius(cityName);
+    const { lat, lng, radius } = cityObj;
+    const touristAttractions = await touristAttractionModel.find({
+      location: { $geoWithin: { $centerSphere: [[lng, lat], radius] } },
+    });
+    return touristAttractions;
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+exports.getToursWithinCity = async function (cityName) {
+  try {
+    const cityObj = await getCityRadius(cityName);
+    const { lat, lng, radius } = cityObj;
+    const tours = await tourModel.find({
+      startLocation: { $geoWithin: { $centerSphere: [[lng, lat], radius] } },
+    });
+    return tours;
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+exports.recommendPlannedTrip = catchAsync(async (req, res, next) => {});

@@ -100,6 +100,9 @@ const Tour = require('./models/tourModel');
 const TouristAttraction = require('./models/touristAttractionModel');
 
 app.use(express.json());
+// Middleware to parse urlencoded data
+app.use(express.urlencoded({ extended: true }));
+
 
 app.use('/api/v1/test', async (req, res) => {
   console.log('Test route accessed!');
