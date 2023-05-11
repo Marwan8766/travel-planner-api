@@ -70,6 +70,7 @@ const tourSchema = new mongoose.Schema(
     company: {
       type: mongoose.Schema.ObjectId,
       ref: 'User',
+      required: [true, 'tour must belong to a company'],
     },
   },
   {
@@ -80,7 +81,6 @@ const tourSchema = new mongoose.Schema(
 
 tourSchema.index({ price: 1, ratingsAverage: -1 });
 tourSchema.index({ startLocation: '2dsphere' });
-
 
 // virtual population
 tourSchema.virtual('reviews', {

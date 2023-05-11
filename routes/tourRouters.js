@@ -28,7 +28,6 @@ router
 
 router.get(
   '/me',
-  authController.protect,
   authController.restrictTo('company'),
   tourController.getAllMyTours
 );
