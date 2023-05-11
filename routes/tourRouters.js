@@ -7,6 +7,14 @@ const { myMulter, fileValidation } = require('../utils/multer');
 const router = express.Router();
 
 router.get('/', tourController.GetAllTour);
+
+router.get(
+  '/me',
+  authController.protect,
+  authController.restrictTo('company'),
+  tourController.getAllMyTours
+);
+
 router.get('/:id', tourController.GetTour);
 
 router.post(
@@ -25,11 +33,5 @@ router
     authController.restrictTo('company'),
     tourController.Updatetour
   );
-
-router.get(
-  '/me',
-  authController.restrictTo('company'),
-  tourController.getAllMyTours
-);
 
 module.exports = router;

@@ -7,6 +7,13 @@ const router = express.Router();
 
 router.get('/', tripProgramController.GetAllTripProgram);
 
+router.get(
+  '/me',
+  authController.protect,
+  authController.restrictTo('company'),
+  tripProgramController.getAllMyTripPrograms
+);
+
 router.get('/:id', tripProgramController.GetTripProgram);
 
 router.use(authController.protect);
@@ -26,11 +33,5 @@ router
     myMulter(fileValidation.image).single('image'),
     tripProgramController.UpdateTripProgram
   );
-
-router.get(
-  '/me',
-  authController.restrictTo('company'),
-  tripProgramController.getAllMyTripPrograms
-);
 
 module.exports = router;
