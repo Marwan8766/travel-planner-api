@@ -26,6 +26,10 @@ touristAttractionSchema.pre(/^find/, function (next) {
   this.populate({
     path: 'city',
     select: '-__v',
+    populate: {
+      path: 'country',
+      select: '-__v',
+    },
   });
 
   next();
