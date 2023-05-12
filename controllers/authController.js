@@ -455,13 +455,13 @@ exports.protect = catchAsync(async (req, res, next) => {
   const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
 
   // check if the user still exists
-  const currentUser = await User.findById(decoded.id);
+  const currentUser = await User.findById(decoded.id).select('emailConfirmed');
   if (!currentUser)
     return next(new AppError('This user does no longer exist'), 401);
 
   // check if user confirmed his email
-  // if (!currentUser.emailConfirmed)
-  //   return next(new AppError('You must confirm your email first', 403));
+  if (!currentUser.emailConfirmed)
+    return next(new AppError('You must confirm your email first', 403));
 
   // check if the user has chamged his password after the token was issued
   if (

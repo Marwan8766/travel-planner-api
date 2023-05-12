@@ -10,6 +10,7 @@ exports.createAvailability = async (req, res, next) => {
   const { startDate, endDate, availableSeats } = req.body;
   const { itemType, item } = req;
 
+  let createdAvailability;
   // Create availability for each date between startDate and endDate
   for (
     let date = new Date(startDate);
@@ -17,19 +18,26 @@ exports.createAvailability = async (req, res, next) => {
     date.setDate(date.getDate() + 1)
   ) {
     if (itemType === 'tour') {
-      await Availability.create({
+      createdAvailability = await Availability.create({
         tour: item._id,
         date,
         availableSeats,
       });
     }
     if (itemType === 'tripProgram') {
-      await Availability.create({
+      createdAvailability = await Availability.create({
         tripProgram: item._id,
         date,
         availableSeats,
       });
     }
+  }
+
+  if (!createdAvailability) {
+    console.log(
+      `availability failed to be created data :::  item:${item} , itemType: ${itemType},  startDate: ${startDate} , endDate: ${endDate}, availableSeats: ${availableSeats}`
+    );
+    return next(new AppError('Error creating the availability', 400));
   }
 
   res.status(201).json({
