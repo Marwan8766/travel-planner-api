@@ -206,7 +206,7 @@ exports.restrictAvailability = catchAsync(async (req, res, next) => {
   console.log(`company id: ${item.company} , type: ${typeof item.company}`);
 
   // check that the company making this req is the one that owns that item
-  if (req.user._id !== item.company)
+  if (req.user._id.toString() !== item.company.toString())
     return next(
       new AppError('You donot have the permission to perform that action', 403)
     );
