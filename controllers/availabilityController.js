@@ -202,6 +202,9 @@ exports.restrictAvailability = catchAsync(async (req, res, next) => {
   // check if the user is the admin
   if (req.user.role === 'admin') return next();
 
+  console.log(`user id: ${req.user._id}, type: ${typeof req.user._id}`);
+  console.log(`company id: ${item.company} , type: ${typeof item.company}`);
+
   // check that the company making this req is the one that owns that item
   if (req.user._id !== item.company)
     return next(
