@@ -455,7 +455,7 @@ exports.protect = catchAsync(async (req, res, next) => {
   const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
 
   // check if the user still exists
-  const currentUser = await User.findById(decoded.id).select('emailConfirmed');
+  const currentUser = await User.findById(decoded.id).select('+emailConfirmed');
   if (!currentUser)
     return next(new AppError('This user does no longer exist'), 401);
 
