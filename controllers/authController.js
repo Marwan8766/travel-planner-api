@@ -460,8 +460,8 @@ exports.protect = catchAsync(async (req, res, next) => {
     return next(new AppError('This user does no longer exist'), 401);
 
   // check if user confirmed his email
-  if (!currentUser.emailConfirmed)
-    return next(new AppError('You must confirm your email first', 403));
+  // if (!currentUser.emailConfirmed)
+  //   return next(new AppError('You must confirm your email first', 403));
 
   // check if the user has chamged his password after the token was issued
   if (
