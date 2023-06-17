@@ -69,6 +69,13 @@ exports.checkAddedItemsAddAvailability = catchAsync(async (req, res, next) => {
           tripProgram: item.tripProgram,
           date: item.date,
         });
+        console.log(`avilability: ${availability}`);
+        console.log(`quantity: ${item.quantity}`);
+        console.log(
+          `error condition seats-quantity: ${
+            availability.availableSeats - item.quantity < 1
+          }`
+        );
         if (!availability || availability.availableSeats - item.quantity < 1) {
           return next(
             new AppError('this tripProgram quantity isnot available', 404)
