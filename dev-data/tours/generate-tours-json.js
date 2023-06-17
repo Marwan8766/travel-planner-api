@@ -368,17 +368,17 @@ const createSaveTours = async (companyIds) => {
       );
       // Generate a summary based on the tour location
       const summary =
-        'Explore the underwater wonders of ' +
+        'Embark on an exhilarating underwater adventure in ' +
         cityName +
-        ' on an unforgettable snorkeling and diving adventure.';
+        ', with our top-rated snorkeling and diving tours.';
 
       // Generate a description based on the tour location
       const description =
-        'Dive into the crystal-clear waters of ' +
+        'Join us for an unforgettable snorkeling and diving experience in ' +
         cityName +
-        " and discover a world of vibrant marine life, colorful coral reefs, and ancient shipwrecks. Our expert guides will take you to the best snorkeling and diving spots, where you'll be surrounded by schools of tropical fish, sea turtles, and other fascinating creatures. Whether you're an experienced diver or a first-time snorkeler, we have the perfect tour for you, with options ranging from gentle snorkeling trips to thrilling deep dives. Our tours are designed to showcase the beauty and diversity of the local marine environment, while also emphasizing safety and conservation. We use state-of-the-art equipment and follow strict guidelines to ensure that you have a memorable and responsible experience. Join us for a day of adventure and exploration, and discover the hidden treasures that lie beneath the waves in " +
+        ", where you'll discover a vibrant world of colorful corals, exotic marine life, and mysterious shipwrecks. Our expert guides will take you to the best dive sites, where you'll encounter schools of tropical fish, graceful manta rays, and perhaps even the elusive whale shark. We offer a range of tours to suit all levels of experience, from beginner snorkeling trips to advanced deep dives. Safety is our top priority, and we use only the latest, well-maintained equipment. We also follow responsible diving practices to minimize our impact on the delicate marine environment. Don't miss this chance to explore the breathtaking beauty of the ocean in " +
         cityName +
-        '.';
+        ', and make memories that will last a lifetime.';
 
       // Generate a random price between 50 and 8000
       const price = faker.datatype.number({ min: 50, max: 8000 });
