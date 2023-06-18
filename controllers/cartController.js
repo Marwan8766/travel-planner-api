@@ -131,7 +131,7 @@ exports.deleteCartItem = catchAsync(async (req, res, next) => {
   const cart = await Cart.findOne({ user: req.user._id });
   if (!cart) return next(new AppError('cart not found', 404));
   console.log(`cartId: ${cart[0].tripProgram}`);
-  console.log(`cartIdString: ${cart[0].tripProgram.toString}`);
+  console.log(`cartIdString: ${cart.items[0].tripProgram.toString}`);
   // Find the item in the cart that matches the given itemId
   const item = cart.items.filter(async (cartItem) => {
     if (cartItem.tour && cartItem.tour.toString() === itemId) return cartItem;
