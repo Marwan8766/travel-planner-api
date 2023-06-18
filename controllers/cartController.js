@@ -132,6 +132,10 @@ exports.deleteCartItem = catchAsync(async (req, res, next) => {
   if (!cart) return next(new AppError('cart not found', 404));
   console.log(`cartId: ${cart}`);
   console.log(`cartIdString: ${cart.items[0].tripProgram.toString}`);
+  cart.items.forEach((ite) => console.log(`ysyys: ${ite.tripProgram}`));
+  cart.items.forEach((ite) =>
+    console.log(`mmmmm: ${ite.tripProgram === itemId}`)
+  );
   // Find the item in the cart that matches the given itemId
   const item = cart.items.filter(async (cartItem) => {
     if (cartItem.tour && cartItem.tour.toString() === itemId) return cartItem;
