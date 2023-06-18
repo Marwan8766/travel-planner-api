@@ -125,8 +125,7 @@ exports.checkCartItemsAvailability = catchAsync(async (req, res, next) => {
 });
 
 exports.deleteCartItem = catchAsync(async (req, res, next) => {
-  let { itemId } = req.body;
-  itemId = itemId.toString();
+  const { itemId } = req.body;
 
   // Find the cart for the current user
   const cart = await Cart.findOne({ user: req.user._id });
@@ -134,8 +133,8 @@ exports.deleteCartItem = catchAsync(async (req, res, next) => {
 
   // Find the item in the cart that matches the given itemId
   const item = cart.items.filter(async (cartItem) => {
-    if (cartItem.tour && cartItem.tour === itemId) return cartItem;
-    if (cartItem.tripProgram && cartItem.tripProgram === itemId)
+    if (cartItem.tour && cartItem.tour.toString() === itemId) return cartItem;
+    if (cartItem.tripProgram && cartItem.tripProgram.toString() === itemId)
       return cartItem;
   });
 
