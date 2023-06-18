@@ -126,7 +126,7 @@ exports.checkCartItemsAvailability = catchAsync(async (req, res, next) => {
 
 exports.deleteCartItem = catchAsync(async (req, res, next) => {
   let { itemId } = req.body;
-  itemId = mongoose.Types.ObjectId(itemId);
+  itemId = itemId.toString();
 
   // Find the cart for the current user
   const cart = await Cart.findOne({ user: req.user._id });
