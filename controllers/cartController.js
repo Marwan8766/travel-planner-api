@@ -139,7 +139,7 @@ exports.deleteCartItem = catchAsync(async (req, res, next) => {
       return cartItem;
   });
 
-  // If item not found, return an error
+  // If item not found, return an error.
   if (!item) return next(new AppError('item not found', 404));
 
   // Remove the item from the cart
