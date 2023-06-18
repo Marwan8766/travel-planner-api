@@ -120,7 +120,7 @@ exports.checkCartItemsAvailability = catchAsync(async (req, res, next) => {
   if (!cart) return next(new AppError('Cart not found', 404));
 
   // Add the updated cart to the request object and continue
-  req.cart = updatedCart;
+  req.cart = cart;
   next();
 });
 
