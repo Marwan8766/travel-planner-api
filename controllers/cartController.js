@@ -127,15 +127,13 @@ exports.checkCartItemsAvailability = catchAsync(async (req, res, next) => {
 exports.deleteCartItem = catchAsync(async (req, res, next) => {
   const { itemId } = req.body;
   console.log(`itemId: ${itemId}`);
+
   // Find the cart for the current user
   const cart = await Cart.findOne({ user: req.user._id });
   if (!cart) return next(new AppError('cart not found', 404));
-  console.log(`cartId: ${cart}`);
-  console.log(`cartIdString: ${cart.items[0].tripProgram.toString()}`);
-  cart.items.forEach((ite) => console.log(`ysyys: ${ite.tripProgram}`));
-  cart.items.forEach((ite) =>
-    console.log(`mmmmm: ${ite.tripProgram === itemId}`)
-  );
+
+  if (cart.items.length === 0) return next(new AppError('cart is empty', 404));
+
   // Find the item in the cart that matches the given itemId
   const item = cart.items.filter(async (cartItem) => {
     if (cartItem.tour && cartItem.tour.toString() === itemId.toString())
@@ -172,6 +170,8 @@ exports.emptyCart = catchAsync(async (req, res, next) => {
   // Find the cart for the current user
   const cart = await Cart.findOne({ user: req.user._id });
   if (!cart) return next(new AppError('cart not found', 404));
+
+  if (cart.items.length === 0) return next(new AppError('cart is empty', 404));
 
   // delete all items at cart
   cart.items = [];
