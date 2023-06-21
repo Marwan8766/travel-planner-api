@@ -131,7 +131,7 @@ exports.deleteCartItem = catchAsync(async (req, res, next) => {
   const cart = await Cart.findOne({ user: req.user._id });
   if (!cart) return next(new AppError('cart not found', 404));
   console.log(`cartId: ${cart}`);
-  console.log(`cartIdString: ${cart.items[0].tripProgram.toString}`);
+  console.log(`cartIdString: ${cart.items[0].tripProgram.toString()}`);
   cart.items.forEach((ite) => console.log(`ysyys: ${ite.tripProgram}`));
   cart.items.forEach((ite) =>
     console.log(`mmmmm: ${ite.tripProgram === itemId}`)
