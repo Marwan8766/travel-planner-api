@@ -126,7 +126,7 @@ exports.checkCartItemsAvailability = catchAsync(async (req, res, next) => {
 
 exports.deleteCartItem = catchAsync(async (req, res, next) => {
   const { itemId } = req.body;
-  console.log(`itemId: ${itemId}`);
+  console.log(`itemId:  ${itemId}`);
 
   // Find the cart for the current user
   const cart = await Cart.findOne({ user: req.user._id });
