@@ -66,7 +66,7 @@ const tripProgram = new mongoose.Schema({
     {
       type: mongoose.Schema.ObjectId,
       ref: 'Tour',
-      required: [true, 'Program must belong to a tour'],
+      required: [true, 'Program must have a tour'],
     },
   ],
   company: {

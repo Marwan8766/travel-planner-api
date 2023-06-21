@@ -27,7 +27,7 @@ const usersId = [];
 
 const createSaveCompany = async function () {
   // Create 100 users
-  for (let i = 0; i < 100; i++) {
+  for (let i = 0; i < 700; i++) {
     try {
       const user = new User({
         name: faker.company.companyName(),

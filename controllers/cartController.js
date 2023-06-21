@@ -67,7 +67,7 @@ exports.checkAddedItemsAddAvailability = catchAsync(async (req, res, next) => {
       } else if (item.type === 'tripProgram') {
         const availability = await Availability.findOne({
           tripProgram: item.tripProgram,
-          date: item.date,
+          date: new Date(item.date),
         });
         console.log(`avilability: ${availability}`);
         console.log(`quantity: ${item.quantity}`);
@@ -138,8 +138,12 @@ exports.deleteCartItem = catchAsync(async (req, res, next) => {
   );
   // Find the item in the cart that matches the given itemId
   const item = cart.items.filter(async (cartItem) => {
-    if (cartItem.tour && cartItem.tour.toString() === itemId) return cartItem;
-    if (cartItem.tripProgram && cartItem.tripProgram.toString() === itemId)
+    if (cartItem.tour && cartItem.tour.toString() === itemId.toString())
+      return cartItem;
+    if (
+      cartItem.tripProgram &&
+      cartItem.tripProgram.toString() === itemId.toString()
+    )
       return cartItem;
   });
 

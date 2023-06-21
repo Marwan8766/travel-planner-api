@@ -25,13 +25,11 @@ const booking = new mongoose.Schema({
     default: Date.now(),
     select: false,
   },
-  tour: [
-    {
-      type: mongoose.Schema.ObjectId,
-      ref: 'Tour',
-      required: false,
-    },
-  ],
+  tour: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'Tour',
+    required: false,
+  },
   tripProgram: {
     type: mongoose.Schema.ObjectId,
     ref: 'TripProgram',
