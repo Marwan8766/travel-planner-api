@@ -24,7 +24,7 @@ exports.createTourReview = catchAsync(async (req, res, next) => {
       secure: true,
     });
     const result = await cloudinary.uploader.upload(file.path, {
-      folder: gallery / profile,
+      folder: 'gallery/review',
     });
     const { secure_url } = result;
     image = secure_url;
@@ -70,7 +70,7 @@ exports.createTripProgramReview = catchAsync(async (req, res, next) => {
       secure: true,
     });
     const result = await cloudinary.uploader.upload(file.path, {
-      folder: gallery / profile,
+      folder: 'gallery/review',
     });
     const { secure_url } = result;
     image = secure_url;
@@ -116,7 +116,7 @@ exports.createCompanyReview = catchAsync(async (req, res, next) => {
       secure: true,
     });
     const result = await cloudinary.uploader.upload(file.path, {
-      folder: gallery / profile,
+      folder: 'gallery/review',
     });
     const { secure_url } = result;
     image = secure_url;
@@ -160,44 +160,48 @@ exports.deleteReview = catchAsync(async (req, res, next) => {
     const reviewUrl = review.image;
 
     // find the publicId from the image url
-    const parts = reviewUrl.split('/');
-    const publicId = parts[parts.length - 2];
+    if (reviewUrl.length > 0) {
+      const parts = reviewUrl.split('/');
+      const publicId = parts[parts.length - 2];
 
-    // find that review and delete it from cloudinary
-    cloudinary.uploader
-      .destroy(publicId, { resouce_type: 'image' })
-      .catch((err) => next(new AppError("This review wasn't found", 404)));
+      // find that review and delete it from cloudinary
+      cloudinary.uploader
+        .destroy(publicId, { resouce_type: 'image' })
+        .catch((err) => next(new AppError("This review wasn't found", 404)));
 
-    // find the review and delete it from DB
-    const deletedReview = await reviewModel.findOneAndDelete({
-      _id: req.params.id,
-    });
+      // find the review and delete it from DB
+      const deletedReview = await reviewModel.findOneAndDelete({
+        _id: req.params.id,
+      });
 
-    // if no review was found throw error
-    if (!deletedReview)
-      return next(new AppError("This review wasn't found", 404));
+      // if no review was found throw error
+      if (!deletedReview)
+        return next(new AppError("This review wasn't found", 404));
+    }
   } else {
     // find the reviewUrl from the review
     const reviewUrl = review.image;
 
     // find the publicId from the image url
-    const parts = reviewUrl.split('/');
-    const publicId = parts[parts.length - 2];
+    if (reviewUrl.length > 0) {
+      const parts = reviewUrl.split('/');
+      const publicId = parts[parts.length - 2];
 
-    // find that review and delete it from cloudinary
-    cloudinary.uploader
-      .destroy(publicId, { resouce_type: 'image' })
-      .catch((err) => next(new AppError("This review wasn't found", 404)));
+      // find that review and delete it from cloudinary
+      cloudinary.uploader
+        .destroy(publicId, { resouce_type: 'image' })
+        .catch((err) => next(new AppError("This review wasn't found", 404)));
 
-    // find the review and delete it from DB
-    const deletedReview = await reviewModel.findOneAndDelete({
-      _id: req.params.id,
-      user: req.user._id,
-    });
+      // find the review and delete it from DB
+      const deletedReview = await reviewModel.findOneAndDelete({
+        _id: req.params.id,
+        user: req.user._id,
+      });
 
-    // if no review was found throw error
-    if (!deletedReview)
-      return next(new AppError("This review wasn't found", 404));
+      // if no review was found throw error
+      if (!deletedReview)
+        return next(new AppError("This review wasn't found", 404));
+    }
   }
   // send res json with success message and deleted review
   res.status(204).json({
@@ -232,7 +236,7 @@ exports.updateReview = catchAsync(async (req, res, next) => {
       secure: true,
     });
     const result = await cloudinary.uploader.upload(file.path, {
-      folder: gallery / review,
+      folder: 'gallery/review',
     });
     const { secure_url } = result;
     image = secure_url;
