@@ -160,7 +160,7 @@ exports.deleteReview = catchAsync(async (req, res, next) => {
     const reviewUrl = review.image;
 
     // find the publicId from the image url
-    if (reviewUrl.length > 0) {
+    if (reviewUrl) {
       const parts = reviewUrl.split('/');
       const publicId = parts[parts.length - 2];
 
@@ -183,7 +183,7 @@ exports.deleteReview = catchAsync(async (req, res, next) => {
     const reviewUrl = review.image;
 
     // find the publicId from the image url
-    if (reviewUrl.length > 0) {
+    if (reviewUrl) {
       const parts = reviewUrl.split('/');
       const publicId = parts[parts.length - 2];
 
@@ -227,6 +227,17 @@ exports.updateReview = catchAsync(async (req, res, next) => {
   const { rating, description } = req.body;
   let image = undefined;
 
+  console.log(`rating: ${rating}`);
+  console.log(`description: ${description}`);
+
+  const review = await reviewModel.findOne({
+    _id: req.params.id,
+    user: req.user._id,
+  });
+  if (!review) return next(new AppError('No review found for that ID', 404));
+
+  console.log(`review: ${review}`);
+
   if (req.file) {
     const file = req.file;
     cloudinary.config({
@@ -242,11 +253,6 @@ exports.updateReview = catchAsync(async (req, res, next) => {
     image = secure_url;
   }
 
-  const review = await reviewModel.findOne({
-    _id: req.params.id,
-    user: req.user._id,
-  });
-  if (!review) return next(new AppError('No review found for that ID', 404));
   // Check if the authenticated user is an admin
   if (req.user.role === 'admin') {
     // Admin is authorized to update the review
@@ -269,6 +275,8 @@ exports.updateReview = catchAsync(async (req, res, next) => {
   const updatedReview = await review.save({ validateModifiedOnly: true });
   if (!updatedReview)
     return next(new AppError('Error updating the review', 400));
+
+  console.log(`updated rev: ${updatedReview}`);
 
   res.status(200).json({
     status: 'success',
