@@ -137,22 +137,21 @@ exports.deleteCartItem = catchAsync(async (req, res, next) => {
     console.log(`mmmmm: ${ite.tripProgram === itemId}`)
   );
   // Find the item in the cart that matches the given itemId
-  const item = [];
-  for (const cartItem of cart.items) {
+  const item = cart.items.filter(async (cartItem) => {
+    if (cartItem.tour && cartItem.tour.toString() === itemId.toString())
+      return cartItem;
     if (
-      (cartItem.tour && cartItem.tour.toString() === itemId.toString()) ||
-      (cartItem.tripProgram &&
-        cartItem.tripProgram.toString() === itemId.toString())
-    ) {
-      item.push(cartItem);
-    }
-  }
+      cartItem.tripProgram &&
+      cartItem.tripProgram.toString() === itemId.toString()
+    )
+      return cartItem;
+  });
 
   // If item not found, return an error.
-  if (!item) return next(new AppError('item not found', 404));
+  if (!item[0]) return next(new AppError('item not found', 404));
 
   // Remove the item from the cart
-  cart.items.pull(item);
+  cart.items.pull(item[0]._id);
 
   // Save the updated cart to the database
   const updatedCart = await cart.save({ validateModifiedOnly: true });
