@@ -155,6 +155,7 @@ exports.deleteReview = catchAsync(async (req, res, next) => {
   const review = await reviewModel.findOne({ _id: req.params.id });
   // if no review was found throw  an rror
   if (!review) return next(new AppError("This review could't be found", 404));
+
   if (req.user.role === 'admin') {
     // find the reviewUrl from the review
     const reviewUrl = review.image;
@@ -181,7 +182,6 @@ exports.deleteReview = catchAsync(async (req, res, next) => {
   } else {
     // find the reviewUrl from the review
     const reviewUrl = review.image;
-
     // find the publicId from the image url
     if (reviewUrl) {
       const parts = reviewUrl.split('/');
@@ -201,8 +201,19 @@ exports.deleteReview = catchAsync(async (req, res, next) => {
       // if no review was found throw error
       if (!deletedReview)
         return next(new AppError("This review wasn't found", 404));
+    } else {
+      // find the review and delete it from DB
+      const deletedReview = await reviewModel.findOneAndDelete({
+        _id: req.params.id,
+        user: req.user._id,
+      });
+
+      // if no review was found throw error
+      if (!deletedReview)
+        return next(new AppError("This review wasn't found", 404));
     }
   }
+
   // send res json with success message and deleted review
   res.status(204).json({
     status: 'success',
