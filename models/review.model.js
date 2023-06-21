@@ -20,12 +20,10 @@ const reviewSchema = new mongoose.Schema(
       max: [5, 'rating avg must be below 5.0'],
       set: (val) => Math.round(val * 10) / 10, // 4.666 , 64.6 , 47 , 4.7
     },
-    tour: [
-      {
-        type: mongoose.Schema.ObjectId,
-        ref: 'Tour',
-      },
-    ],
+    tour: {
+      type: mongoose.Schema.ObjectId,
+      ref: 'Tour',
+    },
     user: {
       type: mongoose.Schema.ObjectId,
       ref: 'User',

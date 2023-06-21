@@ -35,15 +35,6 @@ exports.createTourReview = catchAsync(async (req, res, next) => {
     return next(new AppError('Tour not found', 404));
   }
 
-  tour.description = description ? description : tour.description;
-  tour.image = image ? image : tour.image;
-  tour.rating = rating ? rating : tour.rating;
-
-  const review = await tour.save({ validateModifiedOnly: true });
-  if (!review) {
-    return next(new AppError('Could not save review', 400));
-  }
-
   // Create a new review document in the reviewModel collection
   const newReview = await reviewModel.create({
     tour: tourId,
@@ -88,15 +79,6 @@ exports.createTripProgramReview = catchAsync(async (req, res, next) => {
   const tripProgram = await tripProgramModel.findOne({ _id: tripProgramId });
   if (!tripProgram) {
     return next(new AppError('tripProgram not found', 404));
-  }
-
-  tripProgram.description = description ? description : tripProgram.description;
-  tripProgram.image = image ? image : tripProgram.image;
-  tripProgram.rating = rating ? rating : tripProgram.rating;
-
-  const review = await tripProgram.save({ validateModifiedOnly: true });
-  if (!review) {
-    return next(new AppError('Could not save review', 400));
   }
 
   // Create a new review document in the reviewModel collection
@@ -145,15 +127,6 @@ exports.createCompanyReview = catchAsync(async (req, res, next) => {
   });
   if (!company) {
     return next(new AppError('company not found', 404));
-  }
-
-  company.description = description ? description : company.description;
-  company.image = image ? image : company.image;
-  company.rating = rating ? rating : company.rating;
-
-  const review = await company.save({ validateModifiedOnly: true });
-  if (!review) {
-    return next(new AppError('Could not save review', 400));
   }
 
   // Create a new review document in the reviewModel collection

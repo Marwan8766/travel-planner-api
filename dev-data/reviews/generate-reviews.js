@@ -39,6 +39,11 @@ const getToursIds = async () => {
   return tours.map((tour) => tour._id);
 };
 
+const getTripProgramsIds = async () => {
+  let tripPrograms = await TripProgram.find();
+  return tripPrograms.map((tripProgram) => tripProgram._id);
+};
+
 const createRandomReviewsTour = async () => {
   const users = await getUsersIds();
   const tours = await getToursIds();
@@ -62,4 +67,29 @@ const createRandomReviewsTour = async () => {
   console.log('Done...');
 };
 
-createRandomReviewsTour();
+const createRandomReviewsTripPrograms = async () => {
+  const users = await getUsersIds();
+  const tripPrograms = await getTripProgramsIds();
+
+  // select random user and tour and create review
+  for (let i = 0; i < 20000; i++) {
+    console.log(`i: ${i + 1}`);
+    // Change the loop limit as desired
+    const randomUser = faker.random.arrayElement(users);
+    const randomTripProgram = faker.random.arrayElement(tripPrograms);
+    const randomDescription = faker.lorem.paragraphs(2);
+    const randomRating = faker.datatype.number({ min: 1, max: 5 });
+
+    const review = await Review.create({
+      description: randomDescription,
+      rating: randomRating,
+      tripProgram: randomTripProgram,
+      user: randomUser,
+    });
+  }
+  console.log('Done...');
+};
+
+// createRandomReviewsTour();
+
+createRandomReviewsTripPrograms();
