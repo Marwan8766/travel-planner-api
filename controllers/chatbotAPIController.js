@@ -47,6 +47,7 @@ exports.chatbotWebhookHandler = catchAsync(async (req, res, next) => {
 
 const findTopMatchedTours = async (query, toursLength = 5) => {
   const { lat, lng, radius, budget } = query;
+  console.log(`lat:${lat}   lng: ${lng},  radius: ${radius}`);
 
   const filter = {
     ...(lat && lng && radius
@@ -92,6 +93,7 @@ const constructQueryTour = async (location, budget) => {
   if (location) {
     const coordinatesRes = await plannedTripController.getCityRadius(location);
     query = { ...coordinatesRes };
+    console.log(query);
   }
 
   // if there is budget add to query obj
