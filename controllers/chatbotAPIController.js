@@ -59,7 +59,7 @@ const findTopMatchedTours = async (query, toursLength = 5) => {
     ...(budget ? { price: { $lte: budget } } : {}),
   };
 
-  const matchedTours = await Tour.find(filter).limit(toursLength).cache(false);
+  const matchedTours = await Tour.find(filter).limit(toursLength);
 
   if (matchedTours.length === 0) {
     // No tours found, return null

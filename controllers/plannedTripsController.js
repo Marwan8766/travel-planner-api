@@ -278,7 +278,7 @@ exports.getCityRadius = async function (cityName) {
       lng: lon,
     };
   } catch (error) {
-    console.error(error);
+    throw new Error(`Failed to retrieve city radius: ${error.message}`);
   }
 };
 
