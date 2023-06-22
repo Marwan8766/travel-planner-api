@@ -156,8 +156,9 @@ const handleRecommendationIntent = async (location, Date_period) => {
   const response = await getTravelPlannerRapidApiRes(location, Date_period);
 
   // get the plan array
-  const { plan } = response;
+  const { data } = response;
 
+  console.log(data);
   // create and return text message
-  return createMessageRecommendedTrip(plan);
+  return createMessageRecommendedTrip(data.plan);
 };
