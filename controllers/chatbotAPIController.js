@@ -45,7 +45,7 @@ exports.chatbotWebhookHandler = catchAsync(async (req, res, next) => {
 
 /////////////////////////////////////////////////////////////////////////
 
-const findTopMatchedTours = async (query) => {
+const findTopMatchedTours = async (query, toursLength = 5) => {
   const { lat, lng, radius, budget } = query;
   console.log(`lat:${lat}   lng: ${lng},  radius: ${radius}`);
 
@@ -60,20 +60,14 @@ const findTopMatchedTours = async (query) => {
     ...(budget ? { price: { $lte: budget } } : {}),
   };
 
-  const matchedTours = await Tour.find(filter);
+  const matchedTours = await Tour.find(filter).limit(toursLength);
 
   if (matchedTours.length === 0) {
     // No tours found, return null
     return [];
   }
 
-  // Shuffle the matchedTours array
-  const shuffledTours = matchedTours.sort(() => Math.random() - 0.5);
-
-  // Get the first 'toursLength' tours from the shuffled array
-  const randomTours = shuffledTours.slice(0, toursLength);
-
-  return randomTours;
+  return matchedTours;
 };
 
 const createMessageTour = (matchedTours) => {
@@ -114,7 +108,7 @@ const handleToursIntent = async (location, budget) => {
   const query = await constructQueryTour(location, budget);
 
   // find top 5 matched tours with the query
-  const matchedTours = await findTopMatchedTours(query);
+  const matchedTours = await findTopMatchedTours(query, 5);
 
   // create text message
   const textMessage = createMessageTour(matchedTours);
