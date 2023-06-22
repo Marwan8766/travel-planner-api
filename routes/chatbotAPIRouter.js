@@ -4,7 +4,7 @@ const chatbotAPIController = require('../controllers/chatbotAPIController');
 
 const router = express.Router();
 
-router.post('/', chatbotAPIController.chatbotWebhookHandler);
+router.post('/webhook', chatbotAPIController.chatbotWebhookHandler);
 
 module.exports = router;
 

@@ -135,7 +135,7 @@ app.use(
   })
 );
 
-app.use('api/v1/chatbot/webhook', chatbotAPIRouter);
+app.use('/api/v1/chatbot', chatbotAPIRouter);
 // Routing
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/tours', tourRouter);
