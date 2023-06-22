@@ -79,7 +79,7 @@ const tourSchema = new mongoose.Schema(
 );
 
 tourSchema.index({ price: 1, ratingsAverage: -1 });
-tourSchema.index({ startLocation: '2dsphere' });
+tourSchema.index({ startLocations: '2dsphere' });
 
 // virtual population
 tourSchema.virtual('reviews', {

@@ -59,9 +59,16 @@ const findTopMatchedTours = async (query, toursLength = 5) => {
     ...(budget ? { price: { $lte: budget } } : {}),
   };
 
-  return await Tour.find(filter)
+  const matchedTours = await Tour.find(filter)
     .sort({ ratingsAverage: -1, ratingsQuantity: -1 })
     .limit(toursLength);
+
+  if (matchedTours.length === 0) {
+    // No tours found, return null
+    return [];
+  }
+
+  return matchedTours;
 };
 
 const createMessageTour = (matchedTours) => {
