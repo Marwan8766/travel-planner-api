@@ -262,6 +262,15 @@ exports.updateReview = catchAsync(async (req, res, next) => {
     });
     const { secure_url } = result;
     image = secure_url;
+
+    // if(review.image){
+    //   const parts = review.image.split('/');
+    //   const publicId = parts[parts.length - 2];
+    //    // find that review and delete it from cloudinary
+    //    cloudinary.uploader
+    //    .destroy(publicId, { resouce_type: 'image' })
+    //    .catch((err) => next(new AppError("This review wasn't found", 404)));
+    // }
   }
 
   // Check if the authenticated user is an admin

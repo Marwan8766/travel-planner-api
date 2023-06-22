@@ -99,10 +99,11 @@ const plannedTripController = require('./controllers/plannedTripsController');
 const Tour = require('./models/tourModel');
 const TouristAttraction = require('./models/touristAttractionModel');
 
+const chatbotAPIRouter = require('./routes/chatbotAPIRouter');
+
 app.use(express.json());
 // Middleware to parse urlencoded data
 app.use(express.urlencoded({ extended: true }));
-
 
 app.use('/api/v1/test', async (req, res) => {
   console.log('Test route accessed!');
@@ -134,6 +135,7 @@ app.use(
   })
 );
 
+app.use('api/v1/chatbot/webhook', chatbotAPIRouter);
 // Routing
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/tours', tourRouter);
