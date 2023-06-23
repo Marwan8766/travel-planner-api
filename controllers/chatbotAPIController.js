@@ -95,7 +95,7 @@ Price: $${price}\n\n`;
 };
 
 const constructQueryTour = async (location, budget) => {
-  let query;
+  let query = {};
 
   // if there is location find the lat , lng , radius and add to query object
   if (location) {
