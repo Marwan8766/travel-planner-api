@@ -30,7 +30,9 @@ exports.chatbotWebhookHandler = catchAsync(async (req, res, next) => {
   switch (intentDisplayName) {
     case 'tours':
       console.log(`tours intent`);
-      textResponse = await handleToursIntent(location, budget);
+      if (location && budget)
+        textResponse = await handleToursIntent(location, budget);
+      else textResponse = 'Please provide location and budget';
       break;
 
     case 'recommend':
