@@ -6,7 +6,7 @@ const { query } = require('express');
 const axios = require('axios');
 
 exports.chatbotWebhookHandler = catchAsync(async (req, res, next) => {
-  const { Location, budget, Date_period } = parameters;
+  const { Location, budget, Date_period } = req.body.queryResult.parameters;
 
   // Extract the location
   let location = '';
