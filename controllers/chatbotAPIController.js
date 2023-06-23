@@ -6,13 +6,21 @@ const { query } = require('express');
 const axios = require('axios');
 
 exports.chatbotWebhookHandler = catchAsync(async (req, res, next) => {
-  const { location, budget, Date_period } = req.body.queryResult.parameters;
-  console.log(
-    `location: ${location} \nbudget: ${budget}\nDate_period: ${Date_period}`
-  );
+  const { Location, budget, Date_period } = parameters;
+
+  // Extract the location
+  let location = '';
+  if (Location && Location.city) {
+    location = Location.city;
+  } else if (Location && Location.country) {
+    location = Location.country;
+  }
+
+  console.log(`location: ${location}`);
+  console.log(`budget: ${budget}`);
+  console.log(`Date_period: ${Date_period}`);
   console.log(`req.body: ${JSON.stringify(req.body)}`);
-  console.log(`req.body: ${req.body[0]}`);
-  console.log(`req.body: ${req.body[1]}`);
+
   // Extract the intent display name
   const intentDisplayName = req.body.queryResult.intent.displayName;
 
