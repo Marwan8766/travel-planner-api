@@ -7,6 +7,10 @@ const axios = require('axios');
 
 exports.chatbotWebhookHandler = catchAsync(async (req, res, next) => {
   const { location, budget, Date_period } = req.body.queryResult.parameters;
+  console.log(
+    `location: ${location} \nbudget: ${budget}\nDate_period: ${Date_period}`
+  );
+  console.log(`req.body: ${req.body}`);
   // Extract the intent display name
   const intentDisplayName = req.body.queryResult.intent.displayName;
 
@@ -15,10 +19,12 @@ exports.chatbotWebhookHandler = catchAsync(async (req, res, next) => {
 
   switch (intentDisplayName) {
     case 'tours':
+      console.log(`tours intent`);
       textResponse = await handleToursIntent(location, budget);
       break;
 
     case 'recommend':
+      console.log(`recommend intent`);
       if (location && Date_period)
         textResponse = await handleRecommendationIntent(location, Date_period);
       else
@@ -27,10 +33,12 @@ exports.chatbotWebhookHandler = catchAsync(async (req, res, next) => {
       break;
 
     default:
+      console.log(`intent not found`);
       textResponse = "this intent can't be found";
       break;
   }
 
+  console.log(`textResponse: ${textResponse}`);
   // send the res with the textResponse
   res.status(200).json({
     fulfillmentMessages: [
