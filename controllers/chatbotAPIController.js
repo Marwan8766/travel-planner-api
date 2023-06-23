@@ -89,19 +89,20 @@ const findTopMatchedTours = async (query, toursLength = 5) => {
 };
 
 const createMessageTour = (matchedTours) => {
-  let tourText = '';
+  let message = '';
 
-  if (matchedTours.length === 0)
+  if (matchedTours.length === 0) {
     return 'No tours found for this location and budget';
+  }
 
   matchedTours.forEach((tour, index) => {
     const { name, price } = tour;
-    tourText += `Tour ${index + 1}:
-Name: ${name}
-Price: $${price}\n\n`;
+    message += `\u2022 Tour ${index + 1}:\n`;
+    message += `   Name: ${name}\n`;
+    message += `   Price: $${price}\n\n`;
   });
 
-  return tourText;
+  return message;
 };
 
 const constructQueryTour = async (location, budget) => {
