@@ -10,7 +10,7 @@ exports.chatbotWebhookHandler = catchAsync(async (req, res, next) => {
   console.log(
     `location: ${location} \nbudget: ${budget}\nDate_period: ${Date_period}`
   );
-  console.log(`req.body: ${req.body}`);
+  console.log(`req.body: ${JSON.stringify(req.body)}`);
   // Extract the intent display name
   const intentDisplayName = req.body.queryResult.intent.displayName;
 
