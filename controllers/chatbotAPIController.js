@@ -138,19 +138,19 @@ const handleToursIntent = async (location, budget) => {
 ////////////////////////////////////////////////////////////
 
 const createMessageRecommendedTrip = (plan) => {
-  let text = '';
+  let message = '';
 
   plan.forEach((day) => {
-    text += `Day ${day.day}:\n`;
+    message += `Day ${day.day}:\n`;
 
     day.activities.forEach((activity) => {
-      text += `${activity.time} - ${activity.description}\n`;
+      message += `\u2022 ${activity.time}: ${activity.description}\n`;
     });
 
-    text += '\n';
+    message += '\n';
   });
 
-  return text;
+  return message;
 };
 
 const getTravelPlannerRapidApiRes = async (location, Date_period) => {
