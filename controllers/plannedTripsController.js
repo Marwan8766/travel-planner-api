@@ -270,7 +270,7 @@ exports.getCityRadius = async function (cityName) {
     const radius = Math.sqrt(area / Math.PI);
 
     // Convert radius to radians
-    const radiusInRadians = radius / 6371;
+    const radiusInRadians = radius / 6371000;
 
     return {
       radius: radiusInRadians,

@@ -30,18 +30,18 @@ exports.chatbotWebhookHandler = catchAsync(async (req, res, next) => {
   switch (intentDisplayName) {
     case 'tours':
       console.log(`tours intent`);
-      if (location && budget)
-        textResponse = await handleToursIntent(location, budget);
-      else textResponse = 'Please provide location and budget';
+      if (!location) textResponse = 'Please provide the location';
+      else if (!budget) textResponse = 'Please provide your budget';
+      else textResponse = await handleToursIntent(location, budget);
       break;
 
     case 'recommend':
       console.log(`recommend intent`);
-      if (location && Date_period)
-        textResponse = await handleRecommendationIntent(location, Date_period);
+      if (!location) textResponse = 'Please provide the location';
+      else if (!Date_period)
+        textResponse = 'Please provide the period of the trip';
       else
-        textResponse =
-          'Please provide the location and period to plan the trip';
+        textResponse = await handleRecommendationIntent(location, Date_period);
       break;
 
     default:
@@ -190,3 +190,5 @@ const handleRecommendationIntent = async (location, Date_period) => {
   // create and return text message
   return createMessageRecommendedTrip(data.plan);
 };
+
+/////////////////////////////////////////////////////////////////////////////
