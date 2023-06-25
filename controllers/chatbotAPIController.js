@@ -5,6 +5,7 @@ const plannedTripController = require('./plannedTripsController');
 const { query } = require('express');
 const axios = require('axios');
 const { options } = require('../app');
+const { json } = require('body-parser');
 
 exports.chatbotWebhookHandler = catchAsync(async (req, res, next) => {
   const {
@@ -296,7 +297,10 @@ const searchFlights = async (
     };
 
     const response = await axios.request(options);
+
+    console.log('responseOFFlights: ', JSON.stringify(response, null, 2));
     const flights = response.data.data.flights;
+    console.log(`res.data:  ${(json.stringify(response.data), null, 2)}`);
 
     console.log(`flights length: ${flights.length}`);
 
