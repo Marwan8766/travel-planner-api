@@ -245,7 +245,10 @@ const getAirportCode = async (cityName) => {
     };
 
     const response = await axios.request(options);
+    console.log(`response: ${response.toString()}`);
+    console.log(`response.data: ${response.data.toString()}`);
     const airportCode = response.data.data[0].airportCode;
+    console.log(`airportcode: ${airportCode}`);
 
     return airportCode;
   } catch (error) {
