@@ -304,6 +304,7 @@ const searchFlights = async (
     console.log('res', response);
     // console.log('responseOFFlights: ', JSON.stringify(response));
     const flights = response.data.data.flights;
+    console.log('flights: ', flights[0]);
     // console.log(`res.data:  ${JSON.stringify(response.data.data)}`);
 
     console.log(`flights length: ${flights.length}`);
@@ -411,12 +412,21 @@ const validateFlightParams = (
 
 const constructFlightText = (flights) => {
   const flightDetails = flights.map((flight, index) => {
-    const { segments, purchaseLinks } = flight;
+    const { segments } = flight;
     const departureDateTime = segments[0].legs[0].departureDateTime;
     const arrivalDateTime =
       segments[segments.length - 1].legs[0].arrivalDateTime;
     const airline = segments[0].legs[0].operatingCarrier.displayName;
-    const price = purchaseLinks[index].totalPrice;
+
+    // Find the corresponding purchase link based on flight details
+    const matchingPurchaseLink = flight.purchaseLinks.find(
+      (purchaseLink) =>
+        purchaseLink.totalPrice && purchaseLink.totalPrice !== ''
+    );
+
+    const price = matchingPurchaseLink
+      ? matchingPurchaseLink.totalPrice
+      : 'N/A';
 
     return {
       departureDateTime,
@@ -436,7 +446,7 @@ const constructFlightText = (flights) => {
     text += `• Price: ${flight.price} INR\n\n`;
   });
 
-  // retrun the text
+  // Return the text
   return text;
 };
 
