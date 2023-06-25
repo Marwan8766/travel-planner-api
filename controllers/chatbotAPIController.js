@@ -4,9 +4,25 @@ const Tour = require('../models/tourModel');
 const plannedTripController = require('./plannedTripsController');
 const { query } = require('express');
 const axios = require('axios');
+const { options } = require('../app');
 
 exports.chatbotWebhookHandler = catchAsync(async (req, res, next) => {
-  const { Location, budget, Date_period } = req.body.queryResult.parameters;
+  const {
+    Location,
+    budget,
+    Date_period,
+    cityNamePickup, // flight
+    cityNameDestination,
+    departureDate,
+    flightType,
+    sortingOrder,
+    numAdults,
+    numOfSeniors,
+    flightClass,
+    nearbyAirPorts,
+    nonstopFlight,
+    returnDate,
+  } = req.body.queryResult.parameters;
 
   // Extract the location
   let location = '';
@@ -192,3 +208,118 @@ const handleRecommendationIntent = async (location, Date_period) => {
 };
 
 /////////////////////////////////////////////////////////////////////////////
+// FLIGHTS
+
+const getAirportCode = async (cityName) => {
+  try {
+    const options = {
+      method: 'GET',
+      url: 'https://tripadvisor16.p.rapidapi.com/api/v1/flights/searchAirport',
+      params: { query: cityName },
+      headers: {
+        'X-RapidAPI-Key': process.env.TRIPADVISOR_API_KEY,
+        'X-RapidAPI-Host': 'tripadvisor16.p.rapidapi.com',
+      },
+    };
+
+    const response = await axios.request(options);
+    const airportCode = response.data.data[0].airportCode;
+
+    return airportCode;
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+};
+
+const searchFlights = async (
+  sourceAirportCode,
+  destinationAirportCode,
+  departureDate,
+  flightType,
+  sortingOrder,
+  numAdults,
+  numOfSeniors,
+  flightClass,
+  nearbyAirPorts,
+  nonstopFlight,
+  returnDate
+) => {
+  try {
+    const options = {
+      method: 'GET',
+      url: 'https://tripadvisor16.p.rapidapi.com/api/v1/flights/searchFlights',
+      params: {
+        sourceAirportCode,
+        destinationAirportCode,
+        date: departureDate, //'2023-06-25',
+        itineraryType: flightType || 'ONE_WAY', //'ONE_WAY',
+        sortOrder: sortingOrder || 'ML_BEST_VALUE',
+        numAdults,
+        numSeniors: numOfSeniors.toString() || '0', //  gte 65
+        classOfService: flightClass || 'ECONOMY',
+        pageNumber: '1',
+        nearby: nearbyAirPorts || 'yes', // optional
+        nonstop: nonstopFlight || 'no', // optional
+        currencyCode: 'USD',
+      },
+      headers: {
+        'X-RapidAPI-Key': process.env.TRIPADVISOR_API_KEY,
+        'X-RapidAPI-Host': 'tripadvisor16.p.rapidapi.com',
+      },
+    };
+
+    if (returnDate) options.params.returnDate = returnDate;
+
+    const response = await axios.request(options);
+    const flights = response.data.data.flights;
+
+    console.log(`flights length: ${flights.length}`);
+
+    return flights;
+  } catch (error) {
+    console.error(`error in finding flights: ${error}`);
+    return [];
+  }
+};
+
+function isValidDateFormat(dateString) {
+  const regex = /^\d{4}-\d{2}-\d{2}$/;
+  return regex.test(dateString);
+}
+
+const handleFlightsIntent = async (
+  cityNamePickup,
+  cityNameDestination,
+  departureDate,
+  flightType,
+  sortingOrder,
+  numAdults,
+  numOfSeniors,
+  flightClass,
+  nearbyAirPorts,
+  nonstopFlight,
+  returnDate
+) => {
+  let text = '';
+
+  // find the pickup airport code
+  const pickupAirportCode = await getAirportCode(cityNamePickup);
+  if (!pickupAirportCode)
+    return (text = `Please provide the pickup city name correctly this pickup city name ${cityNamePickup} isnot correct`);
+
+  // find the destination airport code
+  const destinationAirportCode = await getAirportCode(cityNameDestination);
+  if (!destinationAirportCode)
+    return (text = `Please provide the destination city name correctly this destination city name ${cityNameDestination} isnot correct`);
+
+  // validate departureDate
+  if (!departureDate) return (text = `Please provide a departure date`);
+  if (!isValidDateFormat(departureDate))
+    return (text = `Please provide a correct format of departure date`);
+
+  // validate flight type
+  if (!flightType) return (text = 'Please provide a flight type');
+  if (flightType !== '' || flightType !== '')
+    return (text = 'Please provide correct flight type');
+};
