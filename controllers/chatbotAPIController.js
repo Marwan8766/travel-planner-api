@@ -300,7 +300,7 @@ const searchFlights = async (
 
     console.log('responseOFFlights: ', JSON.stringify(response));
     const flights = response.data.data.flights;
-    console.log(`res.data:  ${JSON.stringify(response.data)}`);
+    console.log(`res.data:  ${JSON.stringify(response.data.data)}`);
 
     console.log(`flights length: ${flights.length}`);
 
