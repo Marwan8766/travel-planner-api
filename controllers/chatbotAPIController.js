@@ -384,7 +384,7 @@ const validateFlightParams = (
   if (!flightType)
     return (text =
       'Please provide a flight type either ONE_WAY or ROUND_TRIP and if you choose ROUND_TRIP please provide the return date');
-  if (flightType !== 'ONE_WAY' || flightType !== 'ROUND_TRIP')
+  if (flightType !== 'ONE_WAY' && flightType !== 'ROUND_TRIP')
     return (text = `Please provide correct flight type either ONE_WAY or ROUND_TRIP, the provided flight type ${flightType} isn't correct`);
 
   // validate returnDate
