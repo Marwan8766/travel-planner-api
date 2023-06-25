@@ -298,9 +298,9 @@ const searchFlights = async (
 
     const response = await axios.request(options);
 
-    console.log('responseOFFlights: ', JSON.stringify(response, null, 2));
+    console.log('responseOFFlights: ', JSON.stringify(response));
     const flights = response.data.data.flights;
-    console.log(`res.data:  ${(json.stringify(response.data), null, 2)}`);
+    console.log(`res.data:  ${json.stringify(response.data)}`);
 
     console.log(`flights length: ${flights.length}`);
 
