@@ -296,12 +296,12 @@ const searchFlights = async (
       },
     };
 
-    console.log(`options: ${options}`);
+    // console.log(`options: ${options}`);
     const response = await axios.request(options);
 
-    console.log(response.data.data);
-    console.log(response.data);
-    console.log(response);
+    console.log('res.data.data: ', response.data.data);
+    console.log('res.data: ', response.data);
+    console.log('res', response);
     // console.log('responseOFFlights: ', JSON.stringify(response));
     const flights = response.data.data.flights;
     // console.log(`res.data:  ${JSON.stringify(response.data.data)}`);
