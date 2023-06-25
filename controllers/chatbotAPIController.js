@@ -81,6 +81,8 @@ exports.chatbotWebhookHandler = catchAsync(async (req, res, next) => {
           nonstopFlight,
           returnDate
         );
+      if (textResponse.length === 0)
+        textResponse = `Sorry, couldn't find flights from ${cityNamePickup} to ${cityNameDestination} for this parameters, try to change the parameters`;
       break;
 
     default:
