@@ -304,7 +304,7 @@ const searchFlights = async (
         destinationAirportCode,
         date: departureDate, //'2023-06-25',
         itineraryType: flightType,
-        sortOrder: 'PRICE',
+        sortOrder: 'ML_BEST_VALUE',
         numAdults,
         numSeniors: numOfSeniors.toString(), //  gte 65
         classOfService: flightClass,
