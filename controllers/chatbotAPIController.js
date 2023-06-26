@@ -618,7 +618,7 @@ const getHotelsFromAPI = async (
   }
 };
 
-const constructHotelsText = (hotelsData) => {
+const constructHotelsText = (hotelData) => {
   let result = '';
 
   const sortDisclaimer = hotelData.sortDisclaimer;
