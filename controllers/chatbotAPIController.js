@@ -588,6 +588,8 @@ const getHotelsFromAPI = async (
   adults,
   rooms
 ) => {
+  console.log(`GEOID inside getHotels ${geoId}`);
+  console.log(`GEOID inside getHotels type ${typeof Number(geoId)}`);
   try {
     const options = {
       method: 'GET',
