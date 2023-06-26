@@ -17,7 +17,7 @@ exports.chatbotWebhookHandler = catchAsync(async (req, res, next) => {
     cityNameDestination,
     departureDate,
     flightType,
-    sortingOrder,
+    // sortingOrder,
     numAdults,
     numOfSeniors,
     flightClass,
@@ -79,7 +79,7 @@ exports.chatbotWebhookHandler = catchAsync(async (req, res, next) => {
           cityNameDestination,
           departureDate,
           flightType,
-          sortingOrder,
+          // sortingOrder,
           numAdults,
           numOfSeniors,
           flightClass,
@@ -304,7 +304,7 @@ const searchFlights = async (
         destinationAirportCode,
         date: departureDate, //'2023-06-25',
         itineraryType: flightType,
-        sortOrder: sortingOrder,
+        sortOrder: 'PRICE',
         numAdults,
         numSeniors: numOfSeniors.toString(), //  gte 65
         classOfService: flightClass,
@@ -348,7 +348,7 @@ function isValidDateFormat(dateString) {
 const validateFlightParams = (
   departureDate,
   flightType,
-  sortingOrder,
+  // sortingOrder,
   numAdults,
   numOfSeniors,
   flightClass,
@@ -363,11 +363,11 @@ const validateFlightParams = (
     return (text = `Please provide a valid and correct format of departure date`);
 
   // validate sortingOrder
-  if (!sortingOrder)
-    return (text =
-      'Please provide a sorting order either ML_BEST_VALUE or PRICE');
-  if (sortingOrder !== 'ML_BEST_VALUE' && sortingOrder !== 'PRICE')
-    return (text = `Please provide correct sorting order either ML_BEST_VALUE or PRICE,  the provided sorting order ${sortingOrder} isn't valid`);
+  // if (!sortingOrder)
+  //   return (text =
+  //     'Please provide a sorting order either ML_BEST_VALUE or PRICE');
+  // if (sortingOrder !== 'ML_BEST_VALUE' && sortingOrder !== 'PRICE')
+  //   return (text = `Please provide correct sorting order either ML_BEST_VALUE or PRICE,  the provided sorting order ${sortingOrder} isn't valid`);
 
   // validate numAdults
   if (!numAdults)
@@ -476,7 +476,7 @@ const handleFlightsIntent = async (
   cityNameDestination,
   departureDate,
   flightType,
-  sortingOrder,
+  // sortingOrder,
   numAdults,
   numOfSeniors,
   flightClass,
@@ -500,7 +500,7 @@ const handleFlightsIntent = async (
   text = validateFlightParams(
     departureDate,
     flightType,
-    sortingOrder,
+    // sortingOrder,
     numAdults,
     numOfSeniors,
     flightClass,
@@ -520,7 +520,7 @@ const handleFlightsIntent = async (
     destinationAirportCode,
     departureDate,
     flightType,
-    sortingOrder,
+    // sortingOrder,
     numAdults,
     numOfSeniors,
     flightClass,
@@ -544,13 +544,12 @@ const constructTextResNoCityFlights = () => {
   2. Destination city: [cityNameDestination]
   3. Departure date (in the format year-month-day): [departureDate]
   4. Flight type (ONE_WAY or ROUND_TRIP): [flightType]
-  5. Sorting order (ML_BEST_VALUE or PRICE): [sortingOrder]
-  6. Number of adults (ages between 18-64 years): [numAdults]
-  7. Number of seniors (65 years or above): [numOfSeniors]
-  8. Flight class (ECONOMY, PREMIUM_ECONOMY, BUSINESS, or FIRST): [flightClass]
-  9. Include nearby airports (yes or no): [nearbyAirPorts]
-  10. Nonstop flight only (yes or no): [nonstopFlight]
-  11. Return date (in the format year-month-day, required for ROUND_TRIP): [returnDate]
+  5. Number of adults (ages between 18-64 years): [numAdults]
+  6. Number of seniors (65 years or above): [numOfSeniors]
+  7. Flight class (ECONOMY, PREMIUM_ECONOMY, BUSINESS, or FIRST): [flightClass]
+  8. Include nearby airports (yes or no): [nearbyAirPorts]
+  9. Nonstop flight only (yes or no): [nonstopFlight]
+  10. Return date (in the format year-month-day, required for ROUND_TRIP): [returnDate]
   
   Please provide the requested information with their respective values. Thank you!
   `;
