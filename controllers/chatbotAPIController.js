@@ -8,14 +8,14 @@ const { options } = require('../app');
 const { json } = require('body-parser');
 
 exports.chatbotWebhookHandler = catchAsync(async (req, res, next) => {
-  const {
+  let {
     Location,
     budget,
     Date_period,
     // flight
     cityNamePickup,
     cityNameDestination,
-    departureDate_before,
+    departureDate,
     flightType,
     // sortingOrder,
     numAdults,
@@ -23,24 +23,19 @@ exports.chatbotWebhookHandler = catchAsync(async (req, res, next) => {
     flightClass,
     nearbyAirPorts,
     nonstopFlight,
-    returnDate_before,
+    returnDate,
     // hotels
     hotelCity,
-    checkInDate_before,
-    checkOutDate_before,
+    checkInDate,
+    checkOutDate,
     adults,
     rooms,
   } = req.body.queryResult.parameters;
 
-  let departureDate;
-  let returnDate;
-  let checkInDate;
-  let checkOutDate;
-
-  if (departureDate_before) departureDate = extractDate(departureDate_before);
-  if (returnDate_before) returnDate = extractDate(departureDate_before);
-  if (checkInDate_before) checkInDate = extractDate(departureDate_before);
-  if (checkOutDate_before) checkOutDate = extractDate(departureDate_before);
+  if (departureDate) departureDate = extractDate(departureDate);
+  if (returnDate) returnDate = extractDate(departureDate);
+  if (checkInDate) checkInDate = extractDate(departureDate);
+  if (checkOutDate) checkOutDate = extractDate(departureDate);
 
   // Extract the location
   let location = '';
