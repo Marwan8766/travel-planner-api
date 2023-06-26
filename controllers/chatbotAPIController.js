@@ -42,8 +42,6 @@ exports.chatbotWebhookHandler = catchAsync(async (req, res, next) => {
   if (checkInDate_before) checkInDate = extractDate(departureDate_before);
   if (checkOutDate_before) checkOutDate = extractDate(departureDate_before);
 
-  console.log(`departureDate: ${departureDate}`);
-
   // Extract the location
   let location = '';
   if (Location && Location.city) {
@@ -82,6 +80,7 @@ exports.chatbotWebhookHandler = catchAsync(async (req, res, next) => {
 
     case 'flights':
       console.log(`flights intent`);
+      console.log(`departureDate: ${departureDate}`);
       if (!cityNamePickup) textResponse = constructTextResNoCityFlights();
       else if (!cityNameDestination)
         textResponse = constructTextResNoCityFlights();
