@@ -643,7 +643,6 @@ const constructHotelsText = (hotelData) => {
     if (hotel.badge && hotel.badge.type === 'TRAVELLER_CHOICE') {
       result += `  TRAVELLER'S CHOICE\n`;
     }
-    result += `  View Photos\n\n`;
   });
 
   return result;
