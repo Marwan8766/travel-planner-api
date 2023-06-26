@@ -683,7 +683,7 @@ const handleHotelsIntent = async (
   text = validateHotelParams(checkInDate, checkOutDate);
   if (text !== 'correct') return text;
 
-  hotelsData = await getHotelsFromAPI(
+  const hotelsData = await getHotelsFromAPI(
     geoId,
     checkInDate,
     checkOutDate,
