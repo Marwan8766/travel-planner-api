@@ -575,7 +575,7 @@ const getGeoId = async (hotelCity) => {
     const geoid = response.data.data[0].geoId;
     const numericGeoid = geoid.replace(/[^0-9]/g, '');
     console.log(`numericGeoID: ${numericGeoid}`);
-    return Number(numericGeoid);
+    return numericGeoid;
   } catch (error) {
     console.error(`error getting the geoid of ${hotelCity}: ${error}`);
   }
