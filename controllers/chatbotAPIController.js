@@ -359,10 +359,7 @@ const validateFlightParams = (
   // validate departureDate
   if (!departureDate)
     return (text = `Please provide a departure date in the form year-month-day`);
-  if (
-    !isValidDateFormat(departureDate) ||
-    new Date(departureDate) <= Date.now()
-  )
+  if (!isValidDateFormat(departureDate) && new Date(departureDate) < Date.now())
     return (text = `Please provide a valid and correct format of departure date`);
 
   // validate sortingOrder
@@ -425,7 +422,7 @@ const validateFlightParams = (
     if (!returnDate)
       return (text =
         'Please provide the return date in the form year-month-day');
-    if (!isValidDateFormat(returnDate) || returnDate <= departureDate)
+    if (!isValidDateFormat(returnDate) && returnDate < departureDate)
       return (text =
         'Please provide a valid and correct format of return date');
   }
