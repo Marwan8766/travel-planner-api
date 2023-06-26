@@ -621,16 +621,7 @@ const getHotelsFromAPI = async (
 const constructHotelsText = (hotelData) => {
   let result = '';
   console.log(`hotelData:  ${hotelData}`);
-  const sortDisclaimer = hotelData.sortDisclaimer;
-  const textGroupStandard = hotelData.textGroupStandard;
   const data = hotelData.data;
-
-  // Add sort disclaimer
-  result += `• Sort Disclaimer: ${sortDisclaimer}\n\n`;
-
-  // Add text group standard
-  result += `• Title: ${textGroupStandard.title}\n`;
-  result += `  Message: ${textGroupStandard.message}\n\n`;
 
   // Add hotel data
   data.forEach((hotel) => {
