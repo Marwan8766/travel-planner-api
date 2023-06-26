@@ -648,6 +648,8 @@ const constructHotelsText = (hotelsData) => {
 };
 
 const validateHotelParams = (checkInDate, checkOutDate) => {
+  let text = '';
+
   if (!checkInDate)
     return (text =
       'Please provide checkin date in year-month-day format, you should provide also the checkout date and you could provide the number of rooms and number of adults');
