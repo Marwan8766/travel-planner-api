@@ -588,14 +588,14 @@ const getHotelsFromAPI = async (
   adults,
   rooms
 ) => {
-  console.log(`GEOID inside getHotels ${geoId}`);
-  console.log(`GEOID inside getHotels type ${typeof Number(geoId)}`);
   try {
+    console.log(`GEOID inside getHotels ${geoId}`);
+    console.log(`GEOID inside getHotels type ${typeof Number(geoId)}`);
     const options = {
       method: 'GET',
       url: 'https://tripadvisor16.p.rapidapi.com/api/v1/hotels/searchHotels',
       params: {
-        geoId: Number(geoId),
+        geoId: `${geoId}`,
         checkIn: checkInDate,
         checkOut: checkOutDate,
         pageNumber: '1',
