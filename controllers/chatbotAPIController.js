@@ -593,7 +593,7 @@ const getHotelsFromAPI = async (
       method: 'GET',
       url: 'https://tripadvisor16.p.rapidapi.com/api/v1/hotels/searchHotels',
       params: {
-        geoId: geoId,
+        geoId: Number(geoId),
         checkIn: checkInDate,
         checkOut: checkOutDate,
         pageNumber: '1',
