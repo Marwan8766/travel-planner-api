@@ -137,6 +137,7 @@ function extractDate(datetime) {
   const date = datetime.split('T');
   const dateString = date[0];
   console.log(`dateString: ${dateString}`);
+  console.log(`dateString type: ${typeof dateString}`);
   return dateString;
 }
 
