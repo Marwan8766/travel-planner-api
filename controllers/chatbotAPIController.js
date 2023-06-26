@@ -608,6 +608,7 @@ const getHotelsFromAPI = async (
     };
 
     const response = await axios.request(options);
+    console.log(`response: ${response}`);
     return response.data;
   } catch (error) {
     console.error(error);
