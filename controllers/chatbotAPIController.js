@@ -573,6 +573,7 @@ const getGeoId = async (hotelCity) => {
 
     const response = await axios.request(options);
     const geoid = response.data.data[0].geoId;
+    console.log(`geoid string: ${geoid}`);
     const numericGeoid = geoid.replace(/[^0-9]/g, '');
     console.log(`numericGeoID: ${numericGeoid}`);
     return numericGeoid;
