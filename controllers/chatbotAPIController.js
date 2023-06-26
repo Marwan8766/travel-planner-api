@@ -15,7 +15,7 @@ exports.chatbotWebhookHandler = catchAsync(async (req, res, next) => {
     // flight
     cityNamePickup,
     cityNameDestination,
-    departureDate,
+    departureDate_before,
     flightType,
     // sortingOrder,
     numAdults,
@@ -23,14 +23,24 @@ exports.chatbotWebhookHandler = catchAsync(async (req, res, next) => {
     flightClass,
     nearbyAirPorts,
     nonstopFlight,
-    returnDate,
+    returnDate_before,
     // hotels
     hotelCity,
-    checkInDate,
-    checkOutDate,
+    checkInDate_before,
+    checkOutDate_before,
     adults,
     rooms,
   } = req.body.queryResult.parameters;
+
+  let departureDate;
+  let returnDate;
+  let checkInDate;
+  let checkOutDate;
+
+  if (departureDate_before) departureDate = extractDate(departureDate_before);
+  if (returnDate_before) returnDate = extractDate(departureDate_before);
+  if (checkInDate_before) checkInDate = extractDate(departureDate_before);
+  if (checkOutDate_before) checkOutDate = extractDate(departureDate_before);
 
   // Extract the location
   let location = '';
@@ -125,6 +135,13 @@ exports.chatbotWebhookHandler = catchAsync(async (req, res, next) => {
     ],
   });
 });
+
+//////////////////////////////////////
+function extractDate(datetime) {
+  const date = new Date(datetime);
+  const dateString = date.toISOString().substring(0, 10);
+  return dateString;
+}
 
 /////////////////////////////////////////////////////////////////////////
 

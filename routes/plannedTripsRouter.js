@@ -16,7 +16,7 @@ router
 router
   .route('/:id')
   .get(plannedTripsController.getPlannedTripById) // done
-  .patch(plannedTripsController.updatePlannedTrip) // done
+  .patch(plannedTripsController.updatePlannedTrip) //done
   .delete(plannedTripsController.deletePlannedTrip); // done
 
 router
@@ -25,12 +25,12 @@ router
   .delete(plannedTripsController.deleteTimelineItem); // done
 
 // POST /plannedTrips/:id/days
-router.post('/:id/days', plannedTripsController.addNewDay); // done
+// router.post('/:id/days', plannedTripsController.addNewDay); //
 
 // POST /plannedTrips/:id/customActivities
 router.post(
   '/:id/days/:dayIndex/customActivities',
   plannedTripsController.addCustomActivity
-); // done
+); //
 
 module.exports = router;

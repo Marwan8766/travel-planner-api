@@ -5,9 +5,16 @@ const axios = require('axios');
 const geojsonArea = require('geojson-area');
 const touristAttractionModel = require('../models/touristAttractionModel');
 const tourModel = require('../models/tourModel');
+const Tour = require('../models/tourModel');
+const Availability = require('../models/availabilityModel');
 
 exports.getPlannedTrips = catchAsync(async (req, res, next) => {
+  // find all planned trips
   const plannedTrips = await PlannedTrip.find({ user: req.user._id });
+  // if no plannedtrip found return error
+  if (plannedTrips.length === 0)
+    return next(new AppError('No planned trips was found', 404));
+
   res.status(200).json({
     status: 'success',
     plannedTrips,
@@ -23,31 +30,255 @@ exports.getPlannedTripById = catchAsync(async (req, res, next) => {
   if (!plannedTrip) {
     return next(new AppError('Planned trip not found', 404));
   }
+
   res.status(200).json({
     status: 'success',
     plannedTrip,
   });
 });
 
+// GOOGLE PLACES API
+async function searchPlacesByPreferences(
+  preferences,
+  startDate,
+  endDate,
+  location
+) {
+  try {
+    const {
+      likes_beaches,
+      likes_museums,
+      likes_nightlife,
+      likes_outdoorActivities,
+      likes_shopping,
+      likes_food,
+      likes_sports,
+      likes_relaxation,
+      likes_familyFriendlyActivities,
+    } = preferences;
+
+    const types = [];
+
+    if (likes_beaches) types.push('beach');
+    if (likes_museums) types.push('museum');
+    if (likes_nightlife) types.push('night_club');
+    if (likes_outdoorActivities) types.push('park');
+    if (likes_shopping) types.push('shopping_mall');
+    if (likes_food) types.push('restaurant');
+    if (likes_sports) types.push('stadium');
+    if (likes_relaxation) types.push('spa');
+    if (likes_familyFriendlyActivities) types.push('amusement_park');
+
+    const apiKey = process.env.GOOGLE_MAPS_API_KEY; // Replace with your Google Places API key
+
+    const baseUrl =
+      'https://maps.googleapis.com/maps/api/place/textsearch/json';
+
+    const params = {
+      query: location,
+      type: types.join('|'),
+      key: apiKey,
+    };
+
+    const numberOfDays = getNumberOfDays(startDate, endDate);
+    const desiredNumberOfPlaces = Math.min(5 * numberOfDays, 70); // Maximum 5 places per day for a maximum of 14 days
+
+    let places = [];
+    let nextPageToken = null;
+
+    while (places.length < desiredNumberOfPlaces) {
+      if (nextPageToken) {
+        params.pagetoken = nextPageToken;
+      } else {
+        delete params.pagetoken;
+      }
+
+      const response = await axios.get(baseUrl, { params });
+      const results = response.data.results;
+      places = places.concat(results);
+
+      if (response.data.next_page_token) {
+        nextPageToken = response.data.next_page_token;
+      } else {
+        break;
+      }
+    }
+
+    return places.slice(0, desiredNumberOfPlaces);
+  } catch (error) {
+    console.error('Error retrieving places from google maps:', error);
+    return [];
+  }
+}
+
+function getNumberOfDays(startDate, endDate) {
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  const timeDiff = Math.abs(end.getTime() - start.getTime());
+  const numberOfDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
+  return Math.min(numberOfDays, 14);
+}
+
+const findMatchingTours = async (location, startDate, endDate) => {
+  const locationCoordinates = await this.getCityRadius(location);
+  const numberOfDays = getNumberOfDays(startDate, endDate);
+  const desiredNumberOfTours = 3 * numberOfDays;
+
+  const tours = await Tour.find({
+    'startLocation.coordinates': {
+      $near: {
+        $geometry: {
+          type: 'Point',
+          coordinates: [locationCoordinates.lng, locationCoordinates.lat],
+        },
+        $maxDistance: locationCoordinates.radius,
+      },
+    },
+  }).limit(desiredNumberOfTours);
+
+  return tours;
+};
+
+// Helper function to compare two dates
+const areDatesEqual = (date1, date2) => {
+  return (
+    date1.getFullYear() === date2.getFullYear() &&
+    date1.getMonth() === date2.getMonth() &&
+    date1.getDate() === date2.getDate()
+  );
+};
+
+// Helper function to generate a random time within a day
+const getRandomTime = (date) => {
+  const startTime = new Date(date);
+  startTime.setHours(Math.floor(Math.random() * 24));
+  startTime.setMinutes(Math.floor(Math.random() * 60));
+  startTime.setSeconds(0);
+  return startTime;
+};
+
+const createTripDays = async (
+  attractions,
+  matchedTours,
+  startDate,
+  endDate,
+  crowdLevel
+) => {
+  const numberOfDays = getNumberOfDays(startDate, endDate);
+  const days = [];
+
+  for (let i = 0; i < numberOfDays; i++) {
+    const date = new Date(startDate.getTime() + i * 24 * 60 * 60 * 1000);
+
+    // Filter the matched tours based on availability, available seats, and date
+    const filteredTours = await Promise.all(
+      matchedTours.map(async (tour) => {
+        const availability = await Availability.findOne({
+          tour: tour._id,
+          date: { $gte: startDate, $lte: endDate },
+          availableSeats: { $gte: 1 },
+        });
+        return availability ? tour : null;
+      })
+    );
+
+    const dayTours = filteredTours.filter((tour) => tour !== null);
+    const timeline = [];
+
+    let maxAttractions;
+    let maxTours;
+
+    if (crowdLevel === 'busy') {
+      maxAttractions = 6;
+      maxTours = 2;
+    } else if (crowdLevel === 'moderate') {
+      maxAttractions = 4;
+      maxTours = 1;
+    } else if (crowdLevel === 'quiet') {
+      maxAttractions = 1;
+      maxTours = 1;
+    }
+
+    // Allocate tours with availability to the timeline based on their available dates
+    for (const tour of dayTours) {
+      const tourAvailability = await Availability.findOne({
+        tour: tour._id,
+        date: { $gte: startDate, $lte: endDate },
+        availableSeats: { $gte: 1 },
+      });
+
+      if (tourAvailability && areDatesEqual(tourAvailability.date, date)) {
+        timeline.push({
+          tour,
+          startTime: getRandomTime(date),
+          endTime: getRandomTime(date),
+        });
+
+        if (timeline.length >= maxTours) {
+          break;
+        }
+      }
+    }
+
+    // Allocate attractions to the timeline
+    while (
+      attractions.length > 0 &&
+      timeline.length < maxAttractions &&
+      timeline.length < maxTours + maxAttractions
+    ) {
+      timeline.push({
+        attraction: attractions.shift(),
+        startTime: getRandomTime(date),
+        endTime: getRandomTime(date),
+      });
+    }
+
+    days.push({ date, timeline });
+  }
+
+  return days;
+};
+
 exports.createPlannedTrip = catchAsync(async (req, res, next) => {
   const {
     name,
     budget,
     country,
-    cities,
+    city,
     startDate,
     endDate,
     preferences,
     crowdLevel,
-    days,
   } = req.body;
+
+  const location = city ? city : country;
+
+  // get attractions from google maps
+  const attractions = await searchPlacesByPreferences(
+    preferences,
+    startDate,
+    endDate,
+    location
+  );
+
+  // get tours lies in that city or country and try to filter based on prefrences if possible or make it randomly
+  const matchedTours = await findMatchingTours(location, startDate, endDate);
+
+  // create days array based on number of days with the timeline and attractions and tours
+  const days = await createTripDays(
+    attractions,
+    matchedTours,
+    startDate,
+    endDate,
+    crowdLevel
+  );
 
   const plannedTrip = await PlannedTrip.create({
     user: req.user._id,
     name,
     budget,
     country,
-    cities,
+    city,
     startDate,
     endDate,
     preferences,
@@ -71,32 +302,11 @@ exports.updatePlannedTrip = catchAsync(async (req, res, next) => {
   }
 
   // Update the planned trip fields using object destructuring
-  const {
-    name,
-    budget,
-    country,
-    cities,
-    startDate,
-    endDate,
-    preferences,
-    crowdLevel,
-    days,
-  } = req.body;
+  const { name } = req.body;
 
-  // Create an object with only the fields that are provided in the req.body
-  const updatedPlannedTrip = {};
-  if (name) updatedPlannedTrip.name = name;
-  if (budget) updatedPlannedTrip.budget = budget;
-  if (country) updatedPlannedTrip.country = country;
-  if (cities) updatedPlannedTrip.cities = cities;
-  if (startDate) updatedPlannedTrip.startDate = startDate;
-  if (endDate) updatedPlannedTrip.endDate = endDate;
-  if (preferences) updatedPlannedTrip.preferences = preferences;
-  if (crowdLevel) updatedPlannedTrip.crowdLevel = crowdLevel;
-  if (days) updatedPlannedTrip.days = days;
+  if (name) plannedTrip.name = name;
 
   // Update the planned trip and save
-  plannedTrip.set(updatedPlannedTrip);
   const savedPlannedTrip = await plannedTrip.save({
     validateModifiedOnly: true,
   });
@@ -110,7 +320,10 @@ exports.updatePlannedTrip = catchAsync(async (req, res, next) => {
 
 exports.deletePlannedTrip = catchAsync(async (req, res, next) => {
   // Find the planned trip by ID
-  const plannedTrip = await PlannedTrip.findByIdAndDelete(req.params.id);
+  const plannedTrip = await PlannedTrip.findOneAndDelete({
+    _id: req.params.id,
+    user: req.user._id,
+  });
 
   // If the planned trip is not found, return an error
   if (!plannedTrip) {
@@ -123,45 +336,45 @@ exports.deletePlannedTrip = catchAsync(async (req, res, next) => {
     message: 'Planned trip deleted successfully',
   });
 });
-exports.addNewDay = catchAsync(async (req, res, next) => {
-  // Find the planned trip
-  const { id } = req.params;
-  const plannedTrip = await PlannedTrip.findById(id);
+// exports.addNewDay = catchAsync(async (req, res, next) => {
+//   // Find the planned trip
+//   const { id } = req.params;
+//   const plannedTrip = await PlannedTrip.findById(id);
 
-  // If not found
-  if (!plannedTrip) {
-    return next(new AppError('Planned trip not found', 404));
-  }
+//   // If not found
+//   if (!plannedTrip) {
+//     return next(new AppError('Planned trip not found', 404));
+//   }
 
-  // Extract the fields from the request body
-  const { day } = req.body;
+//   // Extract the fields from the request body
+//   const { day } = req.body;
 
-  // Check if day is an object
-  if (typeof day !== 'object' || Array.isArray(day)) {
-    return next(new AppError('Day must be an object', 400));
-  }
+//   // Check if day is an object
+//   if (typeof day !== 'object' || Array.isArray(day)) {
+//     return next(new AppError('Day must be an object', 400));
+//   }
 
-  // Update end date based on number of added days
-  const oneDay = 24 * 60 * 60 * 1000; // One day in milliseconds
-  const endDate = new Date(plannedTrip.endDate.getTime() + oneDay);
-  plannedTrip.endDate = endDate;
+//   // Update end date based on number of added days
+//   const oneDay = 24 * 60 * 60 * 1000; // One day in milliseconds
+//   const endDate = new Date(plannedTrip.endDate.getTime() + oneDay);
+//   plannedTrip.endDate = endDate;
 
-  // make the day date equals to trip end date
-  day.date = plannedTrip.endDate;
+//   // make the day date equals to trip end date
+//   day.date = plannedTrip.endDate;
 
-  // Add new day to the planned trip
-  plannedTrip.days.push(day);
+//   // Add new day to the planned trip
+//   plannedTrip.days.push(day);
 
-  const savedPlannedTrip = await plannedTrip.save({
-    validateModifiedOnly: true,
-  });
+//   const savedPlannedTrip = await plannedTrip.save({
+//     validateModifiedOnly: true,
+//   });
 
-  // Send response
-  res.status(201).json({
-    status: 'success',
-    plannedTrip: savedPlannedTrip,
-  });
-});
+//   // Send response
+//   res.status(201).json({
+//     status: 'success',
+//     plannedTrip: savedPlannedTrip,
+//   });
+// });
 
 exports.updateTimelineItem = catchAsync(async (req, res, next) => {
   const { id, dayIndex, timelineIndex } = req.params;
@@ -183,7 +396,7 @@ exports.updateTimelineItem = catchAsync(async (req, res, next) => {
   }
 
   if (attraction) {
-    timeline.attraction = attraction;
+    timeline.attraction = attraction; // needs to implement search for attractions functionality
   }
 
   if (tour) {
@@ -194,12 +407,14 @@ exports.updateTimelineItem = catchAsync(async (req, res, next) => {
     timeline.customActivity = customActivity;
   }
 
-  await plannedTrip.save({ validateModifiedOnly: true });
+  const updatedPlannedTrip = await plannedTrip.save({
+    validateModifiedOnly: true,
+  });
 
   res.status(200).json({
     status: 'success',
     data: {
-      plannedTrip,
+      updatedPlannedTrip,
     },
   });
 });
@@ -240,12 +455,14 @@ exports.addCustomActivity = catchAsync(async (req, res, next) => {
     endTime,
   });
 
-  await plannedTrip.save({ validateModifiedOnly: true });
+  const updatedPlannedTrip = await plannedTrip.save({
+    validateModifiedOnly: true,
+  });
 
   res.status(201).json({
     status: 'success',
     data: {
-      plannedTrip,
+      updatedPlannedTrip,
     },
   });
 });

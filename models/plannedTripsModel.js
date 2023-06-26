@@ -6,14 +6,21 @@ const plannedTripSchema = new mongoose.Schema({
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   name: { type: String, required: true },
   budget: { type: Number, min: 0 },
-  country: { type: mongoose.Schema.Types.ObjectId, ref: 'Country' },
-  cities: [{ type: mongoose.Schema.Types.ObjectId, ref: 'City' }],
+  country: String,
+  city: String,
   startDate: { type: Date, required: true },
   endDate: { type: Date, required: true },
   preferences: {
-    likes_beaches: { type: Boolean, default: false },
-    likes_museums: { type: Boolean, default: false },
-    likes_nightlife: { type: Boolean, default: false },
+    likes_beaches: { type: Boolean, default: true },
+    likes_museums: { type: Boolean, default: true },
+    likes_nightlife: { type: Boolean, default: true },
+    likes_outdoorActivities: { type: Boolean, default: true },
+    likes_shopping: { type: Boolean, default: true },
+    likes_food: { type: Boolean, default: true },
+    likes_nightlife: { type: Boolean, default: true },
+    likes_sports: { type: Boolean, default: true },
+    likes_relaxation: { type: Boolean, default: true },
+    likes_familyFriendlyActivities: { type: Boolean, default: true },
   },
   crowdLevel: {
     type: String,
@@ -26,8 +33,13 @@ const plannedTripSchema = new mongoose.Schema({
       timeline: [
         {
           attraction: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'Attraction',
+            coordinates: [Number],
+            name: String,
+            link: String,
+            rating: Number,
+            type: String,
+            description: String,
+            image: String,
           },
           tour: { type: mongoose.Schema.Types.ObjectId, ref: 'Tour' },
           customActivity: { type: String },
@@ -149,6 +161,12 @@ plannedTripSchema.pre('save', function (next) {
     });
   });
 
+  next();
+});
+
+// Define the pre-find middleware function
+plannedTripSchema.pre('find', function (next) {
+  this.populate('days.timeline.tour');
   next();
 });
 
