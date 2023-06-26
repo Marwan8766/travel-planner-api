@@ -360,7 +360,7 @@ const validateFlightParams = (
   if (!departureDate)
     return (text = `Please provide a departure date in the form year-month-day`);
   if (
-    !isValidDateFormat(departureDate) &&
+    !isValidDateFormat(departureDate) ||
     new Date(departureDate) <= Date.now()
   )
     return (text = `Please provide a valid and correct format of departure date`);
@@ -425,7 +425,7 @@ const validateFlightParams = (
     if (!returnDate)
       return (text =
         'Please provide the return date in the form year-month-day');
-    if (!isValidDateFormat(returnDate) && returnDate <= departureDate)
+    if (!isValidDateFormat(returnDate) || returnDate <= departureDate)
       return (text =
         'Please provide a valid and correct format of return date');
   }
@@ -651,13 +651,13 @@ const validateHotelParams = (checkInDate, checkOutDate) => {
   if (!checkInDate)
     return (text =
       'Please provide checkin date in year-month-day format, you should provide also the checkout date and you could provide the number of rooms and number of adults');
-  if (!isValidDateFormat(checkInDate))
+  if (!isValidDateFormat(checkInDate || new Date(checkInDate) < Date.now()))
     return (text = `Please provide checkin date in year-month-day format, you should provide also the checkout date and you could provide the number of rooms and number of adults`);
 
   if (!checkOutDate)
     return (text =
       'Please provide checkout date in year-month-day format and you could provide the number of rooms and number of adults');
-  if (!isValidDateFormat(checkOutDate))
+  if (!isValidDateFormat(checkOutDate || checkOutDate > checkInDate))
     return (text = `Please provide checkout date in year-month-day format and you could provide the number of rooms and number of adults`);
 
   // if everything is ok return correct
