@@ -621,7 +621,7 @@ const getHotelsFromAPI = async (
 const constructHotelsText = (hotelData) => {
   let result = '';
   console.log(`hotelData:  ${hotelData}`);
-  const data = hotelData.data;
+  const data = hotelData.data.data;
   console.log(`data: ${data}`);
   console.log(`data length: ${data.length}`);
 
