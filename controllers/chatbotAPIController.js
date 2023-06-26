@@ -42,6 +42,8 @@ exports.chatbotWebhookHandler = catchAsync(async (req, res, next) => {
   if (checkInDate_before) checkInDate = extractDate(departureDate_before);
   if (checkOutDate_before) checkOutDate = extractDate(departureDate_before);
 
+  console.log(`departureDate: ${departureDate}`);
+
   // Extract the location
   let location = '';
   if (Location && Location.city) {
