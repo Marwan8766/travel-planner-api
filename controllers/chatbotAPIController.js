@@ -24,6 +24,12 @@ exports.chatbotWebhookHandler = catchAsync(async (req, res, next) => {
     nearbyAirPorts,
     nonstopFlight,
     returnDate,
+    // hotels
+    hotelCity,
+    checkInDate,
+    checkOutDate,
+    adults,
+    rooms,
   } = req.body.queryResult.parameters;
 
   // Extract the location
@@ -83,6 +89,22 @@ exports.chatbotWebhookHandler = catchAsync(async (req, res, next) => {
         );
       if (textResponse.length === 0)
         textResponse = `Sorry, couldn't find flights from ${cityNamePickup} to ${cityNameDestination} for this parameters, try to change the parameters`;
+      break;
+
+    case 'hotels':
+      console.log(`hotels intent`);
+
+      textResponse = await handleHotelsIntent(
+        hotelCity,
+        checkInDate,
+        checkOutDate,
+        adults,
+        rooms
+      );
+
+      if (textResponse.length === 0)
+        textResponse = `Sorry, couldn't find hotels in this city ${hotelCity} in checkin date ${checkInDate} and checkout date ${checkOutDate}`;
+
       break;
 
     default:
@@ -535,4 +557,139 @@ const constructTextResNoCityFlights = () => {
   
   Please provide the requested information with their respective values. Thank you!
   `;
+};
+
+////////////////////////////////////////////////////////////////
+// Hotels
+
+const getGeoId = async (hotelCity) => {
+  try {
+    const options = {
+      method: 'GET',
+      url: 'https://tripadvisor16.p.rapidapi.com/api/v1/hotels/searchLocation',
+      params: { query: hotelCity },
+      headers: {
+        'X-RapidAPI-Key': process.env.TRAVEL_PLANNER_RAPID_API_KEY,
+        'X-RapidAPI-Host': 'tripadvisor16.p.rapidapi.com',
+      },
+    };
+
+    const response = await axios.request(options);
+    const geoid = response.data.data[0].geoId;
+    const numericGeoid = geoid.replace(/[^0-9]/g, '');
+    console.log(`numericGeoID: ${numericGeoid}`);
+    return Number(numericGeoid);
+  } catch (error) {
+    console.error(`error getting the geoid of ${hotelCity}: ${error}`);
+  }
+};
+
+const getHotelsFromAPI = async (
+  geoId,
+  checkInDate,
+  checkOutDate,
+  adults,
+  rooms
+) => {
+  try {
+    const options = {
+      method: 'GET',
+      url: 'https://tripadvisor16.p.rapidapi.com/api/v1/hotels/searchHotels',
+      params: {
+        geoId: geoId,
+        checkIn: checkInDate,
+        checkOut: checkOutDate,
+        pageNumber: '1',
+        adults: adults || '1',
+        rooms: rooms || '1',
+        currencyCode: 'USD',
+      },
+      headers: {
+        'X-RapidAPI-Key': process.env.TRIPADVISOR_API_KEY,
+        'X-RapidAPI-Host': 'tripadvisor16.p.rapidapi.com',
+      },
+    };
+
+    const response = await axios.request(options);
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    // throw new Error('Failed to fetch hotel data');
+  }
+};
+
+const constructHotelsText = (hotelsData) => {
+  let result = '';
+
+  const sortDisclaimer = hotelData.sortDisclaimer;
+  const textGroupStandard = hotelData.textGroupStandard;
+  const data = hotelData.data;
+
+  // Add sort disclaimer
+  result += `• Sort Disclaimer: ${sortDisclaimer}\n\n`;
+
+  // Add text group standard
+  result += `• Title: ${textGroupStandard.title}\n`;
+  result += `  Message: ${textGroupStandard.message}\n\n`;
+
+  // Add hotel data
+  data.forEach((hotel) => {
+    result += `• ${hotel.title}\n`;
+    result += `  Rating: ${hotel.rating}/5 (based on ${hotel.reviewCount} reviews)\n`;
+    result += `  Provider: ${hotel.provider}\n`;
+    result += `  Price: ${hotel.price}\n`;
+    if (hotel.breakfastIncluded) {
+      result += `  Free breakfast included\n`;
+    }
+    result += `  View Photos\n\n`;
+  });
+
+  return result;
+};
+
+const validateHotelParams = (checkInDate, checkOutDate) => {
+  if (!checkInDate)
+    return (text =
+      'Please provide checkin date in year-month-day format, you should provide also the checkout date and you could provide the number of rooms and number of adults');
+  if (!isValidDateFormat(checkInDate))
+    return (text = `Please provide checkin date in year-month-day format, you should provide also the checkout date and you could provide the number of rooms and number of adults`);
+
+  if (!checkOutDate)
+    return (text =
+      'Please provide checkout date in year-month-day format and you could provide the number of rooms and number of adults');
+  if (!isValidDateFormat(checkOutDate))
+    return (text = `Please provide checkout date in year-month-day format and you could provide the number of rooms and number of adults`);
+
+  // if everything is ok return correct
+  return 'correct';
+};
+
+const handleHotelsIntent = async (
+  hotelCity,
+  checkInDate,
+  checkOutDate,
+  adults,
+  rooms
+) => {
+  let text = '';
+
+  if (!hotelCity) return (text = 'Please provide the city');
+
+  const geoId = await getGeoId(hotelCity);
+  if (!geoId) return (text = `can't find this city: ${hotelCity}`);
+
+  text = validateHotelParams(checkInDate, checkOutDate);
+  if (text !== 'correct') return text;
+
+  hotelsData = await getHotelsFromAPI(
+    geoId,
+    checkInDate,
+    checkOutDate,
+    adults,
+    rooms
+  );
+
+  text = constructHotelsText(hotelsData);
+
+  return text;
 };
