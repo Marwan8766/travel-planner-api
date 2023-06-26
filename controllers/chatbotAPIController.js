@@ -631,11 +631,17 @@ const constructHotelsText = (hotelData) => {
   // Add hotel data
   data.forEach((hotel) => {
     result += `• ${hotel.title}\n`;
-    result += `  Rating: ${hotel.rating}/5 (based on ${hotel.reviewCount} reviews)\n`;
+    result += `  Rating: ${hotel.bubbleRating.rating}/5 (based on ${hotel.bubbleRating.count} reviews)\n`;
     result += `  Provider: ${hotel.provider}\n`;
-    result += `  Price: ${hotel.price}\n`;
-    if (hotel.breakfastIncluded) {
-      result += `  Free breakfast included\n`;
+    result += `  Price: ${hotel.priceForDisplay}\n`;
+    if (hotel.primaryInfo) {
+      result += `  ${hotel.primaryInfo}\n`;
+    }
+    if (hotel.secondaryInfo) {
+      result += `  ${hotel.secondaryInfo}\n`;
+    }
+    if (hotel.badge && hotel.badge.type === 'TRAVELLER_CHOICE') {
+      result += `  TRAVELLER'S CHOICE\n`;
     }
     result += `  View Photos\n\n`;
   });
