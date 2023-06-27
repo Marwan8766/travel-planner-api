@@ -409,7 +409,6 @@ const createTripDays = async (
           name: attractions[0].name,
           link: attractions[0].link,
           rating: attractions[0].rating,
-          type: attractions[0].types[0],
           description: attractions[0].description,
           image: attractions[0].photo,
         },

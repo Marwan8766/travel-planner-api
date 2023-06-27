@@ -36,7 +36,6 @@ const plannedTripSchema = new mongoose.Schema({
             name: String,
             link: String,
             rating: Number,
-            type: String,
             description: String,
             image: String,
           },
