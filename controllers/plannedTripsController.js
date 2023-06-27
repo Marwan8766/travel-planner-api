@@ -235,6 +235,7 @@ const createTripDays = async (
     days.push({ date, timeline });
   }
 
+  console.log(`days: ${days}`);
   return days;
 };
 
