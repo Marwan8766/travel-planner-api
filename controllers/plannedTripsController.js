@@ -388,10 +388,14 @@ const createTripDays = async (
       });
 
       if (tourAvailability) {
+        const startTime = getRandomTime(date);
+        const endTime = getRandomTime(date);
+        const tourTimeRange = { startTime, endTime };
+
         timeline.push({
           tour: tour._id,
-          startTime: getRandomTime(date),
-          endTime: getRandomTime(date),
+          startTime,
+          endTime,
         });
 
         if (timeline.length >= maxTours) {
@@ -406,6 +410,10 @@ const createTripDays = async (
       (timeline.length < maxAttractions ||
         timeline.length < maxTours + maxAttractions)
     ) {
+      const startTime = getRandomTime(date);
+      const endTime = getRandomTime(date);
+      const attractionTimeRange = { startTime, endTime };
+
       timeline.push({
         attraction: {
           coordinates: attractions[0].coordinates,
@@ -415,10 +423,24 @@ const createTripDays = async (
           description: attractions[0].description,
           image: attractions[0].photo,
         },
-        startTime: getRandomTime(date),
-        endTime: getRandomTime(date),
+        startTime,
+        endTime,
       });
       attractions.shift();
+    }
+
+    // Sort the timeline entries by start time
+    timeline.sort((a, b) => a.startTime - b.startTime);
+
+    // Repair overlapping times
+    for (let j = 1; j < timeline.length; j++) {
+      const previousEndTime = timeline[j - 1].endTime;
+      const currentStartTime = timeline[j].startTime;
+
+      if (previousEndTime > currentStartTime) {
+        timeline[j].startTime = previousEndTime;
+        timeline[j].endTime = getRandomTime(date);
+      }
     }
 
     days.push({ date, timeline });
