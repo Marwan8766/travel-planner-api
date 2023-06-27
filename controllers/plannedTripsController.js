@@ -39,7 +39,6 @@ exports.getPlannedTripById = catchAsync(async (req, res, next) => {
   });
 });
 
-// GOOGLE PLACES API
 async function searchPlacesByPreferences(
   preferences,
   startDate,
@@ -76,11 +75,9 @@ async function searchPlacesByPreferences(
     const baseUrl =
       'https://maps.googleapis.com/maps/api/place/textsearch/json';
 
-    const params = {
-      query: location,
-      type: types.join('|'),
-      key: apiKey,
-    };
+    const query = `${types.join('|')} ${location}`;
+
+    const url = `${baseUrl}?key=${apiKey}&query=${encodeURIComponent(query)}`;
 
     const numberOfDays = getNumberOfDays(startDate, endDate);
     const desiredNumberOfPlaces = Math.min(5 * numberOfDays, 70); // Maximum 5 places per day for a maximum of 14 days
@@ -90,12 +87,10 @@ async function searchPlacesByPreferences(
 
     while (places.length < desiredNumberOfPlaces) {
       if (nextPageToken) {
-        params.pagetoken = nextPageToken;
-      } else {
-        delete params.pagetoken;
+        url += `&pagetoken=${nextPageToken}`;
       }
 
-      const response = await axios.get(baseUrl, { params });
+      const response = await axios.get(url);
       const results = response.data.results;
 
       // Extract only the required fields from the results
@@ -128,7 +123,7 @@ async function searchPlacesByPreferences(
 
     return places.slice(0, desiredNumberOfPlaces);
   } catch (error) {
-    console.error('Error retrieving places from google maps:', error);
+    console.error('Error retrieving places from Google Maps:', error);
     return [];
   }
 }
