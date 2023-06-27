@@ -34,12 +34,11 @@ exports.chatbotWebhookHandler = catchAsync(async (req, res, next) => {
 
   if (departureDate && departureDate.length > 0)
     departureDate = extractDate(departureDate);
-  if (returnDate && returnDate.length > 0)
-    returnDate = extractDate(departureDate);
+  if (returnDate && returnDate.length > 0) returnDate = extractDate(returnDate);
   if (checkInDate && checkInDate.length > 0)
-    checkInDate = extractDate(departureDate);
+    checkInDate = extractDate(checkInDate);
   if (checkOutDate && checkOutDate.length > 0)
-    checkOutDate = extractDate(departureDate);
+    checkOutDate = extractDate(checkOutDate);
 
   // Extract the location
   let location = '';
