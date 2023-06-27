@@ -341,9 +341,11 @@ exports.createPlannedTrip = catchAsync(async (req, res, next) => {
     location
   );
 
+  console.log(`attractions Length: ${attractions.length}`);
   attractions.forEach((attraction) => console.log(`atraction: ${attraction}`));
 
   // get tours lies in that city or country and try to filter based on prefrences if possible or make it randomly
+  console.log(`tours length: ${matchedTours.length}`);
   const matchedTours = await findMatchingTours(location, startDate, endDate);
 
   matchedTours.forEach((tour) => console.log(`tour: ${tour}`));
