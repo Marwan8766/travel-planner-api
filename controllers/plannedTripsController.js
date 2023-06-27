@@ -116,6 +116,11 @@ async function searchPlacesByPreferences(
 
       if (response.data.next_page_token) {
         nextPageToken = response.data.next_page_token;
+
+        console.log(`nextpagetoken: ${nextPageToken}`);
+
+        // Introduce a delay before fetching the next page of results
+        await new Promise((resolve) => setTimeout(resolve, 2000));
       } else {
         break;
       }
