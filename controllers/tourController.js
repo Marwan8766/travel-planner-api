@@ -71,6 +71,14 @@ exports.getAllTours = catchAsync(async (req, res, next) => {
     sort = { price: -1 }; // descending order
   }
 
+  const sortByPrice = (a, b) => {
+    if (sort.price === 1) {
+      return a.price - b.price; // Ascending order
+    } else if (sort.price === -1) {
+      return b.price - a.price; // Descending order
+    }
+  };
+
   let query = await Tour.find(priceFilter)
     .populate('company')
     .skip(skip)
@@ -112,12 +120,12 @@ exports.getAllTours = catchAsync(async (req, res, next) => {
   console.log(`total query length: ${totalQuery.length}`);
 
   if (sort) {
-    query = query.sort(sort);
+    query = query.sort(sortByPrice);
   }
 
   const [doc, total] = await Promise.all([query, totalQuery]);
 
-  console.log(`doc: ${console.log(doc.length)}`);
+  console.log(`doc: ${doc.length}`);
 
   // Send response
   res.status(200).json({
