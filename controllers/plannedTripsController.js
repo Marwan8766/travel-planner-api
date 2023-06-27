@@ -77,7 +77,7 @@ async function searchPlacesByPreferences(
 
     const query = `${types.join('|')} ${location}`;
 
-    const url = `${baseUrl}?key=${apiKey}&query=${encodeURIComponent(query)}`;
+    const url = `${baseUrl}?key=${apiKey}&query=${query}`;
 
     const numberOfDays = getNumberOfDays(startDate, endDate);
     const desiredNumberOfPlaces = Math.min(5 * numberOfDays, 70); // Maximum 5 places per day for a maximum of 14 days
@@ -88,9 +88,11 @@ async function searchPlacesByPreferences(
     while (places.length < desiredNumberOfPlaces) {
       if (nextPageToken) {
         url += `&pagetoken=${nextPageToken}`;
+        console.log(`pagetoken: ${nextPageToken}`);
       }
 
       const response = await axios.get(url);
+      console.log(`response: ${JSON.stringify(response)}`);
       const results = response.data.results;
 
       // Extract only the required fields from the results
@@ -121,7 +123,7 @@ async function searchPlacesByPreferences(
       }
     }
 
-    return places.slice(0, desiredNumberOfPlaces);
+    return places;
   } catch (error) {
     console.error('Error retrieving places from Google Maps:', error);
     return [];
