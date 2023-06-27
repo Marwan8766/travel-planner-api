@@ -79,7 +79,10 @@ async function searchPlacesByPreferences(
 
     const url = `${baseUrl}?key=${apiKey}&query=${query}`;
 
-    const numberOfDays = getNumberOfDays(startDate, endDate);
+    let numberOfDays = 5;
+
+    if (startDate && endDate)
+      numberOfDays = getNumberOfDays(startDate, endDate);
     const desiredNumberOfPlaces = Math.min(5 * numberOfDays, 70); // Maximum 5 places per day for a maximum of 14 days
 
     let places = [];
