@@ -3,7 +3,6 @@ const AppError = require('../utils/appError');
 const bookingModel = require('../models/booking.model');
 const reviewModel = require('../models/review.model');
 
-
 exports.getBookingChartData = catchAsync(async (req, res, next) => {
   // Get the current date
   const currentDate = new Date();
@@ -51,12 +50,10 @@ exports.getBookingChartData = catchAsync(async (req, res, next) => {
     });
   } catch (err) {
     return next(
-      new AppError(Could not retrieve booking data: ${err.message}, 400)
+      new AppError(`Could not retrieve booking data: ${err.message}`, 400)
     );
   }
 });
-
-
 
 exports.getTopRatings = catchAsync(async (req, res, next) => {
   // Get the top 5 rated companies

@@ -98,6 +98,7 @@ const User = require('./models/userModel');
 const plannedTripController = require('./controllers/plannedTripsController');
 const Tour = require('./models/tourModel');
 const TouristAttraction = require('./models/touristAttractionModel');
+const dashboardRouter = require('./routes/dashboardRouter');
 
 const chatbotAPIRouter = require('./routes/chatbotAPIRouter');
 
@@ -148,6 +149,7 @@ app.use('/api/v1/booking', bookingRouter);
 app.use('/api/v1/tripPrograms', tripProgramRouter);
 app.use('/api/v1/availability', availabilityRouter); // not tested
 app.use('/api/v1/cart', cartRouter); // not tested
+app.use('/api/v1/dashboard', dashboardRouter); // not tested
 
 app.all('*', (req, res, next) => {
   next(new AppError(`Couldn't find ${req.originalUrl} on this server!`, 400));
