@@ -134,17 +134,17 @@ exports.GetAllTripProgram = catchAsync(async (req, res, next) => {
   // Sort by price in ascending or descending order
   let sort;
   if (req.query.sort === 'asc') {
-    sort = 'price';
+    sort = { price: 1 }; // ascending order
   } else if (req.query.sort === 'desc') {
-    sort = '-price';
+    sort = { price: -1 }; // descending order
   }
 
-  let query = TripProgram.find(priceFilter)
+  let query = await TripProgram.find(priceFilter)
     .populate('company')
     .skip(skip)
     .limit(limit);
 
-  let totalQuery = TripProgram.countDocuments(priceFilter);
+  let totalQuery = await TripProgram.countDocuments(priceFilter);
 
   if (req.query.cityName) {
     const cityName = req.query.cityName;
@@ -152,7 +152,7 @@ exports.GetAllTripProgram = catchAsync(async (req, res, next) => {
       cityName
     );
 
-    query = query.find({
+    query = await TripProgram.find({
       'startLocations.coordinates': {
         $geoWithin: {
           $centerSphere: [[lng, lat], radius],
@@ -160,7 +160,7 @@ exports.GetAllTripProgram = catchAsync(async (req, res, next) => {
       },
     });
 
-    totalQuery = totalQuery.find({
+    totalQuery = await TripProgram.find({
       'startLocations.coordinates': {
         $geoWithin: {
           $centerSphere: [[lng, lat], radius],
@@ -169,8 +169,16 @@ exports.GetAllTripProgram = catchAsync(async (req, res, next) => {
     });
   }
 
+  const sortByPrice = (a, b) => {
+    if (sort.price === 1) {
+      return a.price - b.price; // Ascending order
+    } else if (sort.price === -1) {
+      return b.price - a.price; // Descending order
+    }
+  };
+
   if (sort) {
-    query = query.sort(sort);
+    query = query.sort(sortByPrice);
   }
 
   const [doc, total] = await Promise.all([query, totalQuery]);
