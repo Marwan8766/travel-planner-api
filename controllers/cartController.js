@@ -4,6 +4,8 @@ const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 
 exports.addToCart = catchAsync(async (req, res, next) => {
+  console.log(`req.body: ${JSON.stringify(req.body)}`);
+
   // get data from body
   const { cartItem } = req.body;
 
@@ -28,6 +30,8 @@ exports.addToCart = catchAsync(async (req, res, next) => {
 });
 
 exports.createCartItems = catchAsync(async (req, res, next) => {
+  console.log(`req.body: ${JSON.stringify(req.body)}`);
+
   const { cartItems } = req.body;
   const cart = await Cart.create({ user: req.user._id, items: cartItems });
   if (!cart) return next(new AppError('Error creating cart', 400));
