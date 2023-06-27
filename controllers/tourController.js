@@ -75,7 +75,11 @@ exports.getAllTours = catchAsync(async (req, res, next) => {
     .skip(skip)
     .limit(limit);
 
+  console.log(`query length: ${query.length}`);
+
   let totalQuery = Tour.countDocuments(priceFilter);
+
+  console.log(`totalQuery: ${totalQuery}`);
 
   if (req.query.cityName) {
     const cityName = req.query.cityName;
@@ -93,6 +97,8 @@ exports.getAllTours = catchAsync(async (req, res, next) => {
       },
     });
 
+    console.log(`query after geowithin length: ${query}`);
+
     totalQuery = totalQuery.find({
       'startLocations.coordinates': {
         $geoWithin: {
@@ -102,11 +108,15 @@ exports.getAllTours = catchAsync(async (req, res, next) => {
     });
   }
 
+  console.log(`total query length: ${totalQuery.length}`);
+
   if (sort) {
     query = query.sort(sort);
   }
 
   const [doc, total] = await Promise.all([query, totalQuery]);
+
+  console.log(`doc: ${console.log(doc.length)}`);
 
   // Send response
   res.status(200).json({
