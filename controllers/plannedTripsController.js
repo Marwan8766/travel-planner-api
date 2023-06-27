@@ -140,7 +140,7 @@ function getNumberOfDays(startDate, endDate) {
 
 const findMatchingTours = async (location, startDate, endDate) => {
   const locationCoordinates = await exports.getCityRadius(location);
-  if (!locationCoordinates.lat) return [];
+  if (!locationCoordinates) return [];
   const numberOfDays = getNumberOfDays(startDate, endDate);
   const desiredNumberOfTours = 3 * numberOfDays;
 
@@ -692,9 +692,11 @@ exports.getCityRadius = async function (cityName) {
       lng: lon,
     };
   } catch (error) {
-    throw new Error(
+    console.log(
       `Failed to retrieve city radius for ${cityName}: ${error.message}`
     );
+
+    return null;
   }
 };
 
