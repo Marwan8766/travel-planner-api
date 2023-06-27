@@ -113,6 +113,8 @@ exports.chatbotWebhookHandler = catchAsync(async (req, res, next) => {
         rooms
       );
 
+      console.log(`textResponse from hotels intent: ${textResponse}`);
+
       if (textResponse.length === 0)
         textResponse = `Sorry, couldn't find hotels in this city ${hotelCity} in checkin date ${checkInDate} and checkout date ${checkOutDate}`;
 
