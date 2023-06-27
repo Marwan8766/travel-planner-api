@@ -32,10 +32,14 @@ exports.chatbotWebhookHandler = catchAsync(async (req, res, next) => {
     rooms,
   } = req.body.queryResult.parameters;
 
-  if (departureDate) departureDate = extractDate(departureDate);
-  if (returnDate) returnDate = extractDate(departureDate);
-  if (checkInDate) checkInDate = extractDate(departureDate);
-  if (checkOutDate) checkOutDate = extractDate(departureDate);
+  if (departureDate && departureDate.length > 0)
+    departureDate = extractDate(departureDate);
+  if (returnDate && returnDate.length > 0)
+    returnDate = extractDate(departureDate);
+  if (checkInDate && checkInDate.length > 0)
+    checkInDate = extractDate(departureDate);
+  if (checkOutDate && checkOutDate.length > 0)
+    checkOutDate = extractDate(departureDate);
 
   // Extract the location
   let location = '';
