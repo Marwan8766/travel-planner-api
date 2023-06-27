@@ -79,23 +79,23 @@ exports.chatbotWebhookHandler = catchAsync(async (req, res, next) => {
     case 'flights':
       console.log(`flights intent`);
       console.log(`departureDate: ${departureDate}`);
-      if (!cityNamePickup) textResponse = constructTextResNoCityFlights();
-      else if (!cityNameDestination)
-        textResponse = constructTextResNoCityFlights();
-      else
-        textResponse = await handleFlightsIntent(
-          cityNamePickup,
-          cityNameDestination,
-          departureDate,
-          flightType,
-          // sortingOrder,
-          numAdults,
-          numOfSeniors,
-          flightClass,
-          nearbyAirPorts,
-          nonstopFlight,
-          returnDate
-        );
+      // if (!cityNamePickup) textResponse = constructTextResNoCityFlights();
+      // else if (!cityNameDestination)
+      //   textResponse = constructTextResNoCityFlights();
+      // else
+      textResponse = await handleFlightsIntent(
+        cityNamePickup,
+        cityNameDestination,
+        departureDate,
+        flightType,
+        // sortingOrder,
+        numAdults,
+        numOfSeniors,
+        flightClass,
+        nearbyAirPorts,
+        nonstopFlight,
+        returnDate
+      );
       if (textResponse.length === 0)
         textResponse = `Sorry, couldn't find flights from ${cityNamePickup} to ${cityNameDestination} for this parameters, try to change the parameters`;
       break;
