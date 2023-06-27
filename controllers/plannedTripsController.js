@@ -9,14 +9,16 @@ const Tour = require('../models/tourModel');
 const Availability = require('../models/availabilityModel');
 
 exports.getPlannedTrips = catchAsync(async (req, res, next) => {
-  // find all planned trips
-  const plannedTrips = await PlannedTrip.find({ user: req.user._id });
-  // if no plannedtrip found return error
-  if (plannedTrips.length === 0)
-    return next(new AppError('No planned trips was found', 404));
+  const page = req.query.page * 1 || 1;
+  const limit = req.query.limit * 1 || 5;
+  const skip = (page - 1) * limit;
 
+  const plannedTrips = await PlannedTrip.find({ user: req.user._id })
+    .skip(skip)
+    .limit(limit);
   res.status(200).json({
     status: 'success',
+    page,
     plannedTrips,
     length: plannedTrips.length,
   });

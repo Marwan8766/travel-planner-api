@@ -61,10 +61,20 @@ exports.getOne = (Model, popOptions) =>
 
 exports.getAll = (Model) =>
   catchAsync(async (req, res, next) => {
-    const doc = await Model.find();
+    const page = req.query.page * 1 || 1;
+    const limit = req.query.limit * 1 || 5;
+    const skip = (page - 1) * limit;
+
+    // Sort by price in ascending or descending order
+    let sort = req.query.sort === 'asc' ? 'price' : '-price';
+    if (req.query.sort === 'desc') {
+      sort = '-price';
+    }
+    const doc = await Model.find().sort(sort).skip(skip).limit(limit);
     // Send response
     res.status(200).json({
       status: 'success',
+      page,
       result: doc.length,
       data: {
         data: doc,

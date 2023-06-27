@@ -6,7 +6,7 @@ const { myMulter, fileValidation } = require('../utils/multer');
 
 const router = express.Router();
 
-router.get('/', tourController.GetAllTour);
+router.get('/', tourController.getAllTour);
 
 router.get(
   '/company/me',

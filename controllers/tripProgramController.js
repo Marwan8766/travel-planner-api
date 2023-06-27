@@ -1,4 +1,5 @@
 const TripProgram = require('../models/tripProgramsmodel');
+const plannedTripController = require('./plannedTripsController');
 const catchAsync = require('../utils/catchAsync');
 const Factory = require('./handlerFactory');
 const AppError = require('../utils/appError');
@@ -119,13 +120,69 @@ exports.UpdateTripProgram = catchAsync(async (req, res, next) => {
 });
 
 exports.GetAllTripProgram = catchAsync(async (req, res, next) => {
-  const doc = await TripProgram.find().populate('tour').populate('company');
+  const page = req.query.page * 1 || 1;
+  const limit = req.query.limit * 1 || 5;
+  const skip = (page - 1) * limit;
+
+  // Filter by minimum and maximum price
+  const minPrice = req.query.minPrice * 1 || 0;
+  const maxPrice = req.query.maxPrice * 1 || Infinity;
+  const priceFilter = {
+    price: { $gte: minPrice, $lte: maxPrice },
+  };
+
+  // Sort by price in ascending or descending order
+  let sort;
+  if (req.query.sort === 'asc') {
+    sort = 'price';
+  } else if (req.query.sort === 'desc') {
+    sort = '-price';
+  }
+
+  let query = TripProgram.find(priceFilter)
+    .populate('company')
+    .skip(skip)
+    .limit(limit);
+
+  let totalQuery = TripProgram.countDocuments(priceFilter);
+
+  if (req.query.cityName) {
+    const cityName = req.query.cityName;
+    const { radius, lat, lng } = await plannedTripController.getCityRadius(
+      cityName
+    );
+
+    query = query.find({
+      'startLocations.coordinates': {
+        $geoWithin: {
+          $centerSphere: [[lng, lat], radius],
+        },
+      },
+    });
+
+    totalQuery = totalQuery.find({
+      'startLocations.coordinates': {
+        $geoWithin: {
+          $centerSphere: [[lng, lat], radius],
+        },
+      },
+    });
+  }
+
+  if (sort) {
+    query = query.sort(sort);
+  }
+
+  const [doc, total] = await Promise.all([query, totalQuery]);
+
   // Send response
   res.status(200).json({
     status: 'success',
-    result: doc.length,
+    page,
+    limit,
+    total,
     data: {
-      data: doc,
+      tripPrograms: doc,
     },
   });
 });

@@ -222,14 +222,19 @@ exports.deleteReview = catchAsync(async (req, res, next) => {
 });
 
 exports.getAllReviews = catchAsync(async (req, res, next) => {
+  const page = req.query.page * 1 || 1;
+  const limit = req.query.limit * 1 || 5;
+  const skip = (page - 1) * limit;
+
   // find all reviews
-  const reviews = await reviewModel.find();
+  const reviews = await reviewModel.find().skip(skip).limit(limit);
   // if there is no reviews throw an error
   if (reviews.length === 0)
     return next(new AppError('There is no reviews found', 404));
   // send res json with success and reviews
   res.status(200).json({
     status: 'success',
+    page,
     data: reviews,
   });
 });
@@ -307,40 +312,64 @@ exports.updateReview = catchAsync(async (req, res, next) => {
 });
 
 exports.getAllTourReviews = catchAsync(async (req, res, next) => {
+  const page = req.query.page * 1 || 1;
+  const limit = req.query.limit * 1 || 5;
+  const skip = (page - 1) * limit;
+
   // find all tour reviews
-  const reviews = await reviewModel.find({ tour: req.params.id });
+  const reviews = await reviewModel
+    .find({ tour: req.params.id })
+    .skip(skip)
+    .limit(limit);
   // if there is no reviews throw an error
   if (reviews.length === 0)
     return next(new AppError('There is no reviews found', 404));
   // send res ison with success and reviews
   res.status(200).json({
     status: 'success',
+    page,
     data: reviews,
   });
 });
 
 exports.getAllTripProgramReviews = catchAsync(async (req, res, next) => {
+  const page = req.query.page * 1 || 1;
+  const limit = req.query.limit * 1 || 5;
+  const skip = (page - 1) * limit;
+
   // find all tour reviews
-  const reviews = await reviewModel.find({ tripProgram: req.params.id });
+  const reviews = await reviewModel
+    .find({ tripProgram: req.params.id })
+    .skip(skip)
+    .limit(limit);
   // if there is no reviews throw an error
   if (reviews.length === 0)
     return next(new AppError('There is no reviews found', 404));
   // send res ison with success and reviews
   res.status(200).json({
     status: 'success',
+    page,
     data: reviews,
   });
 });
 
 exports.getAllCompanyReviews = catchAsync(async (req, res, next) => {
+  const page = req.query.page * 1 || 1;
+  const limit = req.query.limit * 1 || 5;
+  const skip = (page - 1) * limit;
+
   // find all tour reviews
-  const reviews = await reviewModel.find({ company: req.params.id });
+  const reviews = await reviewModel
+    .find({ company: req.params.id })
+    .skip(skip)
+    .limit(limit);
   // if there is no reviews throw an error
   if (reviews.length === 0)
     return next(new AppError('There is no reviews found', 404));
   // send res ison with success and reviews
   res.status(200).json({
     status: 'success',
+    page,
     data: reviews,
   });
 });

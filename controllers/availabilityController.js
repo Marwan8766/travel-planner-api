@@ -112,6 +112,10 @@ exports.deleteAvailability = catchAsync(async (req, res, next) => {
 });
 
 exports.getAvailabilities = catchAsync(async (req, res, next) => {
+  const page = req.query.page * 1 || 1;
+  const limit = req.query.limit * 1 || 5;
+  const skip = (page - 1) * limit;
+
   const { startDate, endDate } = req.query;
   const { id } = req.params;
 
@@ -137,13 +141,14 @@ exports.getAvailabilities = catchAsync(async (req, res, next) => {
     };
   }
 
-  const availabilities = await Availability.find(query);
+  const availabilities = await Availability.find(query).skip(skip).limit(limit);
 
   if (availabilities.length === 0)
     return next(new AppError('No availabilities found for those dates', 404));
 
   res.status(200).json({
     status: 'success',
+    page,
     results: availabilities.length,
     data: { availabilities },
   });

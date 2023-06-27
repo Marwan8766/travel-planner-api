@@ -85,14 +85,18 @@ exports.deleteBook = catchAsync(async (req, res, next) => {
 });
 
 exports.getAllbooks = catchAsync(async (req, res, next) => {
+  const page = req.query.page * 1 || 1;
+  const limit = req.query.limit * 1 || 5;
+  const skip = (page - 1) * limit;
   // find all books
-  const book = await bookingModel.find();
+  const book = await bookingModel.find().skip(skip).limit(limit);
   // if there is no books throw an error
   if (book.length === 0)
     return next(new AppError('There is no books found', 404));
   // send res json with success and books
   res.status(200).json({
     status: 'success',
+    page,
     data: book,
   });
 });
