@@ -63,11 +63,12 @@ exports.getAllTours = catchAsync(async (req, res, next) => {
   };
 
   // Sort by price in ascending or descending order
+  // Sort by price in ascending or descending order
   let sort;
   if (req.query.sort === 'asc') {
-    sort = 'price';
+    sort = { price: 1 }; // ascending order
   } else if (req.query.sort === 'desc') {
-    sort = '-price';
+    sort = { price: -1 }; // descending order
   }
 
   let query = await Tour.find(priceFilter)
