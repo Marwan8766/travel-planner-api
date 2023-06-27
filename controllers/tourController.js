@@ -89,7 +89,7 @@ exports.getAllTours = catchAsync(async (req, res, next) => {
 
     console.log(`radius: ${radius}  lat: ${lat}  lng: ${lng}`);
 
-    query = await query.find({
+    query = query.find({
       'startLocations.coordinates': {
         $geoWithin: {
           $centerSphere: [[lng, lat], radius],
@@ -99,7 +99,7 @@ exports.getAllTours = catchAsync(async (req, res, next) => {
 
     console.log(`query after geowithin length: ${query}`);
 
-    totalQuery = await totalQuery.find({
+    totalQuery = totalQuery.find({
       'startLocations.coordinates': {
         $geoWithin: {
           $centerSphere: [[lng, lat], radius],
