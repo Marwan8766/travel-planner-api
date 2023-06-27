@@ -156,6 +156,84 @@ const getRandomTime = (date) => {
   return startTime;
 };
 
+// const createTripDays = async (
+//   attractions,
+//   matchedTours,
+//   startDate,
+//   endDate,
+//   crowdLevel
+// ) => {
+//   const numberOfDays = getNumberOfDays(startDate, endDate);
+//   const days = [];
+
+//   for (let i = 0; i < numberOfDays; i++) {
+//     const date = new Date(startDate.getTime() + i * 24 * 60 * 60 * 1000);
+
+//     // Filter the matched tours based on availability, available seats, and date
+//     const filteredTours = await Promise.all(
+//       matchedTours.map(async (tour) => {
+//         const availability = await Availability.findOne({
+//           tour: tour._id,
+//           date: { $gte: startDate, $lte: endDate },
+//           availableSeats: { $gte: 1 },
+//         });
+//         return availability ? tour : null;
+//       })
+//     );
+
+//     const dayTours = filteredTours.filter((tour) => tour !== null);
+//     const timeline = [];
+
+//     let maxAttractions;
+//     let maxTours;
+
+//     if (crowdLevel === 'busy') {
+//       maxAttractions = 6;
+//       maxTours = 2;
+//     } else if (crowdLevel === 'moderate') {
+//       maxAttractions = 4;
+//       maxTours = 1;
+//     } else if (crowdLevel === 'quiet') {
+//       maxAttractions = 1;
+//       maxTours = 1;
+//     }
+
+//     // Allocate tours with availability to the timeline based on their available dates
+//     for (const tour of dayTours) {
+//       const tourAvailability = await Availability.findOne({
+//         tour: tour._id,
+//         date: { $gte: startDate, $lte: endDate },
+//         availableSeats: { $gte: 1 },
+//       });
+
+//       if (tourAvailability && areDatesEqual(tourAvailability.date, date)) {
+//         timeline.push({
+//           tour,
+//           startTime: getRandomTime(date),
+//           endTime: getRandomTime(date),
+//         });
+
+//         if (timeline.length >= maxTours) {
+//           break;
+//         }
+//       }
+//     }
+
+//     // Allocate attractions to the timeline
+//     while (attractions.length > 0 && timeline.length < maxAttractions) {
+//       timeline.push({
+//         attraction: attractions.shift(),
+//         startTime: getRandomTime(date),
+//         endTime: getRandomTime(date),
+//       });
+//     }
+
+//     days.push({ date, timeline });
+//   }
+
+//   console.log(`days: ${days}`);
+//   return days;
+// };
 const createTripDays = async (
   attractions,
   matchedTours,
@@ -174,7 +252,7 @@ const createTripDays = async (
       matchedTours.map(async (tour) => {
         const availability = await Availability.findOne({
           tour: tour._id,
-          date: { $gte: startDate, $lte: endDate },
+          date: { $eq: date },
           availableSeats: { $gte: 1 },
         });
         return availability ? tour : null;
@@ -202,11 +280,11 @@ const createTripDays = async (
     for (const tour of dayTours) {
       const tourAvailability = await Availability.findOne({
         tour: tour._id,
-        date: { $gte: startDate, $lte: endDate },
+        date: { $eq: date },
         availableSeats: { $gte: 1 },
       });
 
-      if (tourAvailability && areDatesEqual(tourAvailability.date, date)) {
+      if (tourAvailability) {
         timeline.push({
           tour,
           startTime: getRandomTime(date),
@@ -220,7 +298,11 @@ const createTripDays = async (
     }
 
     // Allocate attractions to the timeline
-    while (attractions.length > 0 && timeline.length < maxAttractions) {
+    while (
+      attractions.length > 0 &&
+      timeline.length < maxAttractions &&
+      timeline.length < maxTours + maxAttractions
+    ) {
       timeline.push({
         attraction: attractions.shift(),
         startTime: getRandomTime(date),
@@ -231,7 +313,7 @@ const createTripDays = async (
     days.push({ date, timeline });
   }
 
-  console.log(`days: ${days}`);
+  console.log(`days: ${JSON.stringify(days)}`);
   return days;
 };
 
