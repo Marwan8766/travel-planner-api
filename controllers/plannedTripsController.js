@@ -341,8 +341,12 @@ exports.createPlannedTrip = catchAsync(async (req, res, next) => {
     location
   );
 
+  attractions.forEach((attraction) => console.log(`atraction: ${attraction}`));
+
   // get tours lies in that city or country and try to filter based on prefrences if possible or make it randomly
   const matchedTours = await findMatchingTours(location, startDate, endDate);
+
+  matchedTours.forEach((tour) => console.log(`tour: ${tour}`));
 
   // create days array based on number of days with the timeline and attractions and tours
   const days = await createTripDays(
