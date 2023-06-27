@@ -220,11 +220,7 @@ const createTripDays = async (
     }
 
     // Allocate attractions to the timeline
-    while (
-      attractions.length > 0 &&
-      timeline.length < maxAttractions &&
-      timeline.length < maxTours + maxAttractions
-    ) {
+    while (attractions.length > 0 && timeline.length < maxAttractions) {
       timeline.push({
         attraction: attractions.shift(),
         startTime: getRandomTime(date),
