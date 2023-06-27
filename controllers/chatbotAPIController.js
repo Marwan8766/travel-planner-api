@@ -83,6 +83,8 @@ exports.chatbotWebhookHandler = catchAsync(async (req, res, next) => {
       // else if (!cityNameDestination)
       //   textResponse = constructTextResNoCityFlights();
       // else
+      nonstopFlight = 'no';
+      nearbyAirPorts = 'yes';
       textResponse = await handleFlightsIntent(
         cityNamePickup,
         cityNameDestination,
