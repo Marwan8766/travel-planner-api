@@ -140,6 +140,7 @@ function getNumberOfDays(startDate, endDate) {
 
 const findMatchingTours = async (location, startDate, endDate) => {
   const locationCoordinates = await exports.getCityRadius(location);
+  if (!locationCoordinates.lat) return [];
   const numberOfDays = getNumberOfDays(startDate, endDate);
   const desiredNumberOfTours = 3 * numberOfDays;
 
@@ -368,7 +369,7 @@ const createTripDays = async (
     let maxTours;
 
     if (crowdLevel === 'busy') {
-      maxAttractions = 6;
+      maxAttractions = 5;
       maxTours = 2;
     } else if (crowdLevel === 'moderate') {
       maxAttractions = 4;
