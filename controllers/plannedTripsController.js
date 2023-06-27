@@ -253,6 +253,8 @@ exports.createPlannedTrip = catchAsync(async (req, res, next) => {
 
   const location = city ? city : country;
 
+  console.log(`location: ${location}`);
+
   // get attractions from google maps
   const attractions = await searchPlacesByPreferences(
     preferences,
@@ -495,7 +497,9 @@ exports.getCityRadius = async function (cityName) {
       lng: lon,
     };
   } catch (error) {
-    throw new Error(`Failed to retrieve city radius: ${error.message}`);
+    throw new Error(
+      `Failed to retrieve city radius for ${cityName}: ${error.message}`
+    );
   }
 };
 
