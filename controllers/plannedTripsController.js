@@ -92,8 +92,8 @@ async function searchPlacesByPreferences(
       }
 
       const response = await axios.get(url);
-      console.log(`response: ${JSON.stringify(response)}`);
       const results = response.data.results;
+      console.log(`response.nextPage: ${response.data.next_page_token}`);
 
       // Extract only the required fields from the results
       const filteredResults = results.map((result) => {
