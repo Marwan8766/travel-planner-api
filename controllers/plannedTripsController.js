@@ -120,7 +120,7 @@ function getNumberOfDays(startDate, endDate) {
 }
 
 const findMatchingTours = async (location, startDate, endDate) => {
-  const locationCoordinates = await this.getCityRadius(location);
+  const locationCoordinates = await getCityRadius(location);
   const numberOfDays = getNumberOfDays(startDate, endDate);
   const desiredNumberOfTours = 3 * numberOfDays;
 
