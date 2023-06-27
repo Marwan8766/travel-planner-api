@@ -125,13 +125,12 @@ const findMatchingTours = async (location, startDate, endDate) => {
   const desiredNumberOfTours = 3 * numberOfDays;
 
   const tours = await Tour.find({
-    'startLocation.coordinates': {
-      $near: {
-        $geometry: {
-          type: 'Point',
-          coordinates: [locationCoordinates.lng, locationCoordinates.lat],
-        },
-        $maxDistance: locationCoordinates.radius,
+    'startLocations.coordinates': {
+      $geoWithin: {
+        $centerSphere: [
+          [locationCoordinates.lng, locationCoordinates.lat],
+          locationCoordinates.radius,
+        ],
       },
     },
   }).limit(desiredNumberOfTours);
