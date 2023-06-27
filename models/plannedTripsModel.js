@@ -39,7 +39,7 @@ const plannedTripSchema = new mongoose.Schema({
             rating: Number,
             description: String,
             image: String,
-            placeID,
+            placeID: String,
           },
           tour: { type: mongoose.Schema.Types.ObjectId, ref: 'Tour' },
           customActivity: { type: String },

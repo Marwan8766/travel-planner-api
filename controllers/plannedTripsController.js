@@ -97,15 +97,8 @@ async function searchPlacesByPreferences(
 
       // Extract only the required fields from the results
       const filteredResults = results.map((result) => {
-        const {
-          name,
-          rating,
-          types,
-          geometry,
-          formatted_address,
-          photos,
-          place_id,
-        } = result;
+        const { name, rating, geometry, formatted_address, photos, place_id } =
+          result;
         return {
           name,
           rating,
@@ -431,6 +424,7 @@ const createTripDays = async (
           description: attractions[0].description,
           image: attractions[0].photo,
           address: attractions[0].address,
+          placeId: attractions[0].placeId,
         },
         startTime,
         endTime,
