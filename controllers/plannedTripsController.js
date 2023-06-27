@@ -355,7 +355,7 @@ const createTripDays = async (
           date: date,
           availableSeats: { $gte: 1 },
         });
-        return availability ? tour : null;
+        return availability && availability.availableSeats >= 1 ? tour : null;
       })
     );
 
@@ -400,8 +400,8 @@ const createTripDays = async (
     // Allocate attractions to the timeline
     while (
       attractions.length > 0 &&
-      timeline.length < maxAttractions &&
-      timeline.length < maxTours + maxAttractions
+      (timeline.length < maxAttractions ||
+        timeline.length < maxTours + maxAttractions)
     ) {
       timeline.push({
         attraction: {
