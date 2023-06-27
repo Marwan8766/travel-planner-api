@@ -97,12 +97,20 @@ async function searchPlacesByPreferences(
 
       // Extract only the required fields from the results
       const filteredResults = results.map((result) => {
-        const { name, rating, types, geometry, formatted_address, photos } =
-          result;
-        return {
+        const {
           name,
           rating,
           types,
+          geometry,
+          formatted_address,
+          photos,
+          place_id,
+        } = result;
+        return {
+          name,
+          rating,
+          placeId: place_id,
+          link: `https://maps.google.com/?q=${geometry.location.lng},${geometry.location.lat}`,
           coordinates: [geometry.location.lng, geometry.location.lat],
           address: formatted_address,
           photo: photos && photos.length > 0 ? photos[0].photo_reference : null,
@@ -422,6 +430,7 @@ const createTripDays = async (
           rating: attractions[0].rating,
           description: attractions[0].description,
           image: attractions[0].photo,
+          address: attractions[0].address,
         },
         startTime,
         endTime,

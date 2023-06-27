@@ -33,11 +33,13 @@ const plannedTripSchema = new mongoose.Schema({
         {
           attraction: {
             coordinates: [Number],
+            address: String,
             name: String,
             link: String,
             rating: Number,
             description: String,
             image: String,
+            placeID,
           },
           tour: { type: mongoose.Schema.Types.ObjectId, ref: 'Tour' },
           customActivity: { type: String },
