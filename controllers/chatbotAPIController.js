@@ -669,16 +669,14 @@ const validateHotelParams = (checkInDate, checkOutDate) => {
   let text = '';
 
   if (!checkInDate)
-    return (text =
-      'Please provide checkin date in year-month-day format, you should provide also the checkout date and you could provide the number of rooms and number of adults');
+    return (text = 'Please provide checkin date in year-month-day format.');
   if (!isValidDateFormat(checkInDate || new Date(checkInDate) < Date.now()))
-    return (text = `Please provide checkin date in year-month-day format, you should provide also the checkout date and you could provide the number of rooms and number of adults`);
+    return (text = `Please provide checkin date in year-month-day format, you should provide also the checkout date`);
 
   if (!checkOutDate)
-    return (text =
-      'Please provide checkout date in year-month-day format and you could provide the number of rooms and number of adults');
+    return (text = 'Please provide checkout date in year-month-day format ');
   if (!isValidDateFormat(checkOutDate || checkOutDate > checkInDate))
-    return (text = `Please provide checkout date in year-month-day format and you could provide the number of rooms and number of adults`);
+    return (text = `Please provide checkout date in year-month-day format`);
 
   // if everything is ok return correct
   return 'correct';
