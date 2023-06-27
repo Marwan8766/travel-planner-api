@@ -70,14 +70,14 @@ exports.getAllTours = catchAsync(async (req, res, next) => {
     sort = '-price';
   }
 
-  let query = Tour.find(priceFilter)
+  let query = await Tour.find(priceFilter)
     .populate('company')
     .skip(skip)
     .limit(limit);
 
   console.log(`query length: ${query.length}`);
 
-  let totalQuery = Tour.countDocuments(priceFilter);
+  let totalQuery = await Tour.countDocuments(priceFilter);
 
   console.log(`totalQuery: ${totalQuery}`);
 
@@ -89,7 +89,7 @@ exports.getAllTours = catchAsync(async (req, res, next) => {
 
     console.log(`radius: ${radius}  lat: ${lat}  lng: ${lng}`);
 
-    query = query.find({
+    query = await query.find({
       'startLocations.coordinates': {
         $geoWithin: {
           $centerSphere: [[lng, lat], radius],
@@ -99,7 +99,7 @@ exports.getAllTours = catchAsync(async (req, res, next) => {
 
     console.log(`query after geowithin length: ${query}`);
 
-    totalQuery = totalQuery.find({
+    totalQuery = await totalQuery.find({
       'startLocations.coordinates': {
         $geoWithin: {
           $centerSphere: [[lng, lat], radius],
