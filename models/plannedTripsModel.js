@@ -17,7 +17,6 @@ const plannedTripSchema = new mongoose.Schema({
     likes_outdoorActivities: { type: Boolean, default: true },
     likes_shopping: { type: Boolean, default: true },
     likes_food: { type: Boolean, default: true },
-    likes_nightlife: { type: Boolean, default: true },
     likes_sports: { type: Boolean, default: true },
     likes_relaxation: { type: Boolean, default: true },
     likes_familyFriendlyActivities: { type: Boolean, default: true },

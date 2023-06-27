@@ -97,7 +97,22 @@ async function searchPlacesByPreferences(
 
       const response = await axios.get(baseUrl, { params });
       const results = response.data.results;
-      places = places.concat(results);
+
+      // Extract only the required fields from the results
+      const filteredResults = results.map((result) => {
+        const { name, rating, types, geometry, formatted_address, photos } =
+          result;
+        return {
+          name,
+          rating,
+          types,
+          coordinates: [geometry.location.lng, geometry.location.lat],
+          address: formatted_address,
+          photo: photos && photos.length > 0 ? photos[0].photo_reference : null,
+        };
+      });
+
+      places = places.concat(filteredResults);
 
       if (response.data.next_page_token) {
         nextPageToken = response.data.next_page_token;
@@ -236,6 +251,89 @@ const getRandomTime = (date) => {
 //   console.log(`days: ${days}`);
 //   return days;
 // };
+// const createTripDays = async (
+//   attractions,
+//   matchedTours,
+//   startDate,
+//   endDate,
+//   crowdLevel
+// ) => {
+//   const numberOfDays = getNumberOfDays(startDate, endDate);
+//   const days = [];
+
+//   for (let i = 0; i < numberOfDays; i++) {
+//     const date = new Date(startDate.getTime() + i * 24 * 60 * 60 * 1000);
+
+//     // Filter the matched tours based on availability, available seats, and date
+//     const filteredTours = await Promise.all(
+//       matchedTours.map(async (tour) => {
+//         const availability = await Availability.findOne({
+//           tour: tour._id,
+//           date: { $eq: date },
+//           availableSeats: { $gte: 1 },
+//         });
+//         return availability ? tour : null;
+//       })
+//     );
+
+//     const dayTours = filteredTours.filter((tour) => tour !== null);
+//     const timeline = [];
+
+//     let maxAttractions;
+//     let maxTours;
+
+//     if (crowdLevel === 'busy') {
+//       maxAttractions = 6;
+//       maxTours = 2;
+//     } else if (crowdLevel === 'moderate') {
+//       maxAttractions = 4;
+//       maxTours = 1;
+//     } else if (crowdLevel === 'quiet') {
+//       maxAttractions = 1;
+//       maxTours = 1;
+//     }
+
+//     // Allocate tours with availability to the timeline based on their available dates
+//     for (const tour of dayTours) {
+//       const tourAvailability = await Availability.findOne({
+//         tour: tour._id,
+//         date: { $eq: date },
+//         availableSeats: { $gte: 1 },
+//       });
+
+//       if (tourAvailability) {
+//         timeline.push({
+//           tour,
+//           startTime: getRandomTime(date),
+//           endTime: getRandomTime(date),
+//         });
+
+//         if (timeline.length >= maxTours) {
+//           break;
+//         }
+//       }
+//     }
+
+//     // Allocate attractions to the timeline
+//     while (
+//       attractions.length > 0 &&
+//       timeline.length < maxAttractions &&
+//       timeline.length < maxTours + maxAttractions
+//     ) {
+//       timeline.push({
+//         attraction: attractions.shift(),
+//         startTime: getRandomTime(date),
+//         endTime: getRandomTime(date),
+//       });
+//     }
+
+//     days.push({ date, timeline });
+//   }
+
+//   console.log(`days: ${JSON.stringify(days)}`);
+//   return days;
+// };
+
 const createTripDays = async (
   attractions,
   matchedTours,
@@ -254,7 +352,7 @@ const createTripDays = async (
       matchedTours.map(async (tour) => {
         const availability = await Availability.findOne({
           tour: tour._id,
-          date: { $eq: date },
+          date: date,
           availableSeats: { $gte: 1 },
         });
         return availability ? tour : null;
@@ -282,13 +380,13 @@ const createTripDays = async (
     for (const tour of dayTours) {
       const tourAvailability = await Availability.findOne({
         tour: tour._id,
-        date: { $eq: date },
+        date: date,
         availableSeats: { $gte: 1 },
       });
 
       if (tourAvailability) {
         timeline.push({
-          tour,
+          tour: tour._id,
           startTime: getRandomTime(date),
           endTime: getRandomTime(date),
         });
@@ -306,10 +404,19 @@ const createTripDays = async (
       timeline.length < maxTours + maxAttractions
     ) {
       timeline.push({
-        attraction: attractions.shift(),
+        attraction: {
+          coordinates: attractions[0].coordinates,
+          name: attractions[0].name,
+          link: attractions[0].link,
+          rating: attractions[0].rating,
+          type: attractions[0].types[0],
+          description: attractions[0].description,
+          image: attractions[0].photo,
+        },
         startTime: getRandomTime(date),
         endTime: getRandomTime(date),
       });
+      attractions.shift();
     }
 
     days.push({ date, timeline });
