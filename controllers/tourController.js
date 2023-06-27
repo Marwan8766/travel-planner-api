@@ -83,6 +83,8 @@ exports.getAllTours = catchAsync(async (req, res, next) => {
       cityName
     );
 
+    console.log(`radius: ${radius}  lat: ${lat}  lng: ${lng}`);
+
     query = query.find({
       'startLocations.coordinates': {
         $geoWithin: {
