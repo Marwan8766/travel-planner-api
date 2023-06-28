@@ -188,11 +188,9 @@ exports.createStripeCheckoutItemsBooking = catchAsync(
       if (item.type === 'tripProgram') query.tripProgram = item.itemId;
 
       // reserve the item from the availability
-      const itemAvailability = await availabilityModel.findOne({
-        query,
-      });
+      const itemAvailability = await availabilityModel.findOne(query);
 
-      console.log(`query: ${query}`);
+      console.log(`query: ${JSON.stringify(query)}`);
 
       if (!itemAvailability)
         return next(
