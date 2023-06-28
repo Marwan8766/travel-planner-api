@@ -7,7 +7,7 @@ const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 const Factory = require('./handlerFactory');
 const cartModel = require('../models/cartModel');
-const stripe = require('stripe')(process.env.STRIPE_P);
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 exports.createTourBook = catchAsync(async (req, res, next) => {
   const tourId = req.params.id;
