@@ -268,7 +268,7 @@ exports.createStripePaymentSession = catchAsync(async (req, res, next) => {
     success_url: `https://travel-gate-trip-planner.netlify.app/index.html`,
     // cancel_url: `${req.protocol}://${req.get('host')}/cancel.html`,
     cancel_url: `https://travel-gate-trip-planner.netlify.app/package.html`,
-    email: req.user.email,
+    customer_email: req.user.email,
     currency: 'usd',
     payment_method_types: ['card'],
     metadata: metadata_obj,
