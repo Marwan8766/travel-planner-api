@@ -7,7 +7,7 @@ const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 const Factory = require('./handlerFactory');
 const cartModel = require('../models/cartModel');
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const stripe = require('stripe')(process.env.STRIPE_P);
 
 exports.createTourBook = catchAsync(async (req, res, next) => {
   const tourId = req.params.id;
@@ -285,6 +285,8 @@ exports.createStripePaymentSession = catchAsync(async (req, res, next) => {
     payment_method_types: ['card'],
     metadata: metadata_obj,
   });
+
+  console.log(`sessionUrl: ${session.url}`);
 
   // send res
   res.redirect(303, session.url);
