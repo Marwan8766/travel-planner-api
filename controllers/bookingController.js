@@ -103,12 +103,12 @@ exports.getAllbooks = catchAsync(async (req, res, next) => {
 
 exports.createStripeCheckoutItems = catchAsync(async (req, res, next) => {
   // find the user cart
-  const cart = await cartModel.findOne({ user: req.user._id });
+  let cart = await cartModel.findOne({ user: req.user._id });
 
   if (!cart) return next(new AppError('cart not found', 404));
 
   // populate the tour and tripProgram fields
-  await cart
+  cart = await cart
     .populate({
       path: 'items.tour',
       select: 'name price company',
@@ -175,11 +175,10 @@ exports.createStripeCheckoutItemsBooking = catchAsync(
   async (req, res, next) => {
     const metadata = req.metadata;
 
+    console.log(`metadata: ${JSON.stringify(metadata)}`);
+
     // loop over metadata items
     for (const [key, item] of Object.entries(metadata)) {
-      let tour = undefined;
-      let tripProgram = undefined;
-
       const query = {
         date: item.itemDate,
       };
