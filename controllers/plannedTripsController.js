@@ -680,6 +680,8 @@ exports.addCustomActivity = catchAsync(async (req, res, next) => {
     endTime,
   });
 
+  console.log(`plannedTripIn_CONT: ${JSON.stringify(plannedTrip)}`);
+
   const updatedPlannedTrip = await plannedTrip.save({
     validateModifiedOnly: true,
   });
