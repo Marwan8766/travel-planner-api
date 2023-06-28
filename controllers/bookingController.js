@@ -258,7 +258,7 @@ exports.createStripeCheckoutItemsBooking = catchAsync(
 
 exports.createStripePaymentSession = catchAsync(async (req, res, next) => {
   // take line_items array and metadata from the req
-  const { lineItems, metadata } = req.body;
+  const { lineItems, metadata } = req;
 
   console.log(`lineItems: ${JSON.stringify(lineItems)}`);
   console.log(`metadata: ${JSON.stringify(metadata)}`);
