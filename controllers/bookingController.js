@@ -345,6 +345,10 @@ exports.updateBooking_stripe_webhook_fail = async (
 
     console.log(`itemBooking.Id fail: ${bookingId}`);
 
+    const cart = await cartModel.findOne({ user: booking.user });
+    cart.items = [];
+    await cart.save({ validateModifiedOnly: true });
+
     await bookingModel.findByIdAndDelete(bookingId);
   } catch (err) {
     console.log(`updateBooking_stripe_webhook_fail ${paymentIntentId}`, err);
