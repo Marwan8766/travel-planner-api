@@ -42,8 +42,7 @@ app.post(
     switch (event.type) {
       case 'payment_intent.succeeded':
         const paymentIntentSucceeded = event.data.object;
-        const metadata =
-          paymentIntentSucceeded.payment_intent.metadata.metadata;
+        const metadata = paymentIntentSucceeded.payment_intent_data.metadata;
         const paymentIntentId = paymentIntentSucceeded.id;
 
         console.log(`metadata_success: ${JSON.stringify(metadata)}`);
@@ -64,7 +63,8 @@ app.post(
       ////////////////////////////////////////////////
       case 'payment_intent.payment_failed':
         const paymentIntentPaymentFailed = event.data.object;
-        const metadata2 = paymentIntentPaymentFailed.metadata;
+        const metadata2 =
+          paymentIntentPaymentFailed.payment_intent_data.metadata;
         const paymentIntentId2 = paymentIntentPaymentFailed.id;
 
         // loop over metadata

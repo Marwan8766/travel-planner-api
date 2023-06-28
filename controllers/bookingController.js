@@ -285,10 +285,13 @@ exports.createStripePaymentSession = catchAsync(async (req, res, next) => {
     customer_email: req.user.email,
     currency: 'usd',
     payment_method_types: ['card'],
-    metadata: metadata_obj,
+    payment_intent_data: {
+      metadata: metadata_obj,
+    },
   });
 
   console.log(`sessionUrl: ${session.url}`);
+  console.log(`session: ${session}`);
 
   // send res
   res.status(200).json({ url: session.url });
