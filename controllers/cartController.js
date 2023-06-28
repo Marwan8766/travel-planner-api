@@ -16,7 +16,7 @@ exports.addToCart = catchAsync(async (req, res, next) => {
   // if there is an cartItem add it to the cart
   cart.items.push(cartItem);
 
-  updatedCart = await cart.save({ validateModifiedOnly: true });
+  const updatedCart = await cart.save({ validateModifiedOnly: true });
 
   if (!updatedCart)
     return next(new AppError('Error adding this item to the cart', 400));
