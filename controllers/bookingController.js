@@ -267,7 +267,9 @@ exports.createStripePaymentSession = catchAsync(async (req, res, next) => {
 
   const metadata_obj = {};
   for (let i = 0; i < metadata.items.length; i++) {
-    metadata_obj[i] = metadata.items[i].bookingId.toString();
+    metadata_obj[i] = `${metadata.items[
+      i
+    ].bookingId.toString()},${metadata.items[i].itemDate.toString()}`;
   }
 
   console.log(`the final metada_obj: ${JSON.stringify(metadata_obj)}`);
@@ -292,9 +294,9 @@ exports.createStripePaymentSession = catchAsync(async (req, res, next) => {
   res.status(200).json({ url: session.url });
 });
 
-exports.updateBooking_stripe_webhook = async (paymentIntentId, item) => {
+exports.updateBooking_stripe_webhook = async (paymentIntentId, bookingId) => {
   try {
-    const booking = await bookingModel.findById(item.bookingId);
+    const booking = await bookingModel.findById(bookingId);
 
     // update the booking
     booking.stripePaymentIntentId = paymentIntentId;
@@ -302,6 +304,10 @@ exports.updateBooking_stripe_webhook = async (paymentIntentId, item) => {
     booking.status = 'reserved';
 
     const updatedBooking = await booking.save({ validateModifiedOnly: true });
+
+    const cart = await cartModel.findOne({ user: booking.user });
+    cart.items = [];
+    await cart.save({ validateModifiedOnly: true });
 
     console.log(`updatedSuccessBooking: ${JSON.stringify(updatedBooking)}`);
     return 'success';
@@ -311,20 +317,24 @@ exports.updateBooking_stripe_webhook = async (paymentIntentId, item) => {
   }
 };
 
-exports.updateBooking_stripe_webhook_fail = async (paymentIntentId, item) => {
+exports.updateBooking_stripe_webhook_fail = async (
+  paymentIntentId,
+  bookingId,
+  itemDate
+) => {
   try {
-    const booking = await bookingModel.findById(item.bookingId);
+    const booking = await bookingModel.findById(bookingId);
 
     let availability;
-    if (item.type === 'tour') {
+    if (booking.tour) {
       availability = await availabilityModel.findOne({
-        tour: item.itemId,
-        date: item.itemDate,
+        tour: booking.tour,
+        date: itemDate,
       });
-    } else if (item.type === 'tripProgram') {
+    } else if (booking.tripProgram === 'tripProgram') {
       availability = await availabilityModel.findOne({
-        tripProgram: item.itemId,
-        date: item.itemDate,
+        tripProgram: booking.tripProgram,
+        date: itemDate,
       });
     }
 
@@ -333,9 +343,9 @@ exports.updateBooking_stripe_webhook_fail = async (paymentIntentId, item) => {
 
     await availability.save({ validateModifiedOnly: true });
 
-    console.log(`itemBooking.Id fail: ${item.bookingId}`);
+    console.log(`itemBooking.Id fail: ${bookingId}`);
 
-    await bookingModel.findByIdAndDelete(item.bookingId);
+    await bookingModel.findByIdAndDelete(bookingId);
   } catch (err) {
     console.log(`updateBooking_stripe_webhook_fail ${paymentIntentId}`, err);
   }

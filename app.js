@@ -43,13 +43,18 @@ app.post(
         const paymentIntentSucceeded = event.data.object;
         const metadata = paymentIntentSucceeded.metadata;
         const paymentIntentId = paymentIntentSucceeded.id;
+
+        console.log(`metadata_success: ${metadata}`);
         // loop over metadata
         for (const [key, item] of Object.entries(metadata)) {
+          const itemSplitted = item.split(',');
+          const bookingId = itemSplitted[0];
+
           // handle updating booking
           const updateBookingStatus =
             bookingController.updateBooking_stripe_webhook(
               paymentIntentId,
-              item
+              bookingId
             );
         }
         // Then define and call a function to handle the event payment_intent.succeeded
@@ -62,11 +67,16 @@ app.post(
 
         // loop over metadata
         for (const [key, item] of Object.entries(metadata)) {
+          const itemSplitted = item.split(',');
+          const bookingId = itemSplitted[0];
+          const itemDate = itemSplitted[1];
+
           // handle updating booking
           const updateBookingStatus =
             bookingController.updateBooking_stripe_webhook_fail(
               paymentIntentId,
-              item
+              bookingId,
+              itemDate
             );
         }
 
