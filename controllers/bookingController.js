@@ -258,14 +258,14 @@ exports.createStripeCheckoutItemsBooking = catchAsync(
 
 exports.createStripePaymentSession = catchAsync(async (req, res, next) => {
   // take line_items array and metadata from the req
-  const { line_items_array, metadata_obj } = req.body;
+  const { lineItems, metadata } = req.body;
 
-  console.log(`line_items_array: ${JSON.stringify(line_items_array)}`);
-  console.log(`metadata_obj: ${JSON.stringify(metadata_obj)}`);
+  console.log(`lineItems: ${JSON.stringify(lineItems)}`);
+  console.log(`metadata: ${JSON.stringify(metadata)}`);
 
   // create the session
   const session = await stripe.checkout.sessions.create({
-    line_items: line_items_array,
+    line_items: lineItems,
     mode: 'payment',
     // success_url: `${req.protocol}://${req.get('host')}/success.html`,
     success_url: `https://travel-gate-trip-planner.netlify.app/index.html`,
@@ -274,7 +274,7 @@ exports.createStripePaymentSession = catchAsync(async (req, res, next) => {
     customer_email: req.user.email,
     currency: 'usd',
     payment_method_types: ['card'],
-    metadata: metadata_obj,
+    metadata: metadata,
   });
 
   // send res
