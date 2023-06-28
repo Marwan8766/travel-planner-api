@@ -260,6 +260,9 @@ exports.createStripePaymentSession = catchAsync(async (req, res, next) => {
   // take line_items array and metadata from the req
   const { line_items_array, metadata_obj } = req.body;
 
+  console.log(`line_items_array: ${JSON.stringify(line_items_array)}`);
+  console.log(`metadata_obj: ${JSON.stringify(metadata_obj)}`);
+
   // create the session
   const session = await stripe.checkout.sessions.create({
     line_items: line_items_array,
