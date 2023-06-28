@@ -45,6 +45,8 @@ exports.createCartItems = catchAsync(async (req, res, next) => {
 
 exports.checkAddedItemsAddAvailability = catchAsync(async (req, res, next) => {
   // get data from body
+  console.log(`req.body: ${JSON.stringify(req.body)}`);
+
   const { cartItems, cartItem } = req.body;
 
   // check that the cartItems or cartItem is provided
@@ -60,6 +62,7 @@ exports.checkAddedItemsAddAvailability = catchAsync(async (req, res, next) => {
   if (cartItems && cartItems.length) {
     // loop over each cartItem and check its availability
     for (const item of cartItems) {
+      console.log(`current checked item avilability in cart: ${item}`);
       if (item.type === 'tour') {
         const availability = await Availability.findOne({
           tour: item.tour,
