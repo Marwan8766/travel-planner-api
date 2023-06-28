@@ -80,6 +80,7 @@ plannedTripSchema.pre('save', async function (next) {
   this.days.forEach((day) => {
     day.timeline.forEach((item) => {
       const { attraction, tour, customActivity } = item;
+      console.log(`currentItem : ${item}`);
       if (
         (!attraction && !tour && !customActivity) || // none of the properties are present
         (attraction && (tour || customActivity)) || // attraction should not coexist with tour or customActivity
@@ -96,6 +97,7 @@ plannedTripSchema.pre('save', async function (next) {
     });
   });
 
+  console.log(`passed it... ${this.days}`);
   next();
 });
 
