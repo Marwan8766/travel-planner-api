@@ -676,8 +676,8 @@ exports.addCustomActivity = catchAsync(async (req, res, next) => {
 
   plannedTrip.days[dayIndex].timeline.push({
     customActivity,
-    startTime,
-    endTime,
+    // startTime,
+    // endTime,
   });
 
   console.log(`plannedTripIn_CONT: ${JSON.stringify(plannedTrip)}`);
