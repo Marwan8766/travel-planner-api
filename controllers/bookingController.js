@@ -260,8 +260,17 @@ exports.createStripePaymentSession = catchAsync(async (req, res, next) => {
   // take line_items array and metadata from the req
   const { lineItems, metadata } = req;
 
+  // ensure that every item in metadata items is string
+
   console.log(`lineItems: ${JSON.stringify(lineItems)}`);
   console.log(`metadata: ${JSON.stringify(metadata)}`);
+
+  const metadata_obj = {};
+  for (let i = 0; i < metadata.items.length; i++) {
+    metadata_obj[i] = metadata.items[i].bookingId;
+  }
+
+  console.log(`the final metada_obj: ${JSON.stringify(metadata_obj)}`);
 
   // create the session
   const session = await stripe.checkout.sessions.create({
@@ -274,7 +283,7 @@ exports.createStripePaymentSession = catchAsync(async (req, res, next) => {
     customer_email: req.user.email,
     currency: 'usd',
     payment_method_types: ['card'],
-    metadata: metadata,
+    metadata: metadata_obj,
   });
 
   // send res
