@@ -248,8 +248,10 @@ exports.createStripePaymentSession = catchAsync(async (req, res, next) => {
   const session = await stripe.checkout.sessions.create({
     line_items: line_items_array,
     mode: 'payment',
-    success_url: `${req.protocol}://${req.get('host')}/success.html`,
-    cancel_url: `${req.protocol}://${req.get('host')}/cancel.html`,
+    // success_url: `${req.protocol}://${req.get('host')}/success.html`,
+    success_url: `https://travel-gate-trip-planner.netlify.app/index.html`,
+    // cancel_url: `${req.protocol}://${req.get('host')}/cancel.html`,
+    cancel_url: `https://travel-gate-trip-planner.netlify.app/package.html`,
     receipt_email: req.user.email,
     currency: 'usd',
     payment_method_types: ['card'],
@@ -271,6 +273,7 @@ exports.updateBooking_stripe_webhook = async (paymentIntentId, item) => {
 
     const updatedBooking = await booking.save({ validateModifiedOnly: true });
 
+    console.log(`updatedSuccessBooking: ${JSON.stringify(updatedBooking)}`);
     return 'success';
   } catch (err) {
     console.log('updateBooking_stripe_webhook error', err);
@@ -299,6 +302,8 @@ exports.updateBooking_stripe_webhook_fail = async (paymentIntentId, item) => {
       availability.availableSeats + booking.quantity;
 
     await availability.save({ validateModifiedOnly: true });
+
+    console.log(`itemBooking.Id fail: ${item.bookingId}`);
 
     await bookingModel.findByIdAndDelete(item.bookingId);
   } catch (err) {
