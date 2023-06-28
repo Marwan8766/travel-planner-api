@@ -177,8 +177,12 @@ exports.createStripeCheckoutItemsBooking = catchAsync(
 
     console.log(`metadata: ${JSON.stringify(metadata)}`);
 
+    let key = 0;
     // loop over metadata items
     for (const item of metadata.items) {
+      let tour = undefined;
+      let tripProgram = undefined;
+
       console.log(`currentITemMeta: ${JSON.stringify(item)}`);
       const query = {
         date: item.itemDate,
@@ -186,6 +190,9 @@ exports.createStripeCheckoutItemsBooking = catchAsync(
 
       if (item.type === 'tour') query.tour = item.itemId;
       if (item.type === 'tripProgram') query.tripProgram = item.itemId;
+
+      if (item.type === 'tour') tour = item.itemId;
+      if (item.type === 'tripProgram') tripProgram = item.itemId;
 
       // reserve the item from the availability
       const itemAvailability = await availabilityModel.findOne(query);
@@ -239,7 +246,8 @@ exports.createStripeCheckoutItemsBooking = catchAsync(
           new AppError(`Error while booking this item ${item.name}`, 400)
         );
       }
-    }
+      key++;
+    } // end of loop
     // update req.metadata with new booking IDs
     req.metadata = metadata;
 
