@@ -180,15 +180,19 @@ exports.createStripeCheckoutItemsBooking = catchAsync(
       let tour = undefined;
       let tripProgram = undefined;
 
-      if (item.type === 'tour') tour = item.itemId;
-      if (item.type === 'tripProgram') tripProgram = item.itemId;
+      const query = {
+        date: item.itemDate,
+      };
+
+      if (item.type === 'tour') query.tour = item.itemId;
+      if (item.type === 'tripProgram') query.tripProgram = item.itemId;
 
       // reserve the item from the availability
       const itemAvailability = await availabilityModel.findOne({
-        tour,
-        tripProgram,
-        date: item.itemDate,
+        query,
       });
+
+      console.log(`query: ${query}`);
 
       if (!itemAvailability)
         return next(
