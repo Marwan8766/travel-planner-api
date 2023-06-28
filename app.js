@@ -42,7 +42,8 @@ app.post(
     switch (event.type) {
       case 'payment_intent.succeeded':
         const paymentIntentSucceeded = event.data.object;
-        const metadata = paymentIntentSucceeded.metadata;
+        const metadata =
+          paymentIntentSucceeded.payment_intent.metadata.metadata;
         const paymentIntentId = paymentIntentSucceeded.id;
 
         console.log(`metadata_success: ${JSON.stringify(metadata)}`);
