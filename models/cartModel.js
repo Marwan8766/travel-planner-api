@@ -130,6 +130,47 @@ cartSchema.pre('save', function (next) {
   next();
 });
 
+cartSchema.pre('save', async function (next) {
+  // Loop over the items array
+  for (let i = 0; i < this.items.length; i++) {
+    const currentItem = this.items[i];
+
+    // Check if the current item has duplicates in the items array
+    const duplicates = this.items.filter(
+      (item, index) => index !== i && isDuplicate(item, currentItem)
+    );
+
+    if (duplicates.length > 0) {
+      // Remove the duplicates
+      this.items = this.items.filter(
+        (item, index) => index === i || !isDuplicate(item, currentItem)
+      );
+
+      // Increase the quantity of the current item
+      currentItem.quantity += duplicates.reduce(
+        (total, item) => total + item.quantity,
+        0
+      );
+    }
+  }
+
+  next();
+});
+
+// Helper function to check if two items are duplicates
+function isDuplicate(item1, item2) {
+  return (
+    item1.type === item2.type &&
+    ((item1.tour &&
+      item2.tour &&
+      item1.tour.toString() === item2.tour.toString()) ||
+      (item1.tripProgram &&
+        item2.tripProgram &&
+        item1.tripProgram.toString() === item2.tripProgram.toString())) &&
+    item1.date.getTime() === item2.date.getTime()
+  );
+}
+
 cartSchema.index({ user: 1 }, { unique: true });
 
 module.exports = mongoose.model('Cart', cartSchema);
