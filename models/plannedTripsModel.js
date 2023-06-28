@@ -82,12 +82,8 @@ plannedTripSchema.pre('save', async function (next) {
   this.days.forEach((day) => {
     day.timeline.forEach((item) => {
       const { attraction, tour, customActivity } = item;
-      if (
-        (!attraction && !tour && !customActivity) ||
-        (attraction && tour) ||
-        (attraction && customActivity) ||
-        (tour && customActivity)
-      ) {
+      const itemTypes = [attraction, tour, customActivity].filter(Boolean);
+      if (itemTypes.length !== 1) {
         timelineErrors.push(
           'Each timeline item must be either an attraction, tour, or custom activity'
         );
@@ -96,7 +92,7 @@ plannedTripSchema.pre('save', async function (next) {
   });
 
   if (timelineErrors.length > 0) {
-    return next(new Error(timelineErrors.join('. ')));
+    return next(new AppError(timelineErrors.join('. '), 400));
   }
 
   next();
