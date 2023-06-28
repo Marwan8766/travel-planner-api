@@ -93,7 +93,7 @@ cartSchema.pre('save', function (next) {
   // Loop through each item and validate it
   for (const item of this.items) {
     // Check that either tour or tripProgram is present
-    if (!(item.tour || item.tripProgram)) {
+    if (!item || !(item.tour || item.tripProgram)) {
       return next(
         new AppError(
           'Either a tour or trip program is required for each item',
