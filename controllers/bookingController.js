@@ -190,6 +190,13 @@ exports.createStripeCheckoutItemsBooking = catchAsync(
         date: item.itemDate,
       });
 
+      if (!itemAvailability)
+        return next(
+          new AppError(
+            `Sorry this item isnot available ${item.type}: ${item.name} in ${item.itemDate}`
+          )
+        );
+
       console.log(`itemAvail: ${JSON.stringify(itemAvailability)}`);
       console.log(`item: ${JSON.stringify(item)}`);
 
