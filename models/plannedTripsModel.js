@@ -81,6 +81,9 @@ plannedTripSchema.pre('save', async function (next) {
 
   this.days.forEach((day) => {
     day.timeline.forEach((item) => {
+      console.log(
+        `item that is currently checked in the day.timeline.item: ${item}`
+      );
       const { attraction, tour, customActivity } = item;
       const itemTypes = [attraction, tour, customActivity].filter(Boolean);
       if (itemTypes.length !== 1) {
