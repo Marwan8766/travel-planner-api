@@ -267,7 +267,7 @@ exports.createStripePaymentSession = catchAsync(async (req, res, next) => {
 
   const metadata_obj = {};
   for (let i = 0; i < metadata.items.length; i++) {
-    metadata_obj[i] = metadata.items[i].bookingId;
+    metadata_obj[i] = metadata.items[i].bookingId.toString();
   }
 
   console.log(`the final metada_obj: ${JSON.stringify(metadata_obj)}`);
