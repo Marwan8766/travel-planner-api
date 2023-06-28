@@ -77,6 +77,8 @@ plannedTripSchema.pre('save', async function (next) {
     return next(new AppError('Total tour price exceeds budget', 400));
 
   // Check that each item in the timeline is either attraction, tour, or custom activity
+  const timelineErrors = [];
+
   this.days.forEach((day) => {
     day.timeline.forEach((item) => {
       const { attraction, tour, customActivity } = item;
@@ -86,15 +88,16 @@ plannedTripSchema.pre('save', async function (next) {
         (attraction && customActivity) ||
         (tour && customActivity)
       ) {
-        return next(
-          new AppError(
-            'Each timeline item must be either an attraction, tour, or custom activity',
-            400
-          )
+        timelineErrors.push(
+          'Each timeline item must be either an attraction, tour, or custom activity'
         );
       }
     });
   });
+
+  if (timelineErrors.length > 0) {
+    return next(new Error(timelineErrors.join('. ')));
+  }
 
   next();
 });
