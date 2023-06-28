@@ -289,7 +289,7 @@ exports.createStripePaymentSession = catchAsync(async (req, res, next) => {
   console.log(`sessionUrl: ${session.url}`);
 
   // send res
-  res.redirect(303, session.url);
+  res.status(200).json({ url: session.url });
 });
 
 exports.updateBooking_stripe_webhook = async (paymentIntentId, item) => {
