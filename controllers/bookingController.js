@@ -233,7 +233,7 @@ exports.createStripeCheckoutItemsBooking = catchAsync(
         user: req.user._id,
       });
 
-      metadata[key].bookingId = itemBooking._id;
+      metadata.items[key].bookingId = itemBooking._id;
 
       // if no booking created add quantity to availability and return error
       if (!itemBooking) {
