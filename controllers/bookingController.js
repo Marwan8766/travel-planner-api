@@ -178,7 +178,8 @@ exports.createStripeCheckoutItemsBooking = catchAsync(
     console.log(`metadata: ${JSON.stringify(metadata)}`);
 
     // loop over metadata items
-    for (const [key, item] of Object.entries(metadata)) {
+    for (const item of metadata.items) {
+      console.log(`currentITemMeta: ${JSON.stringify(item)}`);
       const query = {
         date: item.itemDate,
       };
