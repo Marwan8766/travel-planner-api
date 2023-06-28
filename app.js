@@ -26,6 +26,7 @@ app.post(
   '/webhook',
   bodyParser.raw({ type: 'application/json' }),
   async (request, response) => {
+    console.log(`request.body_webhook: ${request.body}`);
     const sig = request.headers['stripe-signature'];
 
     let event;
@@ -44,7 +45,7 @@ app.post(
         const metadata = paymentIntentSucceeded.metadata;
         const paymentIntentId = paymentIntentSucceeded.id;
 
-        console.log(`metadata_success: ${metadata}`);
+        console.log(`metadata_success: ${JSON.stringify(metadata)}`);
         // loop over metadata
         for (const [key, item] of Object.entries(metadata)) {
           const itemSplitted = item.split(',');
@@ -66,7 +67,7 @@ app.post(
         const paymentIntentId2 = paymentIntentPaymentFailed.id;
 
         // loop over metadata
-        for (const [key, item] of Object.entries(metadata)) {
+        for (const [key, item] of Object.entries(metadata2)) {
           const itemSplitted = item.split(',');
           const bookingId = itemSplitted[0];
           const itemDate = itemSplitted[1];
@@ -74,7 +75,7 @@ app.post(
           // handle updating booking
           const updateBookingStatus =
             bookingController.updateBooking_stripe_webhook_fail(
-              paymentIntentId,
+              paymentIntentId2,
               bookingId,
               itemDate
             );
