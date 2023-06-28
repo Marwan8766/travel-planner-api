@@ -149,18 +149,14 @@ exports.createStripeCheckoutItems = catchAsync(async (req, res, next) => {
   const metadata = {
     items: cart.items.map((item) => {
       const { tour, tripProgram, type, quantity, date } = item;
-      const {
-        name,
-        price,
-        company,
-        id: _id,
-      } = type === 'tour' ? tour : tripProgram;
+      const { name, price, company, _id } =
+        type === 'tour' ? tour : tripProgram;
       const { stripeAccountId } = company;
       return {
         type: type,
         itemDate: date.toISOString(),
         companyId: company._id,
-        itemId: id,
+        itemId: _id,
         itemPrice: price,
         quantity: quantity,
         companyStripeId: stripeAccountId,
