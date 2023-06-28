@@ -190,6 +190,9 @@ exports.createStripeCheckoutItemsBooking = catchAsync(
         date: item.itemDate,
       });
 
+      console.log(`itemAvail: ${JSON.stringify(itemAvailability)}`);
+      console.log(`item: ${JSON.stringify(item)}`);
+
       itemAvailability.availableSeats =
         itemAvailability.availableSeats - item.quantity;
 
