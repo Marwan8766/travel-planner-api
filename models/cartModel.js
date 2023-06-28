@@ -85,8 +85,10 @@ cartSchema.pre('find', async function (next) {
 });
 
 cartSchema.pre('save', function (next) {
-  // Check that at least one item is present in the cart
-  if (this.items.length === 0) return next();
+  // Check if 'this.items' is defined and that at least one item is present in the cart
+  if (!this.items || this.items.length === 0) {
+    return next(new AppError('At least one item is required in the cart', 400));
+  }
 
   // Loop through each item and validate it
   for (const item of this.items) {
@@ -111,20 +113,17 @@ cartSchema.pre('save', function (next) {
     }
 
     // Set the type of the item based on the presence of tour or tripProgram
-    if (item.tour) {
-      item.type = 'tour';
-    } else {
-      item.type = 'tripProgram';
-    }
+    item.type = item.tour ? 'tour' : 'tripProgram';
 
-    // check that the date is greater than or equal current date
-    if (item.date < Date.now())
+    // check that the date is greater than or equal to the current date
+    if (item.date < Date.now()) {
       return next(
         new AppError(
           'The date for each item must be greater than or equal to the current date',
           400
         )
       );
+    }
   }
 
   // Continue with the save operation
