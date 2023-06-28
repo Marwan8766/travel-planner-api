@@ -77,26 +77,24 @@ plannedTripSchema.pre('save', async function (next) {
     return next(new AppError('Total tour price exceeds budget', 400));
 
   // Check that each item in the timeline is either attraction, tour, or custom activity
-  const timelineErrors = [];
-
   this.days.forEach((day) => {
     day.timeline.forEach((item) => {
-      console.log(
-        `item that is currently checked in the day.timeline.item: ${item}`
-      );
       const { attraction, tour, customActivity } = item;
-      const itemTypes = [attraction, tour, customActivity].filter(Boolean);
-      if (itemTypes.length !== 1) {
-        timelineErrors.push(
-          'Each timeline item must be either an attraction, tour, or custom activity'
+      if (
+        (!attraction && !tour && !customActivity) || // none of the properties are present
+        (attraction && (tour || customActivity)) || // attraction should not coexist with tour or customActivity
+        (tour && (attraction || customActivity)) || // tour should not coexist with attraction or customActivity
+        (customActivity && (attraction || tour)) // customActivity should not coexist with attraction or tour
+      ) {
+        return next(
+          new AppError(
+            'Each timeline item must be either an attraction, tour, or custom activity',
+            400
+          )
         );
       }
     });
   });
-
-  if (timelineErrors.length > 0) {
-    return next(new AppError(timelineErrors.join('. '), 400));
-  }
 
   next();
 });
