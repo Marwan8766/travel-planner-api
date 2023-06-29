@@ -1027,23 +1027,22 @@ exports.getTheTrendingCountries = catchAsync(async (req, res, next) => {
   const tourData = await tourModel.find({ _id: { $in: tourIds } });
 
   const countryNameMap = {};
-  const startLocationCoordsMap = {};
+  // const startLocations = {};
 
   tourData.forEach((tour) => {
     countryNameMap[tour._id.toString()] = tour.startLocations.country;
-    startLocationCoordsMap[tour._id.toString()] = tour.startLocations.map(
-      (location) => [location.coordinates[1], location.coordinates[0]]
-    );
   });
+
+  // tourData.forEach(tour => {
+  //     const countryNames = tour.startLocations.map(location => location.country);
+  //     countryNameMap[tour._id.toString()] = countryNames;
+  // });
 
   const result = book.map((item) => {
     const countryNames = countryNameMap[item._id.toString()] || [];
-    const startLocationCoords =
-      startLocationCoordsMap[item._id.toString()] || [];
 
     return {
       countryNames: countryNames,
-      coords: startLocationCoords,
     };
   });
 
