@@ -62,33 +62,15 @@ exports.getAllTours = catchAsync(async (req, res, next) => {
     price: { $gte: minPrice, $lte: maxPrice },
   };
 
-  // Sort by price in ascending or descending order
-  // Sort by price in ascending or descending order
-  let sort;
-  if (req.query.sort === 'asc') {
-    sort = { price: 1 }; // ascending order
-  } else if (req.query.sort === 'desc') {
-    sort = { price: -1 }; // descending order
-  }
+  let sort = { CreatedAt: -1 }; // Sort by creation date in descending order
 
-  const sortByPrice = (a, b) => {
-    if (sort.price === 1) {
-      return a.price - b.price; // Ascending order
-    } else if (sort.price === -1) {
-      return b.price - a.price; // Descending order
-    }
-  };
-
-  let query = await Tour.find(priceFilter)
+  let query = Tour.find(priceFilter)
+    .sort(sort) // Sort by creation date
     .populate('company')
     .skip(skip)
     .limit(limit);
 
-  console.log(`query length: ${query.length}`);
-
-  let totalQuery = await Tour.countDocuments(priceFilter);
-
-  console.log(`totalQuery: ${totalQuery}`);
+  let totalQuery = Tour.countDocuments(priceFilter);
 
   if (req.query.cityName) {
     const cityName = req.query.cityName;
@@ -96,36 +78,26 @@ exports.getAllTours = catchAsync(async (req, res, next) => {
       cityName
     );
 
-    console.log(`radius: ${radius}  lat: ${lat}  lng: ${lng}`);
+    query = Tour.find({
+      'startLocations.coordinates': {
+        $geoWithin: {
+          $centerSphere: [[lng, lat], radius],
+        },
+      },
+    })
+      .sort(sort) // Sort by creation date
+      .populate('company');
 
-    query = await Tour.find({
+    totalQuery = Tour.countDocuments({
       'startLocations.coordinates': {
         $geoWithin: {
           $centerSphere: [[lng, lat], radius],
         },
       },
     });
-
-    console.log(`query after geowithin length: ${query}`);
-
-    totalQuery = await Tour.find({
-      'startLocations.coordinates': {
-        $geoWithin: {
-          $centerSphere: [[lng, lat], radius],
-        },
-      },
-    });
-  }
-
-  console.log(`total query length: ${totalQuery.length}`);
-
-  if (sort) {
-    query = query.sort(sortByPrice);
   }
 
   const [doc, total] = await Promise.all([query, totalQuery]);
-
-  console.log(`doc: ${doc.length}`);
 
   // Send response
   res.status(200).json({

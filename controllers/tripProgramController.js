@@ -131,20 +131,15 @@ exports.GetAllTripProgram = catchAsync(async (req, res, next) => {
     price: { $gte: minPrice, $lte: maxPrice },
   };
 
-  // Sort by price in ascending or descending order
-  let sort;
-  if (req.query.sort === 'asc') {
-    sort = { price: 1 }; // ascending order
-  } else if (req.query.sort === 'desc') {
-    sort = { price: -1 }; // descending order
-  }
+  let sort = { createdAt: -1 }; // Sort by createdAt in descending order
 
-  let query = await TripProgram.find(priceFilter)
+  let query = TripProgram.find(priceFilter)
+    .sort(sort) // Sort by createdAt
     .populate('company')
     .skip(skip)
     .limit(limit);
 
-  let totalQuery = await TripProgram.countDocuments(priceFilter);
+  let totalQuery = TripProgram.countDocuments(priceFilter);
 
   if (req.query.cityName) {
     const cityName = req.query.cityName;
@@ -152,33 +147,23 @@ exports.GetAllTripProgram = catchAsync(async (req, res, next) => {
       cityName
     );
 
-    query = await TripProgram.find({
+    query = TripProgram.find({
+      'startLocations.coordinates': {
+        $geoWithin: {
+          $centerSphere: [[lng, lat], radius],
+        },
+      },
+    })
+      .sort(sort) // Sort by createdAt
+      .populate('company');
+
+    totalQuery = TripProgram.countDocuments({
       'startLocations.coordinates': {
         $geoWithin: {
           $centerSphere: [[lng, lat], radius],
         },
       },
     });
-
-    totalQuery = await TripProgram.find({
-      'startLocations.coordinates': {
-        $geoWithin: {
-          $centerSphere: [[lng, lat], radius],
-        },
-      },
-    });
-  }
-
-  const sortByPrice = (a, b) => {
-    if (sort.price === 1) {
-      return a.price - b.price; // Ascending order
-    } else if (sort.price === -1) {
-      return b.price - a.price; // Descending order
-    }
-  };
-
-  if (sort) {
-    query = query.sort(sortByPrice);
   }
 
   const [doc, total] = await Promise.all([query, totalQuery]);
