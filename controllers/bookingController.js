@@ -1027,10 +1027,12 @@ exports.getTheTrendingCountries = catchAsync(async (req, res, next) => {
   const tourData = await tourModel.find({ _id: { $in: tourIds } });
 
   const countryNameMap = {};
+  const coordsMap = {};
   // const startLocations = {};
 
   tourData.forEach((tour) => {
     countryNameMap[tour._id.toString()] = tour.startLocations.country;
+    coordsMap[tour._id.toString()] = tour.startLocations.coordinates;
   });
 
   // tourData.forEach(tour => {
@@ -1040,9 +1042,12 @@ exports.getTheTrendingCountries = catchAsync(async (req, res, next) => {
 
   const result = book.map((item) => {
     const countryNames = countryNameMap[item._id.toString()] || [];
+    const countryCoords = coordsMap[item._id.toString()] || [];
+    const coords = [countryCoords[1], countryCoords[0]];
 
     return {
       countryNames: countryNames,
+      coords,
     };
   });
 
