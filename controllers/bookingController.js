@@ -355,3 +355,775 @@ exports.updateBooking_stripe_webhook_fail = async (
     console.log(`updateBooking_stripe_webhook_fail ${paymentIntentId}`, err);
   }
 };
+
+/////////////////////////////////////////////
+/////////////////////////////////////////////
+/////////////////////////////////////////////
+// Dashboard
+///////////////////////
+
+exports.getAllbooksLastThreeMonths = catchAsync(async (req, res, next) => {
+  const book = await bookingModel.aggregate([
+    {
+      $match: {
+        updatedAt: {
+          $gte: new Date(new Date().setMonth(new Date().getMonth() - 3)),
+        },
+        status: 'reserved',
+      },
+    },
+
+    {
+      $project: {
+        month: { $month: '$updatedAt' },
+        result: { $sum: 1 },
+      },
+    },
+    {
+      $group: {
+        _id: '$month',
+        monthName: {
+          $first: {
+            $switch: {
+              branches: [
+                { case: { $eq: ['$month', 1] }, then: 'January' },
+                { case: { $eq: ['$month', 2] }, then: 'February' },
+                { case: { $eq: ['$month', 3] }, then: 'March' },
+                { case: { $eq: ['$month', 4] }, then: 'April' },
+                { case: { $eq: ['$month', 5] }, then: 'May' },
+                { case: { $eq: ['$month', 6] }, then: 'June' },
+                { case: { $eq: ['$month', 7] }, then: 'July' },
+                { case: { $eq: ['$month', 8] }, then: 'August' },
+                { case: { $eq: ['$month', 9] }, then: 'September' },
+                { case: { $eq: ['$month', 10] }, then: 'October' },
+                { case: { $eq: ['$month', 11] }, then: 'November' },
+                { case: { $eq: ['$month', 12] }, then: 'December' },
+              ],
+              default: 'Unknown',
+            },
+          },
+        },
+        totalResult: { $sum: '$result' },
+      },
+    },
+    {
+      $match: {
+        _id: { $ne: new Date().getMonth() + 1 },
+      },
+    },
+    {
+      $sort: { _id: 1 },
+    },
+    {
+      $group: {
+        _id: null,
+        months: { $push: '$monthName' },
+        totalResults: { $push: '$totalResult' },
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        months: 1,
+        totalResults: 1,
+      },
+    },
+  ]);
+  // if there is no books throw an error
+  if (book.length === 0)
+    return next(new AppError('There is no books found', 404));
+  // send res json with success and books
+  res.status(200).json({
+    status: 'success',
+    data: book,
+  });
+});
+
+exports.getAllbooksLastSixMonths = catchAsync(async (req, res, next) => {
+  // find all books
+  const book = await bookingModel.aggregate([
+    {
+      $match: {
+        updatedAt: {
+          $gte: new Date(new Date().setMonth(new Date().getMonth() - 6)),
+        },
+        status: 'reserved',
+      },
+    },
+
+    {
+      $project: {
+        month: { $month: '$updatedAt' },
+        result: { $sum: 1 },
+      },
+    },
+    {
+      $group: {
+        _id: '$month',
+        monthName: {
+          $first: {
+            $switch: {
+              branches: [
+                { case: { $eq: ['$month', 1] }, then: 'January' },
+                { case: { $eq: ['$month', 2] }, then: 'February' },
+                { case: { $eq: ['$month', 3] }, then: 'March' },
+                { case: { $eq: ['$month', 4] }, then: 'April' },
+                { case: { $eq: ['$month', 5] }, then: 'May' },
+                { case: { $eq: ['$month', 6] }, then: 'June' },
+                { case: { $eq: ['$month', 7] }, then: 'July' },
+                { case: { $eq: ['$month', 8] }, then: 'August' },
+                { case: { $eq: ['$month', 9] }, then: 'September' },
+                { case: { $eq: ['$month', 10] }, then: 'October' },
+                { case: { $eq: ['$month', 11] }, then: 'November' },
+                { case: { $eq: ['$month', 12] }, then: 'December' },
+                // Add more cases for the remaining months
+              ],
+              default: 'Unknown',
+            },
+          },
+        },
+        totalResult: { $sum: '$result' },
+      },
+    },
+    {
+      $match: {
+        _id: { $ne: new Date().getMonth() + 1 },
+      },
+    },
+    {
+      $sort: { _id: 1 },
+    },
+    {
+      $group: {
+        _id: null,
+        months: { $push: '$monthName' },
+        totalResults: { $push: '$totalResult' },
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        months: 1,
+        totalResults: 1,
+      },
+    },
+  ]);
+  // if there is no books throw an error
+  if (book.length === 0)
+    return next(new AppError('There is no books found', 404));
+  // send res json with success and books
+  res.status(200).json({
+    status: 'success',
+    data: book,
+  });
+});
+
+exports.getAllbooksLastYear = catchAsync(async (req, res, next) => {
+  const book = await bookingModel.aggregate([
+    {
+      $match: {
+        updatedAt: {
+          $gte: new Date(new Date().setMonth(new Date().getMonth() - 12)),
+        },
+        status: 'reserved',
+      },
+    },
+
+    {
+      $project: {
+        month: { $month: '$updatedAt' },
+        result: { $sum: 1 },
+      },
+    },
+    {
+      $group: {
+        _id: '$month',
+        monthName: {
+          $first: {
+            $switch: {
+              branches: [
+                { case: { $eq: ['$month', 1] }, then: 'January' },
+                { case: { $eq: ['$month', 2] }, then: 'February' },
+                { case: { $eq: ['$month', 3] }, then: 'March' },
+                { case: { $eq: ['$month', 4] }, then: 'April' },
+                { case: { $eq: ['$month', 5] }, then: 'May' },
+                { case: { $eq: ['$month', 6] }, then: 'June' },
+                { case: { $eq: ['$month', 7] }, then: 'July' },
+                { case: { $eq: ['$month', 8] }, then: 'August' },
+                { case: { $eq: ['$month', 9] }, then: 'September' },
+                { case: { $eq: ['$month', 10] }, then: 'October' },
+                { case: { $eq: ['$month', 11] }, then: 'November' },
+                { case: { $eq: ['$month', 12] }, then: 'December' },
+                // Add more cases for the remaining months
+              ],
+              default: 'Unknown',
+            },
+          },
+        },
+        totalResult: { $sum: '$result' },
+      },
+    },
+    {
+      $match: {
+        _id: { $ne: new Date().getMonth() + 1 },
+      },
+    },
+    {
+      $sort: { _id: 1 },
+    },
+    {
+      $group: {
+        _id: null,
+        months: { $push: '$monthName' },
+        totalResults: { $push: '$totalResult' },
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        months: 1,
+        totalResults: 1,
+      },
+    },
+  ]);
+  // if there is no books throw an error
+  if (book.length === 0)
+    return next(new AppError('There is no books found', 404));
+  // send res json with success and books
+  res.status(200).json({
+    status: 'success',
+    data: book,
+  });
+});
+
+exports.getTheBestFiveTour_InLastThreeMonths = catchAsync(
+  async (req, res, next) => {
+    const aggregation = [
+      {
+        $match: {
+          updatedAt: {
+            $gte: new Date(new Date().setMonth(new Date().getMonth() - 3)),
+          },
+          status: 'reserved',
+          tour: { $exists: true },
+        },
+      },
+      { $project: { _id: 0, tour: 1, quantity: 1, company: 1 } },
+      {
+        $group: {
+          _id: '$tour',
+          totalQuantity: { $sum: '$quantity' },
+          company: { $first: '$company' },
+        },
+      },
+      { $sort: { totalQuantity: -1 } },
+      { $limit: 5 },
+    ];
+
+    const book = await bookingModel.aggregate(aggregation);
+
+    const tourIds = book.map((item) => item._id);
+
+    const tourData = await tourModel.find({ _id: { $in: tourIds } });
+
+    const companyIds = book.map((item) => item.company);
+
+    const companyData = await User.find({ _id: { $in: companyIds } });
+
+    const tourNameMap = {};
+    const companyNameMap = {};
+
+    tourData.forEach((tour) => {
+      tourNameMap[tour._id.toString()] = tour.name;
+    });
+
+    companyData.forEach((company) => {
+      companyNameMap[company._id.toString()] = company.name;
+    });
+
+    const result = book.map((item) => {
+      const tourName = tourNameMap[item._id.toString()];
+      const companyName = companyNameMap[item.company.toString()] || '';
+      return {
+        tourName: tourName,
+        companyName: companyName,
+        totalQuantity: item.totalQuantity,
+      };
+    });
+
+    if (result.length === 0)
+      return next(new AppError('There are no books found', 404));
+
+    res.status(200).json({
+      status: 'success',
+      results: result.length,
+      data: result,
+    });
+  }
+);
+
+exports.getTheBestFiveTour_InLastSixMonths = catchAsync(
+  async (req, res, next) => {
+    const aggregation = [
+      {
+        $match: {
+          updatedAt: {
+            $gte: new Date(new Date().setMonth(new Date().getMonth() - 6)),
+          },
+          status: 'reserved',
+          tour: { $exists: true },
+        },
+      },
+      { $project: { _id: 0, tour: 1, quantity: 1, company: 1 } },
+      {
+        $group: {
+          _id: '$tour',
+          totalQuantity: { $sum: '$quantity' },
+          company: { $first: '$company' },
+        },
+      },
+      { $sort: { totalQuantity: -1 } },
+      { $limit: 5 },
+    ];
+
+    const book = await bookingModel.aggregate(aggregation);
+
+    const tourIds = book.map((item) => item._id);
+
+    const tourData = await tourModel.find({ _id: { $in: tourIds } });
+
+    const companyIds = book.map((item) => item.company);
+
+    const companyData = await User.find({ _id: { $in: companyIds } });
+
+    const tourNameMap = {};
+    const companyNameMap = {};
+
+    tourData.forEach((tour) => {
+      tourNameMap[tour._id.toString()] = tour.name;
+    });
+
+    companyData.forEach((company) => {
+      companyNameMap[company._id.toString()] = company.name;
+    });
+
+    const result = book.map((item) => {
+      const tourName = tourNameMap[item._id.toString()];
+      const companyName = companyNameMap[item.company.toString()] || '';
+      return {
+        tourName: tourName,
+        companyName: companyName,
+        totalQuantity: item.totalQuantity,
+      };
+    });
+
+    if (result.length === 0)
+      return next(new AppError('There are no books found', 404));
+
+    res.status(200).json({
+      status: 'success',
+      results: result.length,
+      data: result,
+    });
+  }
+);
+
+exports.getTheBestFiveTour_InLastYear = catchAsync(async (req, res, next) => {
+  const aggregation = [
+    {
+      $match: {
+        updatedAt: {
+          $gte: new Date(new Date().setFullYear(new Date().getFullYear() - 1)),
+        },
+        status: 'reserved',
+        tour: { $exists: true },
+      },
+    },
+    { $project: { _id: 0, tour: 1, quantity: 1, company: 1 } },
+    {
+      $group: {
+        _id: '$tour',
+        totalQuantity: { $sum: '$quantity' },
+        company: { $first: '$company' },
+      },
+    },
+    { $sort: { totalQuantity: -1 } },
+    { $limit: 5 },
+  ];
+
+  const book = await bookingModel.aggregate(aggregation);
+
+  const tourIds = book.map((item) => item._id);
+
+  const tourData = await tourModel.find({ _id: { $in: tourIds } });
+
+  const companyIds = book.map((item) => item.company);
+
+  const companyData = await User.find({ _id: { $in: companyIds } });
+
+  const tourNameMap = {};
+  const companyNameMap = {};
+
+  tourData.forEach((tour) => {
+    tourNameMap[tour._id.toString()] = tour.name;
+  });
+
+  companyData.forEach((company) => {
+    companyNameMap[company._id.toString()] = company.name;
+  });
+
+  const result = book.map((item) => {
+    const tourName = tourNameMap[item._id.toString()];
+    const companyName = companyNameMap[item.company.toString()] || '';
+    return {
+      tourName: tourName,
+      companyName: companyName,
+      totalQuantity: item.totalQuantity,
+    };
+  });
+
+  if (result.length === 0)
+    return next(new AppError('There are no books found', 404));
+
+  res.status(200).json({
+    status: 'success',
+    results: result.length,
+    data: result,
+  });
+});
+
+exports.getTheBestFiveTripProgram_InLastThreeMonths = catchAsync(
+  async (req, res, next) => {
+    const aggregation = [
+      {
+        $match: {
+          updatedAt: {
+            $gte: new Date(new Date().setMonth(new Date().getMonth() - 3)),
+          },
+          status: 'reserved',
+          tripProgram: { $exists: true },
+        },
+      },
+      { $project: { _id: 0, tripProgram: 1, quantity: 1, company: 1 } },
+      {
+        $group: {
+          _id: '$tripProgram',
+          totalQuantity: { $sum: '$quantity' },
+          company: { $first: '$company' },
+        },
+      },
+      { $sort: { totalQuantity: -1 } },
+      { $limit: 5 },
+    ];
+
+    const book = await bookingModel.aggregate(aggregation);
+
+    const tripProgramIds = book.map((item) => item._id);
+
+    const tripProgramData = await tripProgramModel.find({
+      _id: { $in: tripProgramIds },
+    });
+
+    const companyIds = book.map((item) => item.company);
+
+    const companyData = await User.find({ _id: { $in: companyIds } });
+
+    const tripProgramNameMap = {};
+    const companyNameMap = {};
+
+    tripProgramData.forEach((tripProgram) => {
+      tripProgramNameMap[tripProgram._id.toString()] = tripProgram.name;
+    });
+
+    companyData.forEach((company) => {
+      companyNameMap[company._id.toString()] = company.name;
+    });
+
+    const result = book.map((item) => {
+      const tripProgramName = tripProgramNameMap[item._id.toString()];
+      const companyName = companyNameMap[item.company.toString()] || '';
+      return {
+        tripProgramName: tripProgramName,
+        companyName: companyName,
+        totalQuantity: item.totalQuantity,
+      };
+    });
+
+    if (result.length === 0)
+      return next(new AppError('There are no books found', 404));
+
+    res.status(200).json({
+      status: 'success',
+      results: result.length,
+      data: result,
+    });
+  }
+);
+
+exports.getTheBestFiveTripProgram_InLastSixMonths = catchAsync(
+  async (req, res, next) => {
+    const aggregation = [
+      {
+        $match: {
+          updatedAt: {
+            $gte: new Date(new Date().setMonth(new Date().getMonth() - 6)),
+          },
+          status: 'reserved',
+          tripProgram: { $exists: true },
+        },
+      },
+      { $project: { _id: 0, tripProgram: 1, quantity: 1, company: 1 } },
+      {
+        $group: {
+          _id: '$tripProgram',
+          totalQuantity: { $sum: '$quantity' },
+          company: { $first: '$company' },
+        },
+      },
+      { $sort: { totalQuantity: -1 } },
+      { $limit: 5 },
+    ];
+
+    const book = await bookingModel.aggregate(aggregation);
+
+    const tripProgramIds = book.map((item) => item._id);
+
+    const tripProgramData = await tripProgramModel.find({
+      _id: { $in: tripProgramIds },
+    });
+
+    const companyIds = book.map((item) => item.company);
+
+    const companyData = await User.find({ _id: { $in: companyIds } });
+
+    const tripProgramNameMap = {};
+    const companyNameMap = {};
+
+    tripProgramData.forEach((tripProgram) => {
+      tripProgramNameMap[tripProgram._id.toString()] = tripProgram.name;
+    });
+
+    companyData.forEach((company) => {
+      companyNameMap[company._id.toString()] = company.name;
+    });
+
+    const result = book.map((item) => {
+      const tripProgramName = tripProgramNameMap[item._id.toString()];
+      const companyName = companyNameMap[item.company.toString()] || '';
+      return {
+        tripProgramName: tripProgramName,
+        companyName: companyName,
+        totalQuantity: item.totalQuantity,
+      };
+    });
+
+    if (result.length === 0)
+      return next(new AppError('There are no books found', 404));
+
+    res.status(200).json({
+      status: 'success',
+      results: result.length,
+      data: result,
+    });
+  }
+);
+
+exports.getTheBestFiveTripProgram_InLastYear = catchAsync(
+  async (req, res, next) => {
+    const aggregation = [
+      {
+        $match: {
+          updatedAt: {
+            $gte: new Date(
+              new Date().setFullYear(new Date().getFullYear() - 1)
+            ),
+          },
+          status: 'reserved',
+          tripProgram: { $exists: true },
+        },
+      },
+      { $project: { _id: 0, tripProgram: 1, quantity: 1, company: 1 } },
+      {
+        $group: {
+          _id: '$tripProgram',
+          totalQuantity: { $sum: '$quantity' },
+          company: { $first: '$company' },
+        },
+      },
+      { $sort: { totalQuantity: -1 } },
+      { $limit: 5 },
+    ];
+
+    const book = await bookingModel.aggregate(aggregation);
+
+    const tripProgramIds = book.map((item) => item._id);
+
+    const tripProgramData = await tripProgramModel.find({
+      _id: { $in: tripProgramIds },
+    });
+
+    const companyIds = book.map((item) => item.company);
+
+    const companyData = await User.find({ _id: { $in: companyIds } });
+
+    const tripProgramNameMap = {};
+    const companyNameMap = {};
+
+    tripProgramData.forEach((tripProgram) => {
+      tripProgramNameMap[tripProgram._id.toString()] = tripProgram.name;
+    });
+
+    companyData.forEach((company) => {
+      companyNameMap[company._id.toString()] = company.name;
+    });
+
+    const result = book.map((item) => {
+      const tripProgramName = tripProgramNameMap[item._id.toString()];
+      const companyName = companyNameMap[item.company.toString()] || '';
+      return {
+        tripProgramName: tripProgramName,
+        companyName: companyName,
+        totalQuantity: item.totalQuantity,
+      };
+    });
+
+    if (result.length === 0)
+      return next(new AppError('There are no books found', 404));
+
+    res.status(200).json({
+      status: 'success',
+      results: result.length,
+      data: result,
+    });
+  }
+);
+
+exports.getTheTrendingCountries = catchAsync(async (req, res, next) => {
+  const aggregation = [
+    {
+      $match: {
+        updatedAt: {
+          $gte: new Date(new Date().setMonth(new Date().getMonth() - 1)),
+        },
+        status: 'reserved',
+        tour: { $exists: true },
+      },
+    },
+    { $project: { _id: 0, tour: 1, quantity: 1 } },
+    {
+      $group: {
+        _id: '$tour',
+        totalQuantity: { $sum: '$quantity' },
+      },
+    },
+    { $sort: { totalQuantity: -1 } },
+    { $limit: 5 },
+  ];
+
+  const book = await bookingModel.aggregate(aggregation);
+
+  const tourIds = book.map((item) => item._id);
+
+  const tourData = await tourModel.find({ _id: { $in: tourIds } });
+
+  const countryNameMap = {};
+  // const startLocations = {};
+
+  tourData.forEach((tour) => {
+    countryNameMap[tour._id.toString()] = tour.startLocations.country;
+  });
+
+  // tourData.forEach(tour => {
+  //     const countryNames = tour.startLocations.map(location => location.country);
+  //     countryNameMap[tour._id.toString()] = countryNames;
+  // });
+
+  const result = book.map((item) => {
+    const countryNames = countryNameMap[item._id.toString()] || [];
+
+    return {
+      countryNames: countryNames,
+    };
+  });
+
+  if (result.length === 0)
+    return next(new AppError('There are no books found', 404));
+
+  res.status(200).json({
+    status: 'success',
+    results: result.length,
+    data: result,
+  });
+});
+
+exports.getTheTenTourIsTrending = catchAsync(async (req, res, next) => {
+  const aggregation = [
+    {
+      $match: {
+        updatedAt: {
+          $gte: new Date(new Date().setMonth(new Date().getMonth() - 1)),
+        },
+        status: 'reserved',
+        tour: { $exists: true },
+      },
+    },
+    { $project: { _id: 0, tour: 1, quantity: 1 } },
+    {
+      $group: {
+        _id: '$tour',
+        totalQuantity: { $sum: '$quantity' },
+        company: { $first: '$company' },
+      },
+    },
+    { $sort: { totalQuantity: -1 } },
+    { $limit: 10 },
+  ];
+
+  const book = await bookingModel.aggregate(aggregation);
+
+  const tourIds = book.map((item) => item._id);
+
+  const tourData = await tourModel.find({ _id: { $in: tourIds } });
+
+  res.status(200).json({
+    status: 'success',
+    results: tourData.length,
+    data: tourData,
+  });
+});
+exports.getTheTenTripProgramIsTrending = catchAsync(async (req, res, next) => {
+  const aggregation = [
+    {
+      $match: {
+        updatedAt: {
+          $gte: new Date(new Date().setMonth(new Date().getMonth() - 1)),
+        },
+        status: 'reserved',
+        tripProgram: { $exists: true },
+      },
+    },
+    { $project: { _id: 0, tripProgram: 1, quantity: 1 } },
+    {
+      $group: {
+        _id: '$tripProgram',
+        totalQuantity: { $sum: '$quantity' },
+      },
+    },
+    { $sort: { totalQuantity: -1 } },
+    { $limit: 10 },
+  ];
+
+  const book = await bookingModel.aggregate(aggregation);
+
+  const tripProgramIds = book.map((item) => item._id);
+
+  const tripProgramData = await tripProgramModel.find({
+    _id: { $in: tripProgramIds },
+  });
+
+  res.status(200).json({
+    status: 'success',
+    results: tripProgramData.length,
+    data: tripProgramData,
+  });
+});

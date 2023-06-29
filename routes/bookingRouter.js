@@ -8,6 +8,49 @@ const router = express.Router();
 
 router.get('/', bookingController.getAllbooks);
 
+//////////////////////////////////////
+//////////////////////////////////////
+// Dashboard
+////////////////////////////////
+////////////////////////////////
+
+router.get('/LastThreeMonths', bookingController.getAllbooksLastThreeMonths);
+router.get('/LastSixMonths', bookingController.getAllbooksLastSixMonths);
+router.get('/LastYear', bookingController.getAllbooksLastYear);
+router.get(
+  '/TheBestFiveTourInLastThreeMonths',
+  bookingController.getTheBestFiveTour_InLastThreeMonths
+);
+router.get(
+  '/TheBestFiveTourInLastSixMonths',
+  bookingController.getTheBestFiveTour_InLastSixMonths
+);
+router.get(
+  '/TheBestFiveTourInLastYear',
+  bookingController.getTheBestFiveTour_InLastYear
+);
+router.get(
+  '/TheBestFiveTripProgramInLastThreeMonths',
+  bookingController.getTheBestFiveTripProgram_InLastThreeMonths
+);
+router.get(
+  '/TheBestFiveTripProgramInLastSixMonths',
+  bookingController.getTheBestFiveTripProgram_InLastSixMonths
+);
+router.get(
+  '/TheBestFiveTripProgramInLastYear',
+  bookingController.getTheBestFiveTripProgram_InLastYear
+);
+router.get('/TheTrendingCountries', bookingController.getTheTrendingCountries);
+router.get('/TheTenToursTrending', bookingController.getTheTenTourIsTrending);
+router.get(
+  '/TheTenTripProgramsTrending',
+  bookingController.getTheTenTripProgramIsTrending
+);
+
+////////////////////////////////////////
+////////////////////////////////////////
+////////////////////////////////////////
 // all routes after this middleware is for authienticated users only
 router.use(authController.protect);
 
