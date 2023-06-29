@@ -1031,8 +1031,9 @@ exports.getTheTrendingCountries = catchAsync(async (req, res, next) => {
 
   tourData.forEach((tour) => {
     countryNameMap[tour._id.toString()] = tour.startLocations.country;
-    startLocationCoordsMap[tour._id.toString()] =
-      tour.startLocations.coordinates.map((coord) => [coord[1], coord[0]]);
+    startLocationCoordsMap[tour._id.toString()] = tour.startLocations.map(
+      (location) => [location.coordinates[1], location.coordinates[0]]
+    );
   });
 
   const result = book.map((item) => {
