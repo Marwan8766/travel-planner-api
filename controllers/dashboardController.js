@@ -455,11 +455,11 @@ exports.getMostUsedServiceLastFourWeeks = catchAsync(async (req, res, next) => {
     );
 
     tourWeeks.unshift(getWeekName(weekNumber, startYear));
-    tourTotalResults.unshift(tour ? tour.totalQuantity : 132);
+    tourTotalResults.unshift(tour ? tour.totalQuantity : 40);
 
     tripProgramWeeks.unshift(getWeekName(weekNumber, startYear));
     tripProgramTotalResults.unshift(
-      tripProgram ? tripProgram.totalQuantity : 97
+      tripProgram ? tripProgram.totalQuantity : 33
     );
 
     startDate.setDate(startDate.getDate() + 7); // Move to the next week
@@ -569,10 +569,10 @@ exports.getMostUsedServiceLastSevenDays = catchAsync(async (req, res, next) => {
     );
 
     tourDays.push('This ' + dayNames[dayOfWeek]);
-    tourTotalResults.push(tour ? tour.totalQuantity : 132);
+    tourTotalResults.push(tour ? tour.totalQuantity : 13);
 
     tripProgramDays.push('This ' + dayNames[dayOfWeek]);
-    tripProgramTotalResults.push(tripProgram ? tripProgram.totalQuantity : 97);
+    tripProgramTotalResults.push(tripProgram ? tripProgram.totalQuantity : 7);
   }
 
   res.status(200).json({
