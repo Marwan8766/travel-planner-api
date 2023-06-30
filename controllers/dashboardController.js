@@ -316,55 +316,58 @@ exports.getMostUsedServiceLastYear = catchAsync(async (req, res, next) => {
     Booking.aggregate(pipelineTripProgram),
   ]);
 
-  // Extract the months and total results from the results
+  // Prepare the data for the previous 11 months in the previous year
   const tourMonths = [];
   const tourTotalResults = [];
 
   const tripProgramMonths = [];
   const tripProgramTotalResults = [];
 
-  // Prepare the data for the current month
-  tourMonths.push(getMonthName(currentMonth));
-  tripProgramMonths.push(getMonthName(currentMonth));
+  // Prepare the data for the previous 11 months
+  for (let i = startMonth; i >= 0; i--) {
+    const tour = tourResult.find((item) => item._id === i);
+    const tripProgram = tripProgramResult.find((item) => item._id === i);
 
+    tourMonths.unshift(getMonthName(i, currentYear - 1));
+    tourTotalResults.unshift(tour ? tour.totalQuantity : 0);
+
+    tripProgramMonths.unshift(getMonthName(i, currentYear - 1));
+    tripProgramTotalResults.unshift(
+      tripProgram ? tripProgram.totalQuantity : 0
+    );
+  }
+
+  // Prepare the data for the current month in the current year
   const currentMonthTour = tourResult.find((item) => item._id === currentMonth);
   const currentMonthTripProgram = tripProgramResult.find(
     (item) => item._id === currentMonth
   );
 
+  tourMonths.push(getMonthName(currentMonth, currentYear));
   tourTotalResults.push(currentMonthTour ? currentMonthTour.totalQuantity : 0);
+
+  tripProgramMonths.push(getMonthName(currentMonth, currentYear));
   tripProgramTotalResults.push(
     currentMonthTripProgram ? currentMonthTripProgram.totalQuantity : 0
   );
 
-  // Prepare the data for the previous 11 months
-  for (let i = startMonth; i !== currentMonth; i = (i + 1) % 12) {
-    tourMonths.push(getMonthName(i));
-    tripProgramMonths.push(getMonthName(i));
-
-    const tour = tourResult.find((item) => item._id === i);
-    const tripProgram = tripProgramResult.find((item) => item._id === i);
-
-    tourTotalResults.push(tour ? tour.totalQuantity : 0);
-    tripProgramTotalResults.push(tripProgram ? tripProgram.totalQuantity : 0);
-  }
-
-  const data = [
-    {
-      months: tourMonths,
-      totalResults: tourTotalResults,
-    },
-    {
-      months: tripProgramMonths,
-      totalResults: tripProgramTotalResults,
-    },
-  ];
-
-  res.status(200).json({ status: 'success', data });
+  res.status(200).json({
+    status: 'success',
+    data: [
+      {
+        months: tourMonths,
+        totalResults: tourTotalResults,
+      },
+      {
+        months: tripProgramMonths,
+        totalResults: tripProgramTotalResults,
+      },
+    ],
+  });
 });
 
-// Helper function to get the month name based on the month number
-function getMonthName(monthNumber) {
+// Helper function to get the month name and year based on the month number and year
+function getMonthName(monthNumber, year) {
   const monthNames = [
     'January',
     'February',
@@ -379,5 +382,5 @@ function getMonthName(monthNumber) {
     'November',
     'December',
   ];
-  return monthNames[monthNumber];
+  return monthNames[monthNumber] + ' ' + year;
 }
