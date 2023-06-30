@@ -10,6 +10,6 @@ router.get('/getTopRatings', dashboardController.getTopRatings);
 ////////////////////////
 ////////////////////////
 
-router.get('/totalUsersNum/:userRole', dashboardController.getTotalUsersNum);
+router.get('/totalUsersNum', dashboardController.getTotalUsersNum);
 
 module.exports = router;
