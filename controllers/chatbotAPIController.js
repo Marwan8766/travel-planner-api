@@ -621,9 +621,9 @@ const getHotelsFromAPI = async (
         checkIn: checkInDate,
         checkOut: checkOutDate,
         pageNumber: '1',
-        adults: adults || '1',
-        rooms: rooms || '1',
-        currencyCode: 'USD',
+        // adults: adults || '1',
+        // rooms: rooms || '1',
+        // currencyCode: 'USD',
       },
       headers: {
         'X-RapidAPI-Key': process.env.TRIPADVISOR_API_KEY,
