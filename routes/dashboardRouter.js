@@ -6,4 +6,10 @@ const router = express.Router();
 router.get('/', dashboardController.getBookingChartData);
 router.get('/getTopRatings', dashboardController.getTopRatings);
 
+////////////////////////
+////////////////////////
+////////////////////////
+
+router.get('/totalUsersNum/:userRole', dashboardController.getTotalUsersNum);
+
 module.exports = router;

@@ -2,6 +2,7 @@ const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 const bookingModel = require('../models/booking.model');
 const reviewModel = require('../models/review.model');
+const User = require('../models/userModel');
 
 exports.getBookingChartData = catchAsync(async (req, res, next) => {
   // Get the current date
@@ -197,6 +198,33 @@ exports.getTopRatings = catchAsync(async (req, res, next) => {
       topRatedCompanies,
       topRatedTours,
       topRatedTripPrograms,
+    },
+  });
+});
+
+///////////////////////////////////////////
+///////////////////////////////////////////
+///////////////////////////////////////////
+///////////////////////////////////////////
+
+exports.getTotalUsersNum = catchAsync(async (req, res, next) => {
+  const { userRole } = req.query;
+
+  const query = {};
+  if (userRole === 'user') {
+    query.role = 'user';
+  }
+
+  if (userRole === 'company') {
+    query.role = 'company';
+  }
+
+  const usersNum = await User.countDocuments(query);
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      usersCount: usersNum,
     },
   });
 });
