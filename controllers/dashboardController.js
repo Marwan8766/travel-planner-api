@@ -323,7 +323,6 @@ exports.getMostUsedServiceLastYear = catchAsync(async (req, res, next) => {
   const tourMonths = [];
   const tourTotalResults = [];
 
-  const tripProgramMonths = [];
   const tripProgramTotalResults = [];
 
   for (let i = startMonth - 1; i >= 0; i--) {
@@ -333,7 +332,6 @@ exports.getMostUsedServiceLastYear = catchAsync(async (req, res, next) => {
     tourMonths.unshift(getMonthName(i, startYear + 1));
     tourTotalResults.unshift(tour ? tour.totalQuantity : 132);
 
-    tripProgramMonths.unshift(getMonthName(i, startYear + 1));
     tripProgramTotalResults.unshift(
       tripProgram ? tripProgram.totalQuantity : 97
     );
@@ -346,7 +344,6 @@ exports.getMostUsedServiceLastYear = catchAsync(async (req, res, next) => {
     tourMonths.unshift(getMonthName(i, startYear));
     tourTotalResults.unshift(tour ? tour.totalQuantity : 132);
 
-    tripProgramMonths.unshift(getMonthName(i, startYear));
     tripProgramTotalResults.unshift(
       tripProgram ? tripProgram.totalQuantity : 97
     );
@@ -354,16 +351,11 @@ exports.getMostUsedServiceLastYear = catchAsync(async (req, res, next) => {
 
   res.status(200).json({
     status: 'success',
-    data: [
-      {
-        labels: tourMonths,
-        tourTotalResults,
-      },
-      {
-        labels: tripProgramMonths,
-        tripProgramTotalResults,
-      },
-    ],
+    data: {
+      labels: tourMonths,
+      tourTotalResults,
+      tripProgramTotalResults,
+    },
   });
 });
 
@@ -442,7 +434,6 @@ exports.getMostUsedServiceLastFourWeeks = catchAsync(async (req, res, next) => {
   const tourWeeks = [];
   const tourTotalResults = [];
 
-  const tripProgramWeeks = [];
   const tripProgramTotalResults = [];
 
   const startYear = startDate.getFullYear();
@@ -457,7 +448,6 @@ exports.getMostUsedServiceLastFourWeeks = catchAsync(async (req, res, next) => {
     tourWeeks.unshift(getWeekName(weekNumber, startYear));
     tourTotalResults.unshift(tour ? tour.totalQuantity : 40);
 
-    tripProgramWeeks.unshift(getWeekName(weekNumber, startYear));
     tripProgramTotalResults.unshift(
       tripProgram ? tripProgram.totalQuantity : 33
     );
@@ -467,16 +457,11 @@ exports.getMostUsedServiceLastFourWeeks = catchAsync(async (req, res, next) => {
 
   res.status(200).json({
     status: 'success',
-    data: [
-      {
-        labels: tourWeeks,
-        tourTotalResults,
-      },
-      {
-        labels: tripProgramWeeks,
-        tripProgramTotalResults,
-      },
-    ],
+    data: {
+      labels: tourWeeks,
+      tourTotalResults,
+      tripProgramTotalResults,
+    },
   });
 });
 
@@ -548,7 +533,6 @@ exports.getMostUsedServiceLastSevenDays = catchAsync(async (req, res, next) => {
   const tourDays = [];
   const tourTotalResults = [];
 
-  const tripProgramDays = [];
   const tripProgramTotalResults = [];
 
   const dayNames = [
@@ -568,24 +552,18 @@ exports.getMostUsedServiceLastSevenDays = catchAsync(async (req, res, next) => {
       (item) => item._id === dayOfWeek
     );
 
-    tourDays.push('This ' + dayNames[dayOfWeek]);
+    tourDays.push(dayNames[dayOfWeek]);
     tourTotalResults.push(tour ? tour.totalQuantity : 13);
 
-    tripProgramDays.push('This ' + dayNames[dayOfWeek]);
     tripProgramTotalResults.push(tripProgram ? tripProgram.totalQuantity : 7);
   }
 
   res.status(200).json({
     status: 'success',
-    data: [
-      {
-        labels: tourDays,
-        tourTotalResults,
-      },
-      {
-        labels: tripProgramDays,
-        tripProgramTotalResults,
-      },
-    ],
+    data: {
+      labels: tourDays,
+      tourTotalResults,
+      tripProgramTotalResults,
+    },
   });
 });
