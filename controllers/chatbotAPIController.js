@@ -594,9 +594,9 @@ const getGeoId = async (hotelCity) => {
 
     const response = await axios.request(options);
     const geoid = response.data.data[0].geoId;
-    console.log(`geoid string: ${geoid}`);
+    // console.log(`geoid string: ${geoid}`);
     const numericGeoid = geoid.split(';')[1];
-    console.log(`numericGeoID: ${numericGeoid}`);
+    // console.log(`numericGeoID: ${numericGeoid}`);
     return numericGeoid;
   } catch (error) {
     console.error(`error getting the geoid of ${hotelCity}: ${error}`);
@@ -611,8 +611,8 @@ const getHotelsFromAPI = async (
   rooms
 ) => {
   try {
-    console.log(`GEOID inside getHotels ${geoId}`);
-    console.log(`GEOID inside getHotels type ${typeof Number(geoId)}`);
+    // console.log(`GEOID inside getHotels ${geoId}`);
+    // console.log(`GEOID inside getHotels type ${typeof Number(geoId)}`);
     const options = {
       method: 'GET',
       url: 'https://tripadvisor16.p.rapidapi.com/api/v1/hotels/searchHotels',
@@ -632,10 +632,10 @@ const getHotelsFromAPI = async (
     };
 
     const response = await axios.request(options);
-    console.log(`response: ${response}`);
-    console.log(`response data: ${response.data}`);
-    console.log(`response status: ${response.status}`);
-    console.log(`response data JSON: ${JSON.stringify(response.data)}`);
+    // console.log(`response: ${response}`);
+    // console.log(`response data: ${response.data}`);
+    // console.log(`response status: ${response.status}`);
+    // console.log(`response data JSON: ${JSON.stringify(response.data)}`);
     return response.data;
   } catch (error) {
     console.error(error);
@@ -645,9 +645,9 @@ const getHotelsFromAPI = async (
 
 const constructHotelsText = (hotelData) => {
   let result = '';
-  console.log(`hotels length: ${hotelData.data.data.length}`);
+  // console.log(`hotels length: ${hotelData.data.data.length}`);
   const data = hotelData.data.data.slice(0, 5);
-  console.log(`data: ${data}`);
+  // console.log(`data: ${data}`);
 
   // Add hotel data
   data.forEach((hotel) => {
@@ -686,6 +686,36 @@ const validateHotelParams = (checkInDate, checkOutDate) => {
   return 'correct';
 };
 
+// const handleHotelsIntent = async (
+//   hotelCity,
+//   checkInDate,
+//   checkOutDate,
+//   adults,
+//   rooms
+// ) => {
+//   let text = '';
+
+//   if (!hotelCity) return (text = 'Please provide the city');
+
+//   const geoId = await getGeoId(hotelCity);
+//   if (!geoId) return (text = `can't find this city: ${hotelCity}`);
+
+//   text = validateHotelParams(checkInDate, checkOutDate);
+//   if (text !== 'correct') return text;
+
+//   const hotelsData = await getHotelsFromAPI(
+//     geoId,
+//     checkInDate,
+//     checkOutDate,
+//     adults,
+//     rooms
+//   );
+
+//   text = constructHotelsText(hotelsData);
+
+//   return text;
+// };
+
 const handleHotelsIntent = async (
   hotelCity,
   checkInDate,
@@ -693,25 +723,30 @@ const handleHotelsIntent = async (
   adults,
   rooms
 ) => {
-  let text = '';
+  if (!hotelCity) return 'Please provide the city.';
 
-  if (!hotelCity) return (text = 'Please provide the city');
+  try {
+    const [geoId, validationMessage] = await Promise.all([
+      getGeoId(hotelCity),
+      validateHotelParams(checkInDate, checkOutDate),
+    ]);
 
-  const geoId = await getGeoId(hotelCity);
-  if (!geoId) return (text = `can't find this city: ${hotelCity}`);
+    if (!geoId) return `Can't find hotels for this city: ${hotelCity}`;
+    if (validationMessage !== 'correct') return validationMessage;
 
-  text = validateHotelParams(checkInDate, checkOutDate);
-  if (text !== 'correct') return text;
+    const hotelsData = await getHotelsFromAPI(
+      geoId,
+      checkInDate,
+      checkOutDate,
+      adults,
+      rooms
+    );
 
-  const hotelsData = await getHotelsFromAPI(
-    geoId,
-    checkInDate,
-    checkOutDate,
-    adults,
-    rooms
-  );
+    const hotelsText = constructHotelsText(hotelsData);
 
-  text = constructHotelsText(hotelsData);
-
-  return text;
+    return hotelsText;
+  } catch (error) {
+    console.error(`Error handling hotels intent: ${error}`);
+    throw new Error('Failed to handle hotels intent');
+  }
 };
