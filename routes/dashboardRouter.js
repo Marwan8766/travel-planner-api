@@ -12,9 +12,15 @@ router.get('/getTopRatings', dashboardController.getTopRatings);
 
 router.get('/totalUsersNum', dashboardController.getTotalUsersNum);
 router.get('/totalBookings', dashboardController.getTotalBookingsAndIncome);
+
 router.get(
   '/getMostUsedServiceLastYear',
   dashboardController.getMostUsedServiceLastYear
+);
+
+router.get(
+  '/getMostUsedServiceLastFourWeeks',
+  dashboardController.getMostUsedServiceLastFourWeeks
 );
 
 module.exports = router;

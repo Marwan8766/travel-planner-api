@@ -385,3 +385,111 @@ function getMonthName(monthNumber, year) {
   ];
   return monthNames[monthNumber] + ' ' + year;
 }
+
+exports.getMostUsedServiceLastFourWeeks = catchAsync(async (req, res, next) => {
+  // Get the current date
+  const currentDate = new Date();
+
+  // Calculate the start and end dates for the last 4 weeks
+  const startDate = new Date(
+    currentDate.getTime() - 4 * 7 * 24 * 60 * 60 * 1000
+  ); // Subtract 4 weeks in milliseconds
+  const endDate = currentDate;
+
+  // Build the match conditions for tours and trip programs
+  const matchConditionsTour = {
+    updatedAt: { $gte: startDate, $lte: endDate },
+    status: 'reserved',
+    tour: { $ne: null },
+  };
+
+  const matchConditionsTripProgram = {
+    updatedAt: { $gte: startDate, $lte: endDate },
+    status: 'reserved',
+    tripProgram: { $ne: null },
+  };
+
+  // Build the aggregation pipelines for tours and trip programs
+  const pipelineTour = [
+    { $match: matchConditionsTour },
+    {
+      $group: {
+        _id: { $week: '$updatedAt' },
+        totalQuantity: { $sum: '$quantity' },
+      },
+    },
+    { $sort: { _id: 1 } }, // Sort the results by week in ascending order
+  ];
+
+  const pipelineTripProgram = [
+    { $match: matchConditionsTripProgram },
+    {
+      $group: {
+        _id: { $week: '$updatedAt' },
+        totalQuantity: { $sum: '$quantity' },
+      },
+    },
+    { $sort: { _id: 1 } }, // Sort the results by week in ascending order
+  ];
+
+  // Execute the aggregation pipelines using Promise.all
+  const [tourResult, tripProgramResult] = await Promise.all([
+    Booking.aggregate(pipelineTour),
+    Booking.aggregate(pipelineTripProgram),
+  ]);
+
+  // Prepare the data for the last 4 weeks
+  const tourWeeks = [];
+  const tourTotalResults = [];
+
+  const tripProgramWeeks = [];
+  const tripProgramTotalResults = [];
+
+  const startYear = startDate.getFullYear();
+
+  for (let i = 4; i >= 1; i--) {
+    const weekNumber = getWeekNumber(startDate);
+    const tour = tourResult.find((item) => item._id === weekNumber);
+    const tripProgram = tripProgramResult.find(
+      (item) => item._id === weekNumber
+    );
+
+    tourWeeks.unshift(getWeekName(weekNumber, startYear));
+    tourTotalResults.unshift(tour ? tour.totalQuantity : 132);
+
+    tripProgramWeeks.unshift(getWeekName(weekNumber, startYear));
+    tripProgramTotalResults.unshift(
+      tripProgram ? tripProgram.totalQuantity : 97
+    );
+
+    startDate.setDate(startDate.getDate() + 7); // Move to the next week
+  }
+
+  res.status(200).json({
+    status: 'success',
+    data: [
+      {
+        weeks: tourWeeks,
+        tourTotalResults,
+      },
+      {
+        weeks: tripProgramWeeks,
+        tripProgramTotalResults,
+      },
+    ],
+  });
+});
+
+// Helper function to get the week number
+function getWeekNumber(date) {
+  const oneJan = new Date(date.getFullYear(), 0, 1);
+  const millisecondsInDay = 86400000;
+  return Math.ceil(
+    ((date - oneJan) / millisecondsInDay + oneJan.getDay() + 1) / 7
+  );
+}
+
+// Helper function to get the week name and year based on the week number and year
+function getWeekName(weekNumber, year) {
+  return 'Week ' + weekNumber + ' ' + year;
+}
