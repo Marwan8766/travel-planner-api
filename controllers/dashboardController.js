@@ -262,3 +262,122 @@ exports.getTotalBookingsAndIncome = catchAsync(async (req, res, next) => {
     },
   });
 });
+
+exports.getMostUsedServiceLastYear = catchAsync(async (req, res, next) => {
+  // Get the current date
+  const currentDate = new Date();
+
+  // Calculate the start and end dates for the current month
+  const currentMonth = currentDate.getMonth();
+  const currentYear = currentDate.getFullYear();
+  const startMonth = currentMonth === 0 ? 11 : currentMonth - 1; // If current month is January, set start month to December of previous year
+  const startDate = new Date(currentYear, startMonth, 1); // Start of the current month
+  const endDate = new Date(currentYear, currentMonth, 0); // End of the current month
+
+  // Build the match conditions for tours and trip programs
+  const matchConditionsTour = {
+    updatedAt: { $gte: startDate, $lte: endDate },
+    status: 'reserved',
+    tour: { $ne: null },
+  };
+
+  const matchConditionsTripProgram = {
+    updatedAt: { $gte: startDate, $lte: endDate },
+    status: 'reserved',
+    tripProgram: { $ne: null },
+  };
+
+  // Build the aggregation pipelines for tours and trip programs
+  const pipelineTour = [
+    { $match: matchConditionsTour },
+    {
+      $group: {
+        _id: { $month: '$updatedAt' },
+        totalQuantity: { $sum: '$quantity' },
+      },
+    },
+    { $sort: { _id: 1 } }, // Sort the results by month in ascending order
+  ];
+
+  const pipelineTripProgram = [
+    { $match: matchConditionsTripProgram },
+    {
+      $group: {
+        _id: { $month: '$updatedAt' },
+        totalQuantity: { $sum: '$quantity' },
+      },
+    },
+    { $sort: { _id: 1 } }, // Sort the results by month in ascending order
+  ];
+
+  // Execute the aggregation pipelines using Promise.all
+  const [tourResult, tripProgramResult] = await Promise.all([
+    Booking.aggregate(pipelineTour),
+    Booking.aggregate(pipelineTripProgram),
+  ]);
+
+  // Extract the months and total results from the results
+  const tourMonths = [];
+  const tourTotalResults = [];
+
+  const tripProgramMonths = [];
+  const tripProgramTotalResults = [];
+
+  // Prepare the data for the current month
+  tourMonths.push(getMonthName(currentMonth));
+  tripProgramMonths.push(getMonthName(currentMonth));
+
+  const currentMonthTour = tourResult.find((item) => item._id === currentMonth);
+  const currentMonthTripProgram = tripProgramResult.find(
+    (item) => item._id === currentMonth
+  );
+
+  tourTotalResults.push(currentMonthTour ? currentMonthTour.totalQuantity : 0);
+  tripProgramTotalResults.push(
+    currentMonthTripProgram ? currentMonthTripProgram.totalQuantity : 0
+  );
+
+  // Prepare the data for the previous 11 months
+  for (let i = startMonth; i !== currentMonth; i = (i + 1) % 12) {
+    tourMonths.push(getMonthName(i));
+    tripProgramMonths.push(getMonthName(i));
+
+    const tour = tourResult.find((item) => item._id === i);
+    const tripProgram = tripProgramResult.find((item) => item._id === i);
+
+    tourTotalResults.push(tour ? tour.totalQuantity : 0);
+    tripProgramTotalResults.push(tripProgram ? tripProgram.totalQuantity : 0);
+  }
+
+  const data = [
+    {
+      months: tourMonths,
+      totalResults: tourTotalResults,
+    },
+    {
+      months: tripProgramMonths,
+      totalResults: tripProgramTotalResults,
+    },
+  ];
+
+  res.status(200).json({ status: 'success', data });
+});
+
+// Helper function to get the month name based on the month number
+function getMonthName(monthNumber) {
+  const monthNames = [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
+  ];
+  return monthNames[monthNumber];
+}
