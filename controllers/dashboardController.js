@@ -357,11 +357,11 @@ exports.getMostUsedServiceLastYear = catchAsync(async (req, res, next) => {
     data: [
       {
         months: tourMonths,
-        totalResults: tourTotalResults,
+        tourTotalResults,
       },
       {
         months: tripProgramMonths,
-        totalResults: tripProgramTotalResults,
+        tripProgramTotalResults,
       },
     ],
   });
