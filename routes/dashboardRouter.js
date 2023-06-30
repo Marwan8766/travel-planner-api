@@ -23,4 +23,9 @@ router.get(
   dashboardController.getMostUsedServiceLastFourWeeks
 );
 
+router.get(
+  '/getMostUsedServiceLastSevenDays',
+  dashboardController.getMostUsedServiceLastSevenDays
+);
+
 module.exports = router;

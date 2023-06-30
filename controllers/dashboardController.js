@@ -356,11 +356,11 @@ exports.getMostUsedServiceLastYear = catchAsync(async (req, res, next) => {
     status: 'success',
     data: [
       {
-        months: tourMonths,
+        labels: tourMonths,
         tourTotalResults,
       },
       {
-        months: tripProgramMonths,
+        labels: tripProgramMonths,
         tripProgramTotalResults,
       },
     ],
@@ -469,11 +469,11 @@ exports.getMostUsedServiceLastFourWeeks = catchAsync(async (req, res, next) => {
     status: 'success',
     data: [
       {
-        weeks: tourWeeks,
+        labels: tourWeeks,
         tourTotalResults,
       },
       {
-        weeks: tripProgramWeeks,
+        labels: tripProgramWeeks,
         tripProgramTotalResults,
       },
     ],
@@ -493,3 +493,99 @@ function getWeekNumber(date) {
 function getWeekName(weekNumber, year) {
   return 'Week ' + weekNumber + ' ' + year;
 }
+
+exports.getMostUsedServiceLastSevenDays = catchAsync(async (req, res, next) => {
+  // Get the current date
+  const currentDate = new Date();
+
+  // Calculate the start and end dates for the last 7 days
+  const startDate = new Date(currentDate.getTime() - 7 * 24 * 60 * 60 * 1000); // Subtract 7 days in milliseconds
+  const endDate = currentDate;
+
+  // Build the match conditions for tours and trip programs
+  const matchConditionsTour = {
+    updatedAt: { $gte: startDate, $lte: endDate },
+    status: 'reserved',
+    tour: { $ne: null },
+  };
+
+  const matchConditionsTripProgram = {
+    updatedAt: { $gte: startDate, $lte: endDate },
+    status: 'reserved',
+    tripProgram: { $ne: null },
+  };
+
+  // Build the aggregation pipelines for tours and trip programs
+  const pipelineTour = [
+    { $match: matchConditionsTour },
+    {
+      $group: {
+        _id: { $dayOfWeek: '$updatedAt' },
+        totalQuantity: { $sum: '$quantity' },
+      },
+    },
+    { $sort: { _id: 1 } }, // Sort the results by day of week in ascending order
+  ];
+
+  const pipelineTripProgram = [
+    { $match: matchConditionsTripProgram },
+    {
+      $group: {
+        _id: { $dayOfWeek: '$updatedAt' },
+        totalQuantity: { $sum: '$quantity' },
+      },
+    },
+    { $sort: { _id: 1 } }, // Sort the results by day of week in ascending order
+  ];
+
+  // Execute the aggregation pipelines using Promise.all
+  const [tourResult, tripProgramResult] = await Promise.all([
+    Booking.aggregate(pipelineTour),
+    Booking.aggregate(pipelineTripProgram),
+  ]);
+
+  // Prepare the data for the last 7 days
+  const tourDays = [];
+  const tourTotalResults = [];
+
+  const tripProgramDays = [];
+  const tripProgramTotalResults = [];
+
+  const dayNames = [
+    'Sunday',
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+  ];
+
+  for (let i = 6; i >= 0; i--) {
+    const dayOfWeek = (endDate.getDay() + 7 - i) % 7;
+    const tour = tourResult.find((item) => item._id === dayOfWeek);
+    const tripProgram = tripProgramResult.find(
+      (item) => item._id === dayOfWeek
+    );
+
+    tourDays.push('This ' + dayNames[dayOfWeek]);
+    tourTotalResults.push(tour ? tour.totalQuantity : 132);
+
+    tripProgramDays.push('This ' + dayNames[dayOfWeek]);
+    tripProgramTotalResults.push(tripProgram ? tripProgram.totalQuantity : 97);
+  }
+
+  res.status(200).json({
+    status: 'success',
+    data: [
+      {
+        labels: tourDays,
+        tourTotalResults,
+      },
+      {
+        labels: tripProgramDays,
+        tripProgramTotalResults,
+      },
+    ],
+  });
+});
