@@ -11,5 +11,6 @@ router.get('/getTopRatings', dashboardController.getTopRatings);
 ////////////////////////
 
 router.get('/totalUsersNum', dashboardController.getTotalUsersNum);
+router.get('/totalBookings', dashboardController.getTotalBookingsAndIncome);
 
 module.exports = router;

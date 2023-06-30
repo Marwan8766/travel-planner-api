@@ -3,6 +3,7 @@ const AppError = require('../utils/appError');
 const bookingModel = require('../models/booking.model');
 const reviewModel = require('../models/review.model');
 const User = require('../models/userModel');
+const Booking = require('../models/booking.model');
 
 exports.getBookingChartData = catchAsync(async (req, res, next) => {
   // Get the current date
@@ -225,6 +226,39 @@ exports.getTotalUsersNum = catchAsync(async (req, res, next) => {
     status: 'success',
     data: {
       usersCount: usersNum,
+    },
+  });
+});
+
+exports.getTotalBookingsAndIncome = catchAsync(async (req, res, next) => {
+  const totalBookingsPromise = Booking.countDocuments({
+    status: 'reserved',
+    paid: true,
+  });
+  const totalIncomePromise = Booking.aggregate([
+    {
+      $match: { status: 'reserved' },
+    },
+    {
+      $group: {
+        _id: null,
+        totalIncome: { $sum: '$price' },
+      },
+    },
+  ]);
+
+  const [totalBookings, totalIncomeResults] = await Promise.all([
+    totalBookingsPromise,
+    totalIncomePromise,
+  ]);
+  const totalIncome =
+    totalIncomeResults.length > 0 ? totalIncomeResults[0].totalIncome : 0;
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      totalBookings,
+      totalIncome,
     },
   });
 });
