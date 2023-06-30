@@ -242,7 +242,7 @@ exports.getTotalBookingsAndIncome = catchAsync(async (req, res, next) => {
     {
       $group: {
         _id: null,
-        totalIncome: { $sum: '$price' },
+        totalIncome: { $sum: { $multiply: ['$price', 0.05] } },
       },
     },
   ]);
