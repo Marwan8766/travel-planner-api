@@ -48,10 +48,10 @@ exports.chatbotWebhookHandler = catchAsync(async (req, res, next) => {
     location = Location.country;
   }
 
-  console.log(`location: ${location}`);
-  console.log(`budget: ${budget}`);
-  console.log(`Date_period: ${Date_period}`);
-  console.log(`req.body: ${JSON.stringify(req.body)}`);
+  // console.log(`location: ${location}`);
+  // console.log(`budget: ${budget}`);
+  // console.log(`Date_period: ${Date_period}`);
+  // console.log(`req.body: ${JSON.stringify(req.body)}`);
 
   // Extract the intent display name
   const intentDisplayName = req.body.queryResult.intent.displayName;
@@ -61,14 +61,14 @@ exports.chatbotWebhookHandler = catchAsync(async (req, res, next) => {
 
   switch (intentDisplayName) {
     case 'tours':
-      console.log(`tours intent`);
+      // console.log(`tours intent`);
       if (!location) textResponse = 'Please provide the location';
       else if (!budget) textResponse = 'Please provide your budget';
       else textResponse = await handleToursIntent(location, budget);
       break;
 
     case 'recommend':
-      console.log(`recommend intent`);
+      // console.log(`recommend intent`);
       if (!location) textResponse = 'Please provide the location';
       else if (!Date_period)
         textResponse = 'Please provide the period of the trip';
@@ -77,8 +77,8 @@ exports.chatbotWebhookHandler = catchAsync(async (req, res, next) => {
       break;
 
     case 'flights':
-      console.log(`flights intent`);
-      console.log(`departureDate: ${departureDate}`);
+      // console.log(`flights intent`);
+      // console.log(`departureDate: ${departureDate}`);
       // if (!cityNamePickup) textResponse = constructTextResNoCityFlights();
       // else if (!cityNameDestination)
       //   textResponse = constructTextResNoCityFlights();
@@ -103,7 +103,7 @@ exports.chatbotWebhookHandler = catchAsync(async (req, res, next) => {
       break;
 
     case 'hotels':
-      console.log(`hotels intent`);
+      // console.log(`hotels intent`);
 
       textResponse = await handleHotelsIntent(
         hotelCity,
@@ -113,7 +113,7 @@ exports.chatbotWebhookHandler = catchAsync(async (req, res, next) => {
         rooms
       );
 
-      console.log(`textResponse from hotels intent: ${textResponse}`);
+      // console.log(`textResponse from hotels intent: ${textResponse}`);
 
       if (textResponse.length === 0)
         textResponse = `Sorry, couldn't find hotels in this city ${hotelCity} in checkin date ${checkInDate} and checkout date ${checkOutDate}`;
@@ -126,7 +126,7 @@ exports.chatbotWebhookHandler = catchAsync(async (req, res, next) => {
       break;
   }
 
-  console.log(`textResponse: ${textResponse}`);
+  // console.log(`textResponse: ${textResponse}`);
   // send the res with the textResponse
   res.status(200).json({
     fulfillmentMessages: [
