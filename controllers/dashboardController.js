@@ -267,12 +267,15 @@ exports.getMostUsedServiceLastYear = catchAsync(async (req, res, next) => {
   // Get the current date
   const currentDate = new Date();
 
-  // Calculate the start and end dates for the current month
-  const currentMonth = currentDate.getMonth();
-  const currentYear = currentDate.getFullYear();
-  const startMonth = currentMonth === 0 ? 11 : currentMonth - 1; // If current month is January, set start month to December of previous year
-  const startDate = new Date(currentYear, startMonth, 1); // Start of the current month
-  const endDate = new Date(currentYear, currentMonth, 0); // End of the current month
+  // Calculate the start and end dates for the previous 12 months
+  const startMonth = currentDate.getMonth(); // Current month
+  const startYear = currentDate.getFullYear() - 1; // Previous year
+  const startDate = new Date(startYear, startMonth, 1); // Start of the current month
+  const endDate = new Date(
+    currentDate.getFullYear(),
+    currentDate.getMonth(),
+    0
+  ); // End of the current month
 
   // Build the match conditions for tours and trip programs
   const matchConditionsTour = {
@@ -316,40 +319,38 @@ exports.getMostUsedServiceLastYear = catchAsync(async (req, res, next) => {
     Booking.aggregate(pipelineTripProgram),
   ]);
 
-  // Prepare the data for the previous 11 months in the previous year
+  // Prepare the data for the previous 12 months
   const tourMonths = [];
   const tourTotalResults = [];
 
   const tripProgramMonths = [];
   const tripProgramTotalResults = [];
 
-  // Prepare the data for the previous 11 months
-  for (let i = startMonth; i >= 0; i--) {
+  for (let i = startMonth - 1; i >= 0; i--) {
     const tour = tourResult.find((item) => item._id === i);
     const tripProgram = tripProgramResult.find((item) => item._id === i);
 
-    tourMonths.unshift(getMonthName(i, currentYear - 1));
+    tourMonths.unshift(getMonthName(i, startYear + 1));
     tourTotalResults.unshift(tour ? tour.totalQuantity : 0);
 
-    tripProgramMonths.unshift(getMonthName(i, currentYear - 1));
+    tripProgramMonths.unshift(getMonthName(i, startYear + 1));
     tripProgramTotalResults.unshift(
       tripProgram ? tripProgram.totalQuantity : 0
     );
   }
 
-  // Prepare the data for the current month in the current year
-  const currentMonthTour = tourResult.find((item) => item._id === currentMonth);
-  const currentMonthTripProgram = tripProgramResult.find(
-    (item) => item._id === currentMonth
-  );
+  for (let i = 11; i >= startMonth; i--) {
+    const tour = tourResult.find((item) => item._id === i);
+    const tripProgram = tripProgramResult.find((item) => item._id === i);
 
-  tourMonths.push(getMonthName(currentMonth, currentYear));
-  tourTotalResults.push(currentMonthTour ? currentMonthTour.totalQuantity : 0);
+    tourMonths.unshift(getMonthName(i, startYear));
+    tourTotalResults.unshift(tour ? tour.totalQuantity : 0);
 
-  tripProgramMonths.push(getMonthName(currentMonth, currentYear));
-  tripProgramTotalResults.push(
-    currentMonthTripProgram ? currentMonthTripProgram.totalQuantity : 0
-  );
+    tripProgramMonths.unshift(getMonthName(i, startYear));
+    tripProgramTotalResults.unshift(
+      tripProgram ? tripProgram.totalQuantity : 0
+    );
+  }
 
   res.status(200).json({
     status: 'success',
