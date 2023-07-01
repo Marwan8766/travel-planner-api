@@ -632,32 +632,20 @@ exports.getMostSellingProducts = catchAsync(async (req, res, next) => {
       },
     },
     {
-      $unwind: {
-        path: '$tourData',
-        preserveNullAndEmptyArrays: true,
-      },
-    },
-    {
-      $unwind: {
-        path: '$tripProgramData',
-        preserveNullAndEmptyArrays: true,
-      },
-    },
-    {
       $project: {
         _id: 1,
         name: {
           $cond: {
-            if: { $ne: ['$tourData', null] },
-            then: '$tourData.name',
-            else: '$tripProgramData.name',
+            if: { $ne: ['$tourData', []] },
+            then: { $arrayElemAt: ['$tourData.name', 0] },
+            else: { $arrayElemAt: ['$tripProgramData.name', 0] },
           },
         },
         price: {
           $cond: {
-            if: { $ne: ['$tourData', null] },
-            then: '$tour.price',
-            else: '$tripProgramData.price',
+            if: { $ne: ['$tourData', []] },
+            then: { $arrayElemAt: ['$tourData.price', 0] },
+            else: { $arrayElemAt: ['$tripProgramData.price', 0] },
           },
         },
         quantity: 1,
@@ -669,16 +657,16 @@ exports.getMostSellingProducts = catchAsync(async (req, res, next) => {
         },
         type: {
           $cond: {
-            if: { $ne: ['$tourData', null] },
+            if: { $ne: ['$tourData', []] },
             then: 'tour',
             else: 'tripProgram',
           },
         },
         image: {
           $cond: {
-            if: { $ne: ['$tourData', null] },
-            then: '$tourData.image',
-            else: '$tripProgramData.image',
+            if: { $ne: ['$tourData', []] },
+            then: { $arrayElemAt: ['$tourData.image', 0] },
+            else: { $arrayElemAt: ['$tripProgramData.image', 0] },
           },
         },
       },
