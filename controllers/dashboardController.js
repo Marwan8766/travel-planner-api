@@ -618,7 +618,7 @@ exports.getMostSellingProducts = catchAsync(async (req, res, next) => {
     {
       $lookup: {
         from: 'Tour',
-        localField: '_id',
+        localField: 'tour',
         foreignField: '_id',
         as: 'productData',
       },
@@ -626,7 +626,7 @@ exports.getMostSellingProducts = catchAsync(async (req, res, next) => {
     {
       $lookup: {
         from: 'TripProgram',
-        localField: '_id',
+        localField: 'tripProgram',
         foreignField: '_id',
         as: 'productData',
       },
