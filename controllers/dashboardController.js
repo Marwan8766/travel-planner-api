@@ -675,15 +675,6 @@ exports.getTopCompanies = catchAsync(async (req, res, next) => {
     {
       $unwind: '$companyData',
     },
-
-    {
-      $sort: {
-        totalQuantity: -1,
-      },
-    },
-    {
-      $limit: 4,
-    },
   ];
 
   const topCompanies = await Booking.aggregate(pipelines);
