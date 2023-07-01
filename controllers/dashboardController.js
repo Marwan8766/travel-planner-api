@@ -692,7 +692,7 @@ exports.getMostSellingProducts = catchAsync(async (req, res, next) => {
         let: { tourId: '$tour' },
         pipeline: [
           { $match: { $expr: { $eq: ['$_id', '$$tourId'] } } },
-          { $project: { name: 1, price: 1, image: 1 } },
+          { $project: { name: 1, price: 1, image: 1, type: 'tour' } },
         ],
         as: 'tour',
       },
@@ -703,7 +703,7 @@ exports.getMostSellingProducts = catchAsync(async (req, res, next) => {
         let: { tripProgramId: '$tripProgram' },
         pipeline: [
           { $match: { $expr: { $eq: ['$_id', '$$tripProgramId'] } } },
-          { $project: { name: 1, price: 1, image: 1 } },
+          { $project: { name: 1, price: 1, image: 1, type: 'tripProgram' } },
         ],
         as: 'tripProgram',
       },
@@ -720,14 +720,25 @@ exports.getMostSellingProducts = catchAsync(async (req, res, next) => {
       },
     },
     {
+      $addFields: {
+        type: {
+          $cond: {
+            if: { $eq: ['$tour', []] },
+            then: 'tripProgram',
+            else: 'tour',
+          },
+        },
+      },
+    },
+    {
       $group: {
         _id: '$product._id',
         name: { $first: '$product.name' },
         price: { $first: '$product.price' },
         totalQuantity: { $sum: '$quantity' },
-        totalIncome: { $sum: { $multiply: ['$price', 0.05, '$quantity'] } },
-        type: { $first: { $ifNull: ['$tour.type', '$tripProgram.type'] } },
-        image: { $first: { $ifNull: ['$tour.image', '$tripProgram.image'] } },
+        totalIncome: { $sum: { $multiply: ['$price', 0.05] } },
+        type: { $first: '$type' },
+        image: { $first: { $ifNull: ['$product.image', ''] } },
       },
     },
     { $sort: { totalQuantity: -1 } },
