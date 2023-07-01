@@ -567,3 +567,94 @@ exports.getMostUsedServiceLastSevenDays = catchAsync(async (req, res, next) => {
     },
   });
 });
+
+exports.getMostSellingProducts = catchAsync(async (req, res, next) => {
+  const period = req.query.period;
+
+  // Get the current date
+  const currentDate = new Date();
+
+  // Calculate the start and end dates based on the period
+  let startDate, endDate;
+  if (period === 'Year') {
+    startDate = new Date(currentDate.getFullYear() - 1, 0, 1); // Start of previous year
+    endDate = new Date(currentDate.getFullYear(), 0, 0); // End of previous year
+  } else if (period === 'Month') {
+    startDate = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth() - 1,
+      1
+    ); // Start of previous month
+    endDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), 0); // End of previous month
+  } else if (period === 'Week') {
+    startDate = new Date(currentDate.getTime() - 7 * 24 * 60 * 60 * 1000); // Start of previous week
+    endDate = currentDate; // End of current week
+  } else {
+    return next(new AppError('Invalid period specified.', 400));
+  }
+
+  // Build the match condition for bookings within the period
+  const matchCondition = {
+    updatedAt: { $gte: startDate, $lte: endDate },
+    status: 'reserved',
+  };
+
+  // Build the aggregation pipeline to get the most selling products
+  const pipeline = [
+    { $match: matchCondition },
+    {
+      $group: {
+        _id: {
+          $cond: {
+            if: { $ne: ['$tour', null] },
+            then: '$tour',
+            else: '$tripProgram',
+          },
+        },
+        quantity: { $sum: '$quantity' },
+        totalPrice: { $sum: { $multiply: ['$price', '$quantity'] } },
+        type: { $first: '$type' },
+      },
+    },
+    {
+      $lookup: {
+        from: 'tours', // Replace with the actual collection name for tours
+        localField: '_id',
+        foreignField: '_id',
+        as: 'productData',
+      },
+    },
+    {
+      $lookup: {
+        from: 'tripPrograms', // Replace with the actual collection name for trip programs
+        localField: '_id',
+        foreignField: '_id',
+        as: 'productData',
+      },
+    },
+    {
+      $unwind: '$productData',
+    },
+    {
+      $project: {
+        _id: 1,
+        image: '$productData.image',
+        name: '$productData.name',
+        price: '$productData.price',
+        quantity: 1,
+        totalPrice: 1,
+        type: 1,
+      },
+    },
+    { $sort: { quantity: -1 } }, // Sort by quantity in descending order
+    { $limit: 10 }, // Get the top 10 most selling products
+  ];
+
+  // Execute the aggregation pipeline
+  const results = await Booking.aggregate(pipeline);
+
+  res.status(200).json({
+    status: 'success',
+    data: results,
+  });
+});

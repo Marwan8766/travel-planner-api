@@ -28,4 +28,9 @@ router.get(
   dashboardController.getMostUsedServiceLastSevenDays
 );
 
+router.get(
+  '/getMostSellingProducts',
+  dashboardController.getMostSellingProducts
+);
+
 module.exports = router;
