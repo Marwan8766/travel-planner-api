@@ -651,3 +651,55 @@ exports.getMostSellingProducts = catchAsync(async (req, res, next) => {
     data: topProducts,
   });
 });
+
+exports.getTopCompanies = catchAsync(async (req, res, next) => {
+  const pipelines = [
+    {
+      $match: { status: 'reserved' },
+    },
+    {
+      $group: {
+        _id: '$company',
+        totalQuantity: { $sum: '$quantity' },
+        totalIncome: { $sum: { $multiply: ['$price', 0.05] } },
+      },
+    },
+    {
+      $lookup: {
+        from: 'User',
+        localField: '_id',
+        foreignField: '_id',
+        as: 'companyData',
+      },
+    },
+    {
+      $unwind: '$companyData',
+    },
+    {
+      $project: {
+        companyName: '$companyData.name',
+        companyImage: '$companyData.image',
+        totalQuantity: 1,
+        totalIncome: 1,
+      },
+    },
+    {
+      $sort: {
+        totalQuantity: -1,
+      },
+    },
+    {
+      $limit: 4,
+    },
+  ];
+
+  const topCompanies = await Booking.aggregate(pipelines);
+
+  if (topCompanies.length === 0)
+    return next(new AppError('No companies found', 404));
+
+  res.status(200).json({
+    status: 'success',
+    data: topCompanies,
+  });
+});

@@ -33,4 +33,6 @@ router.get(
   dashboardController.getMostSellingProducts
 );
 
+router.get('/getTopCompanies', dashboardController.getTopCompanies);
+
 module.exports = router;
