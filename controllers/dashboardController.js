@@ -695,6 +695,8 @@ exports.getTopCompanies = catchAsync(async (req, res, next) => {
 
   const topCompanies = await Booking.aggregate(pipelines);
 
+  console.log(`topCompanies: ${JSON.stringify(topCompanies)}`);
+
   if (topCompanies.length === 0)
     return next(new AppError('No companies found', 404));
 
