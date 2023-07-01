@@ -667,7 +667,7 @@ exports.getTopCompanies = catchAsync(async (req, res, next) => {
     {
       $lookup: {
         from: 'User',
-        localField: '_id',
+        localField: 'company',
         foreignField: '_id',
         as: 'companyData',
       },
