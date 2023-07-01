@@ -667,21 +667,49 @@ exports.getTopCompanies = catchAsync(async (req, res, next) => {
     {
       $lookup: {
         from: 'users',
-        localField: {
-          $toObjectId: '$company',
-        },
-        foreignField: '_id',
+        let: { companyId: '$_id' },
+        pipeline: [
+          {
+            $match: {
+              $expr: { $eq: ['$$companyId', '$_id'] },
+            },
+          },
+          {
+            $project: {
+              name: 1,
+              image: 1,
+            },
+          },
+        ],
         as: 'companyData',
       },
+    },
+    {
+      $unwind: '$companyData',
+    },
+    {
+      $project: {
+        companyName: '$companyData.name',
+        companyImage: '$companyData.image',
+        totalQuantity: 1,
+        totalIncome: 1,
+      },
+    },
+    {
+      $sort: {
+        totalQuantity: -1,
+      },
+    },
+    {
+      $limit: 4,
     },
   ];
 
   const topCompanies = await Booking.aggregate(pipelines);
 
-  console.log(`topCompanies: ${JSON.stringify(topCompanies)}`);
-
-  if (topCompanies.length === 0)
+  if (topCompanies.length === 0) {
     return next(new AppError('No companies found', 404));
+  }
 
   res.status(200).json({
     status: 'success',
