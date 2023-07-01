@@ -606,7 +606,9 @@ exports.getMostSellingProducts = catchAsync(async (req, res, next) => {
       $group: {
         _id: {
           $cond: {
-            if: { $ne: ['$tour', null] },
+            if: {
+              $or: [{ $ne: ['$tour', null] }, { $ne: ['$tripProgram', null] }],
+            },
             then: '$tour',
             else: '$tripProgram',
           },
@@ -626,25 +628,52 @@ exports.getMostSellingProducts = catchAsync(async (req, res, next) => {
     {
       $lookup: {
         from: 'TripProgram', // Replace with the actual collection name for trip programs
-        localField: 'tripProram',
+        localField: 'tripProgram',
         foreignField: '_id',
-        as: 'productData',
+        as: 'tripProgramData',
       },
     },
     {
-      $unwind: '$productData',
+      $unwind: {
+        path: '$productData',
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $unwind: {
+        path: '$tripProgramData',
+        preserveNullAndEmptyArrays: true,
+      },
     },
     {
       $project: {
         _id: 1,
-        image: '$productData.image',
-        name: '$productData.name',
-        price: '$productData.price',
+        image: {
+          $cond: {
+            if: { $ne: ['$productData', null] },
+            then: '$productData.image',
+            else: '$tripProgramData.image',
+          },
+        },
+        name: {
+          $cond: {
+            if: { $ne: ['$productData', null] },
+            then: '$productData.name',
+            else: '$tripProgramData.name',
+          },
+        },
+        price: {
+          $cond: {
+            if: { $ne: ['$productData', null] },
+            then: '$productData.price',
+            else: '$tripProgramData.price',
+          },
+        },
         quantity: 1,
         totalPrice: 1,
         type: {
           $cond: {
-            if: { $ne: ['$tour', null] },
+            if: { $ne: ['$productData', null] },
             then: 'tour',
             else: 'tripProgram',
           },
