@@ -632,6 +632,18 @@ exports.getMostSellingProducts = catchAsync(async (req, res, next) => {
       },
     },
     {
+      $unwind: {
+        path: '$tourData',
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $unwind: {
+        path: '$tripProgramData',
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
       $project: {
         _id: 1,
         name: {
@@ -651,23 +663,23 @@ exports.getMostSellingProducts = catchAsync(async (req, res, next) => {
         quantity: 1,
         totalIncome: {
           $multiply: [
-            '$totalIncome',
+            '$totalPrice',
             { $literal: 0.05 }, // Apply the 5% multiplier
           ],
         },
-      },
-      type: {
-        $cond: {
-          if: { $ne: ['$tourData', null] },
-          then: 'tour',
-          else: 'tripProgram',
+        type: {
+          $cond: {
+            if: { $ne: ['$tourData', null] },
+            then: 'tour',
+            else: 'tripProgram',
+          },
         },
-      },
-      image: {
-        $cond: {
-          if: { $ne: ['$tourData', null] },
-          then: '$tourData.image',
-          else: '$tripProgramData.image',
+        image: {
+          $cond: {
+            if: { $ne: ['$tourData', null] },
+            then: '$tourData.image',
+            else: '$tripProgramData.image',
+          },
         },
       },
     },
