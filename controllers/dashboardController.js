@@ -613,21 +613,20 @@ exports.getMostSellingProducts = catchAsync(async (req, res, next) => {
         },
         quantity: { $sum: '$quantity' },
         totalPrice: { $sum: { $multiply: ['$price', '$quantity'] } },
-        type: { $first: '$type' },
       },
     },
     {
       $lookup: {
-        from: 'tours', // Replace with the actual collection name for tours
-        localField: '_id',
+        from: 'Tour', // Replace with the actual collection name for tours
+        localField: 'tour',
         foreignField: '_id',
         as: 'productData',
       },
     },
     {
       $lookup: {
-        from: 'tripPrograms', // Replace with the actual collection name for trip programs
-        localField: '_id',
+        from: 'TripProgram', // Replace with the actual collection name for trip programs
+        localField: 'tripProram',
         foreignField: '_id',
         as: 'productData',
       },
@@ -643,7 +642,13 @@ exports.getMostSellingProducts = catchAsync(async (req, res, next) => {
         price: '$productData.price',
         quantity: 1,
         totalPrice: 1,
-        type: 1,
+        type: {
+          $cond: {
+            if: { $ne: ['$tour', null] },
+            then: 'tour',
+            else: 'tripProgram',
+          },
+        },
       },
     },
     { $sort: { quantity: -1 } }, // Sort by quantity in descending order
