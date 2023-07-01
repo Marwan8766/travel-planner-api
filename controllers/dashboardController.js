@@ -616,7 +616,7 @@ exports.getMostSellingProducts = catchAsync(async (req, res, next) => {
   const productMap = new Map();
   bookings.forEach((booking) => {
     const product = booking.tour || booking.tripProgram;
-    const type = booking.type;
+    const type = booking.tour ? 'tour' : 'tripProgram';
     if (!product) return;
     const { name, price, image } = product;
     const totalQuantity = booking.quantity;
