@@ -613,6 +613,7 @@ exports.getMostSellingProducts = catchAsync(async (req, res, next) => {
       select: 'name price image',
     });
 
+  console.log(`bookings: ${JSON.stringify(bookings)}`);
   // Calculate the total income and group the results by product
   const productMap = new Map();
   bookings.forEach((booking) => {
