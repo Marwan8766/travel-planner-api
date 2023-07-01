@@ -599,48 +599,66 @@ exports.getMostSellingProducts = catchAsync(async (req, res, next) => {
     status: 'reserved',
   };
 
-  // Execute the find operation to get the most selling products
-  const bookings = await Booking.find(matchCondition)
-    .sort({ quantity: -1 })
-    .limit(4)
-    .select('quantity price tour tripProgram')
-    .populate({
-      path: 'tour',
-      select: 'name price image',
-    })
-    .populate({
-      path: 'tripProgram',
-      select: 'name price image',
-    });
-
-  // Calculate the total income and group the results by product
-  const productMap = new Map();
-  bookings.forEach((booking) => {
-    const product = booking.tour || booking.tripProgram;
-    if (!product) return;
-    const { name, price, image } = product;
-    const totalIncome = booking.price * 0.05; // Apply the 5% multiplier
-    if (productMap.has(product._id)) {
-      const existing = productMap.get(product._id);
-      existing.quantity += booking.quantity;
-      existing.totalIncome += totalIncome;
-    } else {
-      productMap.set(product._id, {
-        _id: product._id,
-        name,
-        price,
-        quantity: booking.quantity,
-        totalIncome,
-        type: product.__t === 'Tour' ? 'tour' : 'tripProgram',
-        image,
-      });
-    }
-  });
-
-  // Sort the products by quantity in descending order
-  const results = Array.from(productMap.values()).sort(
-    (a, b) => b.quantity - a.quantity
-  );
+  // Execute the aggregation pipeline to get the most selling products
+  const results = await Booking.aggregate([
+    { $match: matchCondition },
+    {
+      $group: {
+        _id: {
+          $cond: {
+            if: { $ne: ['$tour', null] },
+            then: '$tour',
+            else: '$tripProgram',
+          },
+        },
+        quantity: { $sum: '$quantity' },
+        totalPrice: { $sum: '$price' },
+      },
+    },
+    {
+      $lookup: {
+        from: 'Tour',
+        localField: '_id',
+        foreignField: '_id',
+        as: 'productData',
+      },
+    },
+    {
+      $lookup: {
+        from: 'TripProgram',
+        localField: '_id',
+        foreignField: '_id',
+        as: 'productData',
+      },
+    },
+    {
+      $project: {
+        _id: 1,
+        name: { $arrayElemAt: ['$productData.name', 0] },
+        price: { $arrayElemAt: ['$productData.price', 0] },
+        quantity: 1,
+        totalIncome: {
+          $multiply: ['$totalPrice', { $literal: 0.05 }], // Apply the 5% multiplier
+        },
+        type: {
+          $cond: {
+            if: { $ne: ['$productData', []] },
+            then: {
+              $cond: [
+                { $eq: [{ $arrayElemAt: ['$productData.__t', 0] }, 'Tour'] },
+                'tour',
+                'tripProgram',
+              ],
+            },
+            else: null,
+          },
+        },
+        image: { $arrayElemAt: ['$productData.image', 0] },
+      },
+    },
+    { $sort: { quantity: -1 } }, // Sort by quantity in descending order
+    { $limit: 4 }, // Get the top 4 most selling products
+  ]);
 
   res.status(200).json({
     status: 'success',
