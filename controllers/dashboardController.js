@@ -568,6 +568,90 @@ exports.getMostUsedServiceLastSevenDays = catchAsync(async (req, res, next) => {
   });
 });
 
+// exports.getMostSellingProducts = catchAsync(async (req, res, next) => {
+//   const { period } = req.query;
+
+//   // Get the current date
+//   const currentDate = new Date();
+
+//   // Calculate the start and end dates based on the period
+//   let startDate, endDate;
+//   if (period === 'Year') {
+//     startDate = new Date(currentDate.getFullYear() - 1, 0, 1); // Start of previous year
+//     endDate = new Date(currentDate.getFullYear(), 0, 0); // End of previous year
+//   } else if (period === 'Month') {
+//     startDate = new Date(
+//       currentDate.getFullYear(),
+//       currentDate.getMonth() - 1,
+//       1
+//     ); // Start of previous month
+//     endDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), 0); // End of previous month
+//   } else if (period === 'Week') {
+//     startDate = new Date(currentDate.getTime() - 7 * 24 * 60 * 60 * 1000); // Start of previous week
+//     endDate = currentDate; // End of current week
+//   } else {
+//     return next(new AppError('Invalid period specified.', 400));
+//   }
+
+//   // Build the match condition for bookings within the period
+//   const matchCondition = {
+//     updatedAt: { $gte: startDate, $lte: endDate },
+//     status: 'reserved',
+//   };
+
+//   // Execute the find operation to get the most selling products
+//   const bookings = await Booking.find(matchCondition)
+//     .select('quantity price tour tripProgram')
+//     .populate({
+//       path: 'tour',
+//       select: 'name price image',
+//     })
+//     .populate({
+//       path: 'tripProgram',
+//       select: 'name price image',
+//     })
+//     .lean();
+
+//   // Calculate the total quantity and total income and group the results by product
+//   const productMap = new Map();
+//   bookings.forEach((booking) => {
+//     const product = booking.tour || booking.tripProgram;
+//     const type = booking.tour ? 'tour' : 'tripProgram';
+//     if (!product) return;
+//     const { name, price, image } = product;
+//     const totalQuantity = booking.quantity;
+//     const totalIncome = booking.price * 0.05; // Apply the 5% multiplier per quantity
+//     if (productMap.has(product._id)) {
+//       const existing = productMap.get(product._id);
+//       existing.totalQuantity += totalQuantity;
+//       existing.totalIncome += totalIncome;
+//     } else {
+//       productMap.set(product._id, {
+//         _id: product._id,
+//         name,
+//         price,
+//         totalQuantity,
+//         totalIncome,
+//         type,
+//         image,
+//       });
+//     }
+//   });
+
+//   // Sort the products by total quantity in descending order
+//   const results = Array.from(productMap.values()).sort(
+//     (a, b) => b.totalQuantity - a.totalQuantity
+//   );
+
+//   // Get the top 4 products with the highest total quantity
+//   const topProducts = results.slice(0, 4);
+
+//   res.status(200).json({
+//     status: 'success',
+//     data: topProducts,
+//   });
+// });
+
 exports.getMostSellingProducts = catchAsync(async (req, res, next) => {
   const { period } = req.query;
 
@@ -599,52 +683,56 @@ exports.getMostSellingProducts = catchAsync(async (req, res, next) => {
     status: 'reserved',
   };
 
-  // Execute the find operation to get the most selling products
-  const bookings = await Booking.find(matchCondition)
-    .select('quantity price tour tripProgram')
-    .populate({
-      path: 'tour',
-      select: 'name price image',
-    })
-    .populate({
-      path: 'tripProgram',
-      select: 'name price image',
-    })
-    .lean();
-
-  // Calculate the total quantity and total income and group the results by product
-  const productMap = new Map();
-  bookings.forEach((booking) => {
-    const product = booking.tour || booking.tripProgram;
-    const type = booking.tour ? 'tour' : 'tripProgram';
-    if (!product) return;
-    const { name, price, image } = product;
-    const totalQuantity = booking.quantity;
-    const totalIncome = booking.price * 0.05; // Apply the 5% multiplier per quantity
-    if (productMap.has(product._id)) {
-      const existing = productMap.get(product._id);
-      existing.totalQuantity += totalQuantity;
-      existing.totalIncome += totalIncome;
-    } else {
-      productMap.set(product._id, {
-        _id: product._id,
-        name,
-        price,
-        totalQuantity,
-        totalIncome,
-        type,
-        image,
-      });
-    }
-  });
-
-  // Sort the products by total quantity in descending order
-  const results = Array.from(productMap.values()).sort(
-    (a, b) => b.totalQuantity - a.totalQuantity
-  );
-
-  // Get the top 4 products with the highest total quantity
-  const topProducts = results.slice(0, 4);
+  // Execute the aggregation pipeline
+  const topProducts = await Booking.aggregate([
+    { $match: matchCondition },
+    {
+      $lookup: {
+        from: 'tours', // Update with the actual name of the tours collection
+        let: { tourId: '$tour' },
+        pipeline: [
+          { $match: { $expr: { $eq: ['$_id', '$$tourId'] } } },
+          { $project: { name: 1, price: 1, image: 1 } },
+        ],
+        as: 'tour',
+      },
+    },
+    {
+      $lookup: {
+        from: 'tripprograms', // Update with the actual name of the tripPrograms collection
+        let: { tripProgramId: '$tripProgram' },
+        pipeline: [
+          { $match: { $expr: { $eq: ['$_id', '$$tripProgramId'] } } },
+          { $project: { name: 1, price: 1, image: 1 } },
+        ],
+        as: 'tripProgram',
+      },
+    },
+    {
+      $addFields: {
+        product: {
+          $cond: {
+            if: { $ne: ['$tour', []] },
+            then: { $arrayElemAt: ['$tour', 0] },
+            else: { $arrayElemAt: ['$tripProgram', 0] },
+          },
+        },
+      },
+    },
+    {
+      $group: {
+        _id: '$product._id',
+        name: { $first: '$product.name' },
+        price: { $first: '$product.price' },
+        totalQuantity: { $sum: '$quantity' },
+        totalIncome: { $sum: { $multiply: ['$price', 0.05, '$quantity'] } },
+        type: { $first: { $ifNull: ['$tour.type', '$tripProgram.type'] } },
+        image: { $first: { $ifNull: ['$tour.image', '$tripProgram.image'] } },
+      },
+    },
+    { $sort: { totalQuantity: -1 } },
+    { $limit: 4 },
+  ]);
 
   res.status(200).json({
     status: 'success',
