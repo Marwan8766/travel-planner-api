@@ -617,7 +617,7 @@ exports.getMostSellingProducts = catchAsync(async (req, res, next) => {
     },
     {
       $lookup: {
-        from: 'Tour', // Replace with the actual collection name for tours
+        from: 'Tour',
         localField: 'tour',
         foreignField: '_id',
         as: 'productData',
@@ -625,7 +625,7 @@ exports.getMostSellingProducts = catchAsync(async (req, res, next) => {
     },
     {
       $lookup: {
-        from: 'TripProgram', // Replace with the actual collection name for trip programs
+        from: 'Tripprogram',
         localField: 'tripProgram',
         foreignField: '_id',
         as: 'tripProgramData',
@@ -646,13 +646,6 @@ exports.getMostSellingProducts = catchAsync(async (req, res, next) => {
     {
       $project: {
         _id: 1,
-        image: {
-          $cond: {
-            if: { $ne: ['$productData', null] },
-            then: '$productData.image',
-            else: '$tripProgramData.image',
-          },
-        },
         name: {
           $cond: {
             if: { $ne: ['$productData', null] },
@@ -669,13 +662,36 @@ exports.getMostSellingProducts = catchAsync(async (req, res, next) => {
         },
         quantity: 1,
         totalIncome: {
-          $multiply: [{ $multiply: ['$price', '$quantity'] }, 0.05],
+          $cond: {
+            if: { $ne: ['$productData', null] },
+            then: {
+              $multiply: [
+                '$productData.price',
+                '$quantity',
+                { $literal: 0.05 }, // Apply the 5% multiplier
+              ],
+            },
+            else: {
+              $multiply: [
+                '$tripProgramData.price',
+                '$quantity',
+                { $literal: 0.05 }, // Apply the 5% multiplier
+              ],
+            },
+          },
         },
         type: {
           $cond: {
             if: { $ne: ['$productData', null] },
             then: 'tour',
             else: 'tripProgram',
+          },
+        },
+        image: {
+          $cond: {
+            if: { $ne: ['$productData', null] },
+            then: '$productData.image',
+            else: '$tripProgramData.image',
           },
         },
       },
