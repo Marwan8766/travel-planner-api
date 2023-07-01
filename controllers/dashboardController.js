@@ -670,7 +670,9 @@ exports.getMostSellingProducts = catchAsync(async (req, res, next) => {
           },
         },
         quantity: 1,
-        totalPrice: 1,
+        totalIncome: {
+          $multiply: [{ $sum: { $multiply: ['$price', '$quantity'] } }, 0.05],
+        },
         type: {
           $cond: {
             if: { $ne: ['$productData', null] },
@@ -681,7 +683,7 @@ exports.getMostSellingProducts = catchAsync(async (req, res, next) => {
       },
     },
     { $sort: { quantity: -1 } }, // Sort by quantity in descending order
-    { $limit: 10 }, // Get the top 10 most selling products
+    { $limit: 4 }, // Get the top 10 most selling products
   ];
 
   // Execute the aggregation pipeline
