@@ -664,17 +664,6 @@ exports.getTopCompanies = catchAsync(async (req, res, next) => {
         totalIncome: { $sum: { $multiply: ['$price', 0.05] } },
       },
     },
-    {
-      $lookup: {
-        from: 'users',
-        localField: 'company',
-        foreignField: '_id',
-        as: 'companyData',
-      },
-    },
-    {
-      $unwind: '$companyData',
-    },
   ];
 
   const topCompanies = await Booking.aggregate(pipelines);
