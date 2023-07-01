@@ -613,12 +613,19 @@ exports.getMostSellingProducts = catchAsync(async (req, res, next) => {
         },
         quantity: { $sum: '$quantity' },
         totalPrice: { $sum: '$price' },
+        tourId: { $first: '$tour' },
+        tripProgramId: { $first: '$tripProgram' },
+      },
+    },
+    {
+      $addFields: {
+        intermediateResults1: '$$ROOT',
       },
     },
     {
       $lookup: {
         from: 'Tour',
-        localField: '_id',
+        localField: 'tourId',
         foreignField: '_id',
         as: 'tourData',
       },
@@ -626,9 +633,14 @@ exports.getMostSellingProducts = catchAsync(async (req, res, next) => {
     {
       $lookup: {
         from: 'TripProgram',
-        localField: '_id',
+        localField: 'tripProgramId',
         foreignField: '_id',
         as: 'tripProgramData',
+      },
+    },
+    {
+      $addFields: {
+        intermediateResults2: '$$ROOT',
       },
     },
     {
@@ -677,6 +689,8 @@ exports.getMostSellingProducts = catchAsync(async (req, res, next) => {
 
   // Execute the aggregation pipeline
   const results = await Booking.aggregate(pipeline);
+
+  console.log('Aggregation results:', results);
 
   res.status(200).json({
     status: 'success',
