@@ -675,14 +675,7 @@ exports.getTopCompanies = catchAsync(async (req, res, next) => {
     {
       $unwind: '$companyData',
     },
-    {
-      $project: {
-        companyName: '$companyData.name',
-        companyImage: '$companyData.image',
-        totalQuantity: 1,
-        totalIncome: 1,
-      },
-    },
+
     {
       $sort: {
         totalQuantity: -1,
