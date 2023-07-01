@@ -612,7 +612,7 @@ exports.getMostSellingProducts = catchAsync(async (req, res, next) => {
           },
         },
         quantity: { $sum: '$quantity' },
-        totalPrice: { $sum: { $multiply: ['$price', '$quantity'] } },
+        totalPrice: { $sum: '$price' },
       },
     },
     {
@@ -620,27 +620,15 @@ exports.getMostSellingProducts = catchAsync(async (req, res, next) => {
         from: 'Tour',
         localField: 'tour',
         foreignField: '_id',
-        as: 'productData',
+        as: 'tourData',
       },
     },
     {
       $lookup: {
-        from: 'Tripprogram',
+        from: 'TripProgram',
         localField: 'tripProgram',
         foreignField: '_id',
         as: 'tripProgramData',
-      },
-    },
-    {
-      $unwind: {
-        path: '$productData',
-        preserveNullAndEmptyArrays: true,
-      },
-    },
-    {
-      $unwind: {
-        path: '$tripProgramData',
-        preserveNullAndEmptyArrays: true,
       },
     },
     {
@@ -648,51 +636,38 @@ exports.getMostSellingProducts = catchAsync(async (req, res, next) => {
         _id: 1,
         name: {
           $cond: {
-            if: { $ne: ['$productData', null] },
-            then: '$productData.name',
+            if: { $ne: ['$tourData', null] },
+            then: '$tourData.name',
             else: '$tripProgramData.name',
           },
         },
         price: {
           $cond: {
-            if: { $ne: ['$productData', null] },
-            then: '$productData.price',
+            if: { $ne: ['$tourData', null] },
+            then: '$tour.price',
             else: '$tripProgramData.price',
           },
         },
         quantity: 1,
         totalIncome: {
-          $cond: {
-            if: { $ne: ['$productData', null] },
-            then: {
-              $multiply: [
-                '$productData.price',
-                '$quantity',
-                { $literal: 0.05 }, // Apply the 5% multiplier
-              ],
-            },
-            else: {
-              $multiply: [
-                '$tripProgramData.price',
-                '$quantity',
-                { $literal: 0.05 }, // Apply the 5% multiplier
-              ],
-            },
-          },
+          $multiply: [
+            '$totalIncome',
+            { $literal: 0.05 }, // Apply the 5% multiplier
+          ],
         },
-        type: {
-          $cond: {
-            if: { $ne: ['$productData', null] },
-            then: 'tour',
-            else: 'tripProgram',
-          },
+      },
+      type: {
+        $cond: {
+          if: { $ne: ['$tourData', null] },
+          then: 'tour',
+          else: 'tripProgram',
         },
-        image: {
-          $cond: {
-            if: { $ne: ['$productData', null] },
-            then: '$productData.image',
-            else: '$tripProgramData.image',
-          },
+      },
+      image: {
+        $cond: {
+          if: { $ne: ['$tourData', null] },
+          then: '$tourData.image',
+          else: '$tripProgramData.image',
         },
       },
     },
