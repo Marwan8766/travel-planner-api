@@ -568,74 +568,106 @@ exports.getMostUsedServiceLastSevenDays = catchAsync(async (req, res, next) => {
   });
 });
 
-// Execute the find operation to get the most selling products
-const bookings = await Booking.find(matchCondition)
-  .sort({ quantity: -1 })
-  .limit(4)
-  .select('quantity price tour tripProgram')
-  .populate({
-    path: 'tour',
-    select: 'name price image',
-  })
-  .populate({
-    path: 'tripProgram',
-    select: 'name price image',
-  })
-  .lean();
+exports.getMostSellingProducts = catchAsync(async (req, res, next) => {
+  const { period } = req.query;
 
-// Calculate the total income and group the results by product
-const productMap = new Map();
-bookings.forEach((booking) => {
-  const tour = booking.tour;
-  const tripProgram = booking.tripProgram;
+  // Get the current date
+  const currentDate = new Date();
 
-  if (tour) {
-    const { _id, name, price, image } = tour;
-    const totalIncome = booking.price * 0.05; // Apply the 5% multiplier
-
-    if (productMap.has(_id)) {
-      const existing = productMap.get(_id);
-      existing.quantity += booking.quantity;
-      existing.totalIncome += totalIncome;
-    } else {
-      productMap.set(_id, {
-        _id,
-        name,
-        price,
-        quantity: booking.quantity,
-        totalIncome,
-        type: 'tour',
-        image,
-      });
-    }
-  } else if (tripProgram) {
-    const { _id, name, price, image } = tripProgram;
-    const totalIncome = booking.price * 0.05; // Apply the 5% multiplier
-
-    if (productMap.has(_id)) {
-      const existing = productMap.get(_id);
-      existing.quantity += booking.quantity;
-      existing.totalIncome += totalIncome;
-    } else {
-      productMap.set(_id, {
-        _id,
-        name,
-        price,
-        quantity: booking.quantity,
-        totalIncome,
-        type: 'tripProgram',
-        image,
-      });
-    }
+  // Calculate the start and end dates based on the period
+  let startDate, endDate;
+  if (period === 'Year') {
+    startDate = new Date(currentDate.getFullYear() - 1, 0, 1); // Start of previous year
+    endDate = new Date(currentDate.getFullYear(), 0, 0); // End of previous year
+  } else if (period === 'Month') {
+    startDate = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth() - 1,
+      1
+    ); // Start of previous month
+    endDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), 0); // End of previous month
+  } else if (period === 'Week') {
+    startDate = new Date(currentDate.getTime() - 7 * 24 * 60 * 60 * 1000); // Start of previous week
+    endDate = currentDate; // End of current week
+  } else {
+    return next(new AppError('Invalid period specified.', 400));
   }
-});
 
-// Sort the products by quantity in descending order
-const results = Array.from(productMap.values()).sort(
-  (a, b) => b.quantity - a.quantity
-);
+  // Build the match condition for bookings within the period
+  const matchCondition = {
+    updatedAt: { $gte: startDate, $lte: endDate },
+    status: 'reserved',
+  };
 
-res.status(200).json({
-  status: 'success',
-  data: results,
+  // Execute the find operation to get the most selling products
+  const bookings = await Booking.find(matchCondition)
+    .sort({ quantity: -1 })
+    .limit(4)
+    .select('quantity price tour tripProgram')
+    .populate({
+      path: 'tour',
+      select: 'name price image',
+    })
+    .populate({
+      path: 'tripProgram',
+      select: 'name price image',
+    })
+    .lean();
+
+  // Calculate the total income and group the results by product
+  const productMap = new Map();
+  bookings.forEach((booking) => {
+    const tour = booking.tour;
+    const tripProgram = booking.tripProgram;
+
+    if (tour) {
+      const { _id, name, price, image } = tour;
+      const totalIncome = booking.price * 0.05; // Apply the 5% multiplier
+
+      if (productMap.has(_id)) {
+        const existing = productMap.get(_id);
+        existing.quantity += booking.quantity;
+        existing.totalIncome += totalIncome;
+      } else {
+        productMap.set(_id, {
+          _id,
+          name,
+          price,
+          quantity: booking.quantity,
+          totalIncome,
+          type: 'tour',
+          image,
+        });
+      }
+    } else if (tripProgram) {
+      const { _id, name, price, image } = tripProgram;
+      const totalIncome = booking.price * 0.05; // Apply the 5% multiplier
+
+      if (productMap.has(_id)) {
+        const existing = productMap.get(_id);
+        existing.quantity += booking.quantity;
+        existing.totalIncome += totalIncome;
+      } else {
+        productMap.set(_id, {
+          _id,
+          name,
+          price,
+          quantity: booking.quantity,
+          totalIncome,
+          type: 'tripProgram',
+          image,
+        });
+      }
+    }
+  });
+
+  // Sort the products by quantity in descending order
+  const results = Array.from(productMap.values()).sort(
+    (a, b) => b.quantity - a.quantity
+  );
+
+  res.status(200).json({
+    status: 'success',
+    data: results,
+  });
 });
