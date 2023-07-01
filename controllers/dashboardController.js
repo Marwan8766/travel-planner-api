@@ -703,6 +703,11 @@ exports.getTopCompanies = catchAsync(async (req, res, next) => {
     {
       $limit: 4,
     },
+    {
+      $addFields: {
+        totalIncome: { $floor: '$totalIncome' },
+      },
+    },
   ];
 
   const topCompanies = await Booking.aggregate(pipelines);
