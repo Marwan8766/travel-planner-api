@@ -602,6 +602,7 @@ exports.getMostSellingProducts = catchAsync(async (req, res, next) => {
   // Execute the find operation to get the most selling products
   const bookings = await Booking.find(matchCondition)
     .limit(4)
+    .sort({ quantity: -1 })
     .select('quantity price tour tripProgram')
     .populate({
       path: 'tour',
