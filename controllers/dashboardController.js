@@ -616,6 +616,7 @@ exports.getMostSellingProducts = catchAsync(async (req, res, next) => {
   const productMap = new Map();
   bookings.forEach((booking) => {
     const product = booking.tour || booking.tripProgram;
+    const type = booking.type;
     if (!product) return;
     const { name, price, image } = product;
     const totalQuantity = booking.quantity;
@@ -631,7 +632,7 @@ exports.getMostSellingProducts = catchAsync(async (req, res, next) => {
         price,
         totalQuantity,
         totalIncome,
-        type: product.__t === 'Tour' ? 'tour' : 'tripProgram',
+        type,
         image,
       });
     }
@@ -642,11 +643,11 @@ exports.getMostSellingProducts = catchAsync(async (req, res, next) => {
     (a, b) => b.totalQuantity - a.totalQuantity
   );
 
-  // Get the top 4 most booked products
-  const finalResults = results.slice(0, 4);
+  // Get the top 4 products with the highest total quantity
+  const topProducts = results.slice(0, 4);
 
   res.status(200).json({
     status: 'success',
-    data: finalResults,
+    data: topProducts,
   });
 });
