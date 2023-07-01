@@ -665,6 +665,8 @@ exports.getMostSellingProducts = catchAsync(async (req, res, next) => {
     (a, b) => b.quantity - a.quantity
   );
 
+  const final_results = results.slice(0, 4);
+
   res.status(200).json({
     status: 'success',
     data: results,
