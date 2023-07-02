@@ -52,6 +52,7 @@ exports.chatbotWebhookHandler = catchAsync(async (req, res, next) => {
   } else if (Location && Location.country) {
     location = Location.country;
   }
+  if (!location) location = Location;
 
   console.log(`locationFirstParameter: ${location}`);
 
