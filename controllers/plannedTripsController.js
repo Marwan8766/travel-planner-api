@@ -78,7 +78,7 @@ async function searchPlacesByPreferences(
 
     const query = `${types.join('|')} ${location}`;
 
-    const url = `${baseUrl}?key=${apiKey}&query=${query}`;
+    let url = `${baseUrl}?key=${apiKey}&query=${query}`;
 
     let numberOfDays = 5;
 
