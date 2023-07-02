@@ -843,6 +843,9 @@ const getAttractions = async (location, prefrence) => {
 
   console.log(`filteredResults: ${JSON.stringify(filteredResults)}`);
 
+  // Sort the filtered results by rating in descending order
+  filteredResults.sort((a, b) => b.rating - a.rating);
+
   // Get the top 5 attractions
   const top5Attractions = filteredResults.slice(0, 5);
 
