@@ -32,7 +32,7 @@ exports.chatbotWebhookHandler = catchAsync(async (req, res, next) => {
     adults,
     rooms,
     // Attractions
-    prefrence,
+    preference,
   } = req.body.queryResult.parameters;
 
   const sessionId = req.body.session;
@@ -129,11 +129,11 @@ exports.chatbotWebhookHandler = catchAsync(async (req, res, next) => {
       console.log('attractions intent');
       const fulfillmentMessagesList = await handleAttractionsIntent(
         location,
-        prefrence
+        preference
       );
 
       if (fulfillmentMessagesList.length === 0) {
-        textResponse = `Sorry couldn't find attractions in ${location} matching ${prefrence}`;
+        textResponse = `Sorry couldn't find attractions in ${location} matching ${preference}`;
         break;
       }
 
@@ -827,7 +827,7 @@ const getAttractions = async (location, prefrence) => {
       name,
       rating,
       placeId: place_id,
-      link: `https://maps.google.com/?q=${name.join(' ')}`,
+      link: `https://maps.google.com/?q=${name.replace(/ /g, '-')}`,
       coordinates: [geometry.location.lng, geometry.location.lat],
       address: formatted_address,
       photo: photos && photos.length > 0 ? photos[0].photo_reference : null,
