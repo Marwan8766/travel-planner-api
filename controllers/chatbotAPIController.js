@@ -124,6 +124,7 @@ exports.chatbotWebhookHandler = catchAsync(async (req, res, next) => {
       break;
 
     case 'timeout':
+      console.log('timeout intent');
       function wait(ms) {
         return new Promise((resolve) => setTimeout(resolve, ms));
       }
