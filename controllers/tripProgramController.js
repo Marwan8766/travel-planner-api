@@ -131,7 +131,7 @@ exports.GetAllTripProgram = catchAsync(async (req, res, next) => {
     price: { $gte: minPrice, $lte: maxPrice },
   };
 
-  let sort = { createdAt: -1 }; // Sort by createdAt in descending order
+  let sort = { CreatedAt: -1 }; // Sort by createdAt in descending order
 
   let query = TripProgram.find(priceFilter)
     .sort(sort) // Sort by createdAt
