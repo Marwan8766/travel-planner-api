@@ -14,6 +14,7 @@ exports.getPlannedTrips = catchAsync(async (req, res, next) => {
   const skip = (page - 1) * limit;
 
   const plannedTrips = await PlannedTrip.find({ user: req.user._id })
+    .sort({ _id: -1 }) // Sort by ObjectId in descending order
     .skip(skip)
     .limit(limit);
   res.status(200).json({
