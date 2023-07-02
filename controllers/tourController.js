@@ -9,8 +9,8 @@ exports.createTour = catchAsync(async (req, res, next) => {
   let { name, price, summary, description, startLocations, locations } =
     req.body;
 
-  startLocations = JSON.parse(startLocations);
-  locations = JSON.parse(locations);
+  if (startLocations) startLocations = JSON.parse(startLocations);
+  if (locations) locations = JSON.parse(locations);
 
   let image = '';
   if (req.file) {
