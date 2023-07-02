@@ -6,6 +6,7 @@ const { query } = require('express');
 const axios = require('axios');
 const { options } = require('../app');
 const { json } = require('body-parser');
+const Chatbot = require('../models/chatbotModel');
 
 exports.chatbotWebhookHandler = catchAsync(async (req, res, next) => {
   let {
@@ -32,6 +33,8 @@ exports.chatbotWebhookHandler = catchAsync(async (req, res, next) => {
     rooms,
   } = req.body.queryResult.parameters;
 
+  const sessionId = req.body.session;
+
   if (departureDate && departureDate.length > 0)
     departureDate = extractDate(departureDate);
   if (returnDate && returnDate.length > 0) returnDate = extractDate(returnDate);
@@ -51,7 +54,7 @@ exports.chatbotWebhookHandler = catchAsync(async (req, res, next) => {
   // console.log(`location: ${location}`);
   // console.log(`budget: ${budget}`);
   // console.log(`Date_period: ${Date_period}`);
-  // console.log(`req.body: ${JSON.stringify(req.body)}`);
+  console.log(`req.body: ${JSON.stringify(req.body)}`);
 
   // Extract the intent display name
   const intentDisplayName = req.body.queryResult.intent.displayName;
@@ -120,6 +123,17 @@ exports.chatbotWebhookHandler = catchAsync(async (req, res, next) => {
 
       break;
 
+    case 'timeout':
+      function wait(ms) {
+        return new Promise((resolve) => setTimeout(resolve, ms));
+      }
+
+      await wait(2000);
+
+      textResponse = await Chatbot.findOne({ sessionId });
+
+      break;
+
     default:
       console.log(`intent not found`);
       textResponse = "this intent can't be found";
@@ -127,6 +141,11 @@ exports.chatbotWebhookHandler = catchAsync(async (req, res, next) => {
   }
 
   // console.log(`textResponse: ${textResponse}`);
+  await Chatbot.create({
+    sessionId: sessionId.toString(),
+    message: textResponse,
+  });
+
   // send the res with the textResponse
   res.status(200).json({
     fulfillmentMessages: [
