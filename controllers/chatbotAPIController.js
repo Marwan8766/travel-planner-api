@@ -810,7 +810,7 @@ const getAttractions = async (location, prefrence) => {
 
   const baseUrl = 'https://maps.googleapis.com/maps/api/place/textsearch/json';
 
-  const query = `type ${prefrence} in ${location}`;
+  const query = `type ${prefrence} ${location}`;
 
   const url = `${baseUrl}?key=${apiKey}&query=${query}`;
 
@@ -827,12 +827,14 @@ const getAttractions = async (location, prefrence) => {
       name,
       rating,
       placeId: place_id,
-      link: `https://maps.google.com/?q=${geometry.location.lng},${geometry.location.lat}`,
+      link: `https://maps.google.com/?q=${name}`,
       coordinates: [geometry.location.lng, geometry.location.lat],
       address: formatted_address,
       photo: photos && photos.length > 0 ? photos[0].photo_reference : null,
     };
   });
+
+  console.log(`filteredResults: ${JSON.stringify(filteredResults)}`);
 
   // Sort the filtered results by rating in descending order
   filteredResults.sort((a, b) => b.rating - a.rating);
@@ -848,12 +850,12 @@ const getAttractions = async (location, prefrence) => {
 const constructAttractionText = (attractions) => {
   const fulfillmentMessagesList = [];
 
-  attractions.forEach((atraction) => {
+  attractions.forEach((attraction) => {
     let cardText = '';
 
-    cardText += `• ${atraction.name}\n`;
-    cardText += `  Rating: ${atraction.rating}\n`;
-    cardText += `  Address: ${atraction.address}\n`;
+    cardText += `• ${attraction.name}\n`;
+    cardText += `  Rating: ${attraction.rating}\n`;
+    cardText += `  Address: ${attraction.address}\n`;
 
     const cardObj = {
       card: {
