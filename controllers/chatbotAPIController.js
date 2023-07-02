@@ -142,10 +142,16 @@ exports.chatbotWebhookHandler = catchAsync(async (req, res, next) => {
   }
 
   // console.log(`textResponse: ${textResponse}`);
-  await Chatbot.create({
-    sessionId: sessionId.toString(),
-    message: textResponse,
-  });
+  const storedSession = await Chatbot.findOne({ sessionId });
+  if (storedSession) {
+    storedSession.message = textResponse;
+    await storedSession.save({ validateModifiedOnly: true });
+  } else {
+    await Chatbot.create({
+      sessionId: sessionId.toString(),
+      message: textResponse,
+    });
+  }
 
   // send the res with the textResponse
   res.status(200).json({
