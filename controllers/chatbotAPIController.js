@@ -126,17 +126,26 @@ exports.chatbotWebhookHandler = catchAsync(async (req, res, next) => {
       break;
 
     case 'attractions':
+      console.log('attractions intent');
       const fulfillmentMessagesList = await handleAttractionsIntent(
         location,
         prefrence
       );
 
-      if (fulfillmentMessagesList.length === 0)
+      if (fulfillmentMessagesList.length === 0) {
         textResponse = `Sorry couldn't find attractions in ${location} matching ${prefrence}`;
+        break;
+      }
+
+      console.log(
+        `fulfillmentMessagesList: ${JSON.stringify(fulfillmentMessagesList)}`
+      );
 
       res.status(200).json({
         fulfillmentMessages: fulfillmentMessagesList,
       });
+
+      return;
 
       break;
 
@@ -830,6 +839,8 @@ const getAttractions = async (location, prefrence) => {
 
   // Get the top 5 attractions
   const top5Attractions = filteredResults.slice(0, 5);
+
+  console.log(`attractions: ${JSON.stringify(top5Attractions)}`);
 
   return top5Attractions;
 };
