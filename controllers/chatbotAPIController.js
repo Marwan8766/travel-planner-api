@@ -31,6 +31,8 @@ exports.chatbotWebhookHandler = catchAsync(async (req, res, next) => {
     checkOutDate,
     adults,
     rooms,
+    // Attractions
+    prefrence,
   } = req.body.queryResult.parameters;
 
   const sessionId = req.body.session;
@@ -120,6 +122,21 @@ exports.chatbotWebhookHandler = catchAsync(async (req, res, next) => {
 
       if (textResponse.length === 0)
         textResponse = `Sorry, couldn't find hotels in this city ${hotelCity} in checkin date ${checkInDate} and checkout date ${checkOutDate}`;
+
+      break;
+
+    case 'attractions':
+      const fulfillmentMessagesList = await handleAttractionsIntent(
+        location,
+        prefrence
+      );
+
+      if (fulfillmentMessagesList.length === 0)
+        textResponse = `Sorry couldn't find attractions in ${location} matching ${prefrence}`;
+
+      res.status(200).json({
+        fulfillmentMessages: fulfillmentMessagesList,
+      });
 
       break;
 
@@ -778,3 +795,82 @@ const handleHotelsIntent = async (
 //     throw new Error('Failed to handle hotels intent');
 //   }
 // };
+
+const getAttractions = async (location, prefrence) => {
+  const apiKey = process.env.GOOGLE_MAPS_API_KEY; // Replace with your Google Places API key
+
+  const baseUrl = 'https://maps.googleapis.com/maps/api/place/textsearch/json';
+
+  const query = `type ${prefrence} in ${location}`;
+
+  const url = `${baseUrl}?key=${apiKey}&query=${query}`;
+
+  let places = [];
+
+  const response = await axios.get(url);
+  const results = response.data.results;
+
+  // Extract only the required fields from the results
+  const filteredResults = results.map((result) => {
+    const { name, rating, geometry, formatted_address, photos, place_id } =
+      result;
+    return {
+      name,
+      rating,
+      placeId: place_id,
+      link: `https://maps.google.com/?q=${geometry.location.lng},${geometry.location.lat}`,
+      coordinates: [geometry.location.lng, geometry.location.lat],
+      address: formatted_address,
+      photo: photos && photos.length > 0 ? photos[0].photo_reference : null,
+    };
+  });
+
+  // Sort the filtered results by rating in descending order
+  filteredResults.sort((a, b) => b.rating - a.rating);
+
+  // Get the top 5 attractions
+  const top5Attractions = filteredResults.slice(0, 5);
+
+  return top5Attractions;
+};
+
+const constructAttractionText = (attractions) => {
+  const fulfillmentMessagesList = [];
+
+  attractions.forEach((atraction) => {
+    let cardText = '';
+
+    cardText += `• ${atraction.name}\n`;
+    cardText += `  Rating: ${atraction.rating}\n`;
+    cardText += `  Address: ${atraction.address}\n`;
+
+    const cardObj = {
+      card: {
+        title: attraction.name,
+        subtitle: cardText,
+        imageUri: attraction.photo,
+        buttons: [
+          {
+            text: `${attraction.name} Link`,
+            postback: attraction.link,
+          },
+        ],
+      },
+    };
+
+    fulfillmentMessagesList.push(cardObj);
+  });
+
+  return fulfillmentMessagesList;
+};
+
+const handleAttractionsIntent = async (location, prefrence) => {
+  // get the attractions list
+  const attractions = await getAttractions(location, prefrence);
+
+  // construct the card list
+  const fulfillmentMessagesList = constructAttractionText(attractions);
+
+  // return the card list
+  return fulfillmentMessagesList;
+};

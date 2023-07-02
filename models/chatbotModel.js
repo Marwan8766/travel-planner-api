@@ -11,6 +11,7 @@ const chatbotSchema = new mongoose.Schema({
     type: String,
     required: [true, 'A session must have a session id'],
   },
+  hotelCityGeoId: String,
   created_at: { type: Date, default: Date.now },
   updated_at: { type: Date, default: Date.now },
 });
