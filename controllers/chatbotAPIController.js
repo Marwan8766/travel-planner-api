@@ -614,9 +614,9 @@ const getGeoId = async (hotelCity) => {
 
     const response = await axios.request(options);
     const geoid = response.data.data[0].geoId;
-    // console.log(`geoid string: ${geoid}`);
+    console.log(`geoid string: ${geoid}`);
     const numericGeoid = geoid.split(';')[1];
-    // console.log(`numericGeoID: ${numericGeoid}`);
+    console.log(`numericGeoID: ${numericGeoid}`);
     return numericGeoid;
   } catch (error) {
     console.error(`error getting the geoid of ${hotelCity}: ${error}`);
@@ -706,36 +706,6 @@ const validateHotelParams = (checkInDate, checkOutDate) => {
   return 'correct';
 };
 
-// const handleHotelsIntent = async (
-//   hotelCity,
-//   checkInDate,
-//   checkOutDate,
-//   adults,
-//   rooms
-// ) => {
-//   let text = '';
-
-//   if (!hotelCity) return (text = 'Please provide the city');
-
-//   const geoId = await getGeoId(hotelCity);
-//   if (!geoId) return (text = `can't find this city: ${hotelCity}`);
-
-//   text = validateHotelParams(checkInDate, checkOutDate);
-//   if (text !== 'correct') return text;
-
-//   const hotelsData = await getHotelsFromAPI(
-//     geoId,
-//     checkInDate,
-//     checkOutDate,
-//     adults,
-//     rooms
-//   );
-
-//   text = constructHotelsText(hotelsData);
-
-//   return text;
-// };
-
 const handleHotelsIntent = async (
   hotelCity,
   checkInDate,
@@ -743,30 +713,60 @@ const handleHotelsIntent = async (
   adults,
   rooms
 ) => {
-  if (!hotelCity) return 'Please provide the city.';
+  let text = '';
 
-  try {
-    const [geoId, validationMessage] = await Promise.all([
-      getGeoId(hotelCity),
-      validateHotelParams(checkInDate, checkOutDate),
-    ]);
+  if (!hotelCity) return (text = 'Please provide the city');
 
-    if (!geoId) return `Can't find hotels for this city: ${hotelCity}`;
-    if (validationMessage !== 'correct') return validationMessage;
+  const geoId = await getGeoId(hotelCity);
+  if (!geoId) return (text = `can't find this city: ${hotelCity}`);
 
-    const hotelsData = await getHotelsFromAPI(
-      geoId,
-      checkInDate,
-      checkOutDate,
-      adults,
-      rooms
-    );
+  text = validateHotelParams(checkInDate, checkOutDate);
+  if (text !== 'correct') return text;
 
-    const hotelsText = constructHotelsText(hotelsData);
+  const hotelsData = await getHotelsFromAPI(
+    geoId,
+    checkInDate,
+    checkOutDate,
+    adults,
+    rooms
+  );
 
-    return hotelsText;
-  } catch (error) {
-    console.error(`Error handling hotels intent: ${error}`);
-    throw new Error('Failed to handle hotels intent');
-  }
+  text = constructHotelsText(hotelsData);
+
+  return text;
 };
+
+// const handleHotelsIntent = async (
+//   hotelCity,
+//   checkInDate,
+//   checkOutDate,
+//   adults,
+//   rooms
+// ) => {
+//   if (!hotelCity) return 'Please provide the city.';
+
+//   try {
+//     const [geoId, validationMessage] = await Promise.all([
+//       getGeoId(hotelCity),
+//       validateHotelParams(checkInDate, checkOutDate),
+//     ]);
+
+//     if (!geoId) return `Can't find hotels for this city: ${hotelCity}`;
+//     if (validationMessage !== 'correct') return validationMessage;
+
+//     const hotelsData = await getHotelsFromAPI(
+//       geoId,
+//       checkInDate,
+//       checkOutDate,
+//       adults,
+//       rooms
+//     );
+
+//     const hotelsText = constructHotelsText(hotelsData);
+
+//     return hotelsText;
+//   } catch (error) {
+//     console.error(`Error handling hotels intent: ${error}`);
+//     throw new Error('Failed to handle hotels intent');
+//   }
+// };
