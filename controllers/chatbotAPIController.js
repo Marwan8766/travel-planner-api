@@ -183,9 +183,10 @@ const createMessageTour = (matchedTours) => {
   }
 
   matchedTours.forEach((tour, index) => {
-    const { name, price } = tour;
+    const { name, price, description } = tour;
     message += `\u2022 Tour ${index + 1}:\n`;
     message += `   Name: ${name}\n`;
+    message += `   Description: ${description}\n`;
     message += `   Price: $${price}\n\n`;
   });
 
