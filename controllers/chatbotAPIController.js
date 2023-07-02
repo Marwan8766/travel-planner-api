@@ -601,6 +601,7 @@ const constructTextResNoCityFlights = () => {
 // Hotels
 
 const getGeoId = async (hotelCity) => {
+  console.log(`hotelCity: ${hotelCity}`);
   try {
     const options = {
       method: 'GET',
