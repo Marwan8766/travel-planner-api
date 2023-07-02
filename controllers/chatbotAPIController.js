@@ -810,7 +810,7 @@ const getAttractions = async (location, prefrence) => {
 
   const baseUrl = 'https://maps.googleapis.com/maps/api/place/textsearch/json';
 
-  const query = `${prefrence}+in+${location}`;
+  const query = `${preference} attractions in ${location}`;
 
   const url = `${baseUrl}?key=${apiKey}&query=${encodeURIComponent(query)}`;
 
