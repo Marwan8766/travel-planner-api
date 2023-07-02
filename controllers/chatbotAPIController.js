@@ -53,6 +53,8 @@ exports.chatbotWebhookHandler = catchAsync(async (req, res, next) => {
     location = Location.country;
   }
 
+  console.log(`locationFirstParameter: ${location}`);
+
   // console.log(`location: ${location}`);
   // console.log(`budget: ${budget}`);
   // console.log(`Date_period: ${Date_period}`);
@@ -127,6 +129,7 @@ exports.chatbotWebhookHandler = catchAsync(async (req, res, next) => {
 
     case 'attractions':
       console.log('attractions intent');
+      console.log(`attractions intent location: ${location}`);
       const fulfillmentMessagesList = await handleAttractionsIntent(
         location,
         preference
@@ -838,9 +841,6 @@ const getAttractions = async (location, prefrence) => {
   });
 
   console.log(`filteredResults: ${JSON.stringify(filteredResults)}`);
-
-  // Sort the filtered results by rating in descending order
-  filteredResults.sort((a, b) => b.rating - a.rating);
 
   // Get the top 5 attractions
   const top5Attractions = filteredResults.slice(0, 5);
