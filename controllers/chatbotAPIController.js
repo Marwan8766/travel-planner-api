@@ -608,7 +608,7 @@ const getGeoId = async (hotelCity) => {
       url: 'https://tripadvisor16.p.rapidapi.com/api/v1/hotels/searchLocation',
       params: { query: hotelCity },
       headers: {
-        'X-RapidAPI-Key': process.env.TRAVEL_PLANNER_RAPID_API_KEY,
+        'X-RapidAPI-Key': process.env.TRIPADVISOR_API_KEY,
         'X-RapidAPI-Host': 'tripadvisor16.p.rapidapi.com',
       },
     };
