@@ -86,10 +86,10 @@ cartSchema.pre('find', async function (next) {
 
 cartSchema.pre('save', function (next) {
   // Check if 'this.items' is defined and that at least one item is present in the cart
-  if (!this.items || this.items.length === 0) {
-    return next(new AppError('At least one item is required in the cart', 400));
-  }
-
+  // if (!this.items || this.items.length === 0) {
+  //   return next(new AppError('At least one item is required in the cart', 400));
+  // }
+  if (!this.items || this.items.length === 0) return next();
   // Loop through each item and validate it
   for (const item of this.items) {
     // Check that either tour or tripProgram is present
