@@ -40,10 +40,10 @@ app.post(
 
     // Handle the event
     switch (event.type) {
-      case 'payment_intent.succeeded':
-        const paymentIntentSucceeded = event.data.object;
-        const metadata = paymentIntentSucceeded.metadata;
-        const paymentIntentId = paymentIntentSucceeded.id;
+      case 'checkout.session.completed':
+        const checkoutSessionCompleted = event.data.object;
+        const metadata = checkoutSessionCompleted.metadata;
+        const paymentIntentId = checkoutSessionCompleted.payment_intent;
 
         console.log(`metadata_success: ${JSON.stringify(metadata)}`);
         // loop over metadata
@@ -61,10 +61,10 @@ app.post(
         // Then define and call a function to handle the event payment_intent.succeeded
         break;
       ////////////////////////////////////////////////
-      case 'payment_intent.payment_failed':
-        const paymentIntentPaymentFailed = event.data.object;
-        const metadata2 = paymentIntentPaymentFailed.metadata;
-        const paymentIntentId2 = paymentIntentPaymentFailed.id;
+      case 'checkout.session.async_payment_failed':
+        const checkoutSessionFailed = event.data.object;
+        const metadata2 = checkoutSessionFailed.metadata;
+        const paymentIntentId2 = checkoutSessionFailed.payment_intent;
 
         // loop over metadata
         for (const [key, item] of Object.entries(metadata2)) {
