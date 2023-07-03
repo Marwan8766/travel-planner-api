@@ -50,12 +50,14 @@ app.post(
         for (const [key, item] of Object.entries(metadata)) {
           const itemSplitted = item.split(',');
           const bookingId = itemSplitted[0];
+          const bookedItemDate = itemSplitted[1];
 
           // handle updating booking
           const updateBookingStatus =
             bookingController.updateBooking_stripe_webhook(
               paymentIntentId,
-              bookingId
+              bookingId,
+              bookedItemDate
             );
         }
         // Then define and call a function to handle the event payment_intent.succeeded

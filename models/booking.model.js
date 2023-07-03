@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const AppError = require('../utils/appError');
+const { date } = require('faker/lib/locales/az');
 
 const booking = new mongoose.Schema({
   paid: {
@@ -50,6 +51,9 @@ const booking = new mongoose.Schema({
     type: Number,
     required: [true, 'A booking must have a quantity'],
   },
+  date: {
+    type: date,
+  },
 });
 
 booking.pre('save', function (next) {
@@ -57,6 +61,8 @@ booking.pre('save', function (next) {
     return next(
       new AppError('A booking must have either a tour or a tripProgram', 400)
     );
+
+  this.updatedAt = new Date();
 
   next();
 });

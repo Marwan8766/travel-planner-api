@@ -89,7 +89,15 @@ exports.getAllbooks = catchAsync(async (req, res, next) => {
   const limit = req.query.limit * 1 || 5;
   const skip = (page - 1) * limit;
   // find all books
-  const book = await bookingModel.find().skip(skip).limit(limit);
+  const book = await bookingModel
+    .find({ user: req.user._id, status: 'reserved', paid: true })
+    .sort({ updatedAt: -1 })
+    .populate({ path: 'company', select: 'name' })
+    .populate({ path: 'tour', select: 'name ratingsAverage image' })
+    .populate({ path: 'tripProgram', select: 'name ratingsAverage image' })
+    .select('date price paid')
+    .skip(skip)
+    .limit(limit);
   // if there is no books throw an error
   if (book.length === 0)
     return next(new AppError('There is no books found', 404));
@@ -298,7 +306,11 @@ exports.createStripePaymentSession = catchAsync(async (req, res, next) => {
   res.status(200).json({ url: session.url });
 });
 
-exports.updateBooking_stripe_webhook = async (paymentIntentId, bookingId) => {
+exports.updateBooking_stripe_webhook = async (
+  paymentIntentId,
+  bookingId,
+  bookedItemDate
+) => {
   try {
     const booking = await bookingModel.findById(bookingId);
 
@@ -306,6 +318,7 @@ exports.updateBooking_stripe_webhook = async (paymentIntentId, bookingId) => {
     booking.stripePaymentIntentId = paymentIntentId;
     booking.paid = true;
     booking.status = 'reserved';
+    booking.date = bookedItemDate;
 
     const updatedBooking = await booking.save({ validateModifiedOnly: true });
 
