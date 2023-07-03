@@ -201,8 +201,8 @@ exports.chatbotWebhookHandler = catchAsync(async (req, res, next) => {
 
 //////////////////////////////////////
 function extractDate(datetime) {
-  if (!datetime || datetime.length === 0) return '';
-  const date = datetime.split('T');
+  if (!datetime || datetime.length === 0) return ''; // added this line
+  const date = datetime.toString().split('T');
   const dateString = date[0].toString();
   console.log(`dateString: ${dateString}`);
   console.log(`dateString type: ${typeof dateString}`);
