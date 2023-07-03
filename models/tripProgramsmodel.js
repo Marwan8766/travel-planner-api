@@ -31,7 +31,7 @@ const tripProgram = new mongoose.Schema({
   ratingsAverage: {
     type: Number,
     default: 4.5,
-    min: [1, 'rating avg must be above 1.0'],
+    min: [1, 'ratings avg must be above 1.0'],
     max: [5, 'rating avg must be below 5.0'],
     set: (val) => Math.round(val * 10) / 10, // 4.666 , 64.6 , 47 , 4.7
   },
