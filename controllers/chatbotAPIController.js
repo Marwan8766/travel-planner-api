@@ -161,7 +161,8 @@ exports.chatbotWebhookHandler = catchAsync(async (req, res, next) => {
 
       await wait(2000);
 
-      textResponse = await Chatbot.findOne({ sessionId });
+      const storedSessionDoc = await Chatbot.findOne({ sessionId });
+      textResponse = storedSessionDoc.message;
 
       break;
 
@@ -182,6 +183,8 @@ exports.chatbotWebhookHandler = catchAsync(async (req, res, next) => {
       message: textResponse,
     });
   }
+
+  console.log(`textResponse: ${textResponse}`);
 
   // send the res with the textResponse
   res.status(200).json({
