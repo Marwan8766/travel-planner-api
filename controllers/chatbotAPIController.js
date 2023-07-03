@@ -885,15 +885,23 @@ const constructAttractionText = (attractions) => {
     //     ],
     //   },
     // };
+    // {
+    //   "type": "description",
+    //   "title": "Description title",
+    //   "text": [
+    //     "This is text line 1.",
+    //     "This is text line 2."
+    //   ]
+    // }
     const cardObj = {
       type: 'info',
       title: attraction.name,
       subtitle: cardText,
-      image: {
-        src: {
-          rawUrl: attraction.photo,
-        },
-      },
+      // image: {
+      //   src: {
+      //     rawUrl: attraction.photo,
+      //   },
+      // },
       actionLink: attraction.link,
     };
 
