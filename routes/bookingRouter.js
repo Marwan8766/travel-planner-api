@@ -6,8 +6,6 @@ const authController = require('../controllers/authController');
 
 const router = express.Router();
 
-router.get('/', bookingController.getAllbooks);
-
 //////////////////////////////////////
 //////////////////////////////////////
 // Dashboard
@@ -53,6 +51,8 @@ router.get(
 ////////////////////////////////////////
 // all routes after this middleware is for authienticated users only
 router.use(authController.protect);
+
+router.get('/', bookingController.getAllbooks);
 
 router.post(
   '/stripe/create-payment-intent',
