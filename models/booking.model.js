@@ -39,7 +39,7 @@ const booking = new mongoose.Schema({
   company: {
     type: mongoose.Schema.ObjectId,
     ref: 'users',
-    required: [true, 'A booking must have a company id'],
+    required: [true, 'A booking must have a company ID'],
   },
   user: {
     type: mongoose.Schema.ObjectId,
