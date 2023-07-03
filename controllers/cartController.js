@@ -137,26 +137,27 @@ exports.deleteCartItem = catchAsync(async (req, res, next) => {
 
   // Find the cart for the current user
   const cart = await Cart.findOne({ user: req.user._id });
-  if (!cart) return next(new AppError('cart not found', 404));
+  if (!cart) return next(new AppError('Cart not found', 404));
 
-  if (cart.items.length === 0) return next(new AppError('cart is empty', 404));
+  if (cart.items.length === 0) return next(new AppError('Cart is empty', 404));
 
   // Find the item in the cart that matches the given itemId
-  const item = cart.items.filter(async (cartItem) => {
-    if (cartItem.tour && cartItem.tour.toString() === itemId.toString())
-      return cartItem;
-    if (
-      cartItem.tripProgram &&
-      cartItem.tripProgram.toString() === itemId.toString()
-    )
-      return cartItem;
+  const itemIndex = cart.items.findIndex((cartItem) => {
+    if (cartItem._id && cartItem._id.toString() === itemId.toString())
+      return true;
+    // Uncomment the following lines if you want to match the itemId in the tripProgram field
+    // if (
+    //   cartItem.tripProgram &&
+    //   cartItem.tripProgram.toString() === itemId.toString()
+    // )
+    //   return true;
   });
 
   // If item not found, return an error.
-  if (!item[0]) return next(new AppError('item not found', 404));
+  if (itemIndex === -1) return next(new AppError('Item not found', 404));
 
   // Remove the item from the cart
-  cart.items.pull(item[0]._id);
+  cart.items.splice(itemIndex, 1);
 
   // Save the updated cart to the database
   const updatedCart = await cart.save({ validateModifiedOnly: true });
