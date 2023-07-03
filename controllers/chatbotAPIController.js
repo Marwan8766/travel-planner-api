@@ -146,7 +146,7 @@ exports.chatbotWebhookHandler = catchAsync(async (req, res, next) => {
       );
 
       res.status(200).json({
-        fulfillmentMessages: fulfillmentMessagesList,
+        richContent: [fulfillmentMessagesList],
       });
 
       return;
@@ -867,18 +867,29 @@ const constructAttractionText = (attractions) => {
     cardText += `  Rating: ${attraction.rating}\n`;
     cardText += `  Address: ${attraction.address}\n`;
 
+    // const cardObj = {
+    //   card: {
+    //     title: attraction.name,
+    //     subtitle: cardText,
+    //     imageUri: attraction.photo,
+    //     buttons: [
+    //       {
+    //         text: `${attraction.name} Link`,
+    //         postback: attraction.link,
+    //       },
+    //     ],
+    //   },
+    // };
     const cardObj = {
-      card: {
-        title: attraction.name,
-        subtitle: cardText,
-        imageUri: attraction.photo,
-        buttons: [
-          {
-            text: `${attraction.name} Link`,
-            postback: attraction.link,
-          },
-        ],
+      type: 'info',
+      title: attraction.name,
+      subtitle: cardText,
+      image: {
+        src: {
+          rawUrl: attraction.photo,
+        },
       },
+      actionLink: attraction.link,
     };
 
     fulfillmentMessagesList.push(cardObj);
