@@ -156,8 +156,14 @@ exports.deleteCartItem = catchAsync(async (req, res, next) => {
   // If item not found, return an error.
   if (itemIndex === -1) return next(new AppError('Item not found', 404));
 
-  // Remove the item from the cart
-  cart.items.splice(itemIndex, 1);
+  const cartItem = cart.items[itemIndex];
+
+  if (cartItem && cartItem.quantity > 1) {
+    cart.items[itemIndex].quantity--;
+  } else {
+    // Remove the item from the cart
+    cart.items.splice(itemIndex, 1);
+  }
 
   // Save the updated cart to the database
   const updatedCart = await cart.save({ validateModifiedOnly: true });
