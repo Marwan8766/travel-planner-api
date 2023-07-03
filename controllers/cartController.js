@@ -68,7 +68,7 @@ exports.checkAddedItemsAddAvailability = catchAsync(async (req, res, next) => {
           tour: item.tour,
           date: item.date,
         });
-        if (!availability || availability.availableSeats - item.quantity < 1) {
+        if (!availability || availability.availableSeats - item.quantity < 0) {
           return next(new AppError('this tour quantity isnot available', 404));
         }
       } else if (item.type === 'tripProgram') {
@@ -80,10 +80,10 @@ exports.checkAddedItemsAddAvailability = catchAsync(async (req, res, next) => {
         console.log(`quantity: ${item.quantity}`);
         console.log(
           `error condition seats-quantity: ${
-            availability.availableSeats - item.quantity < 1
+            availability.availableSeats - item.quantity < 0
           }`
         );
-        if (!availability || availability.availableSeats - item.quantity < 1) {
+        if (!availability || availability.availableSeats - item.quantity < 0) {
           return next(
             new AppError('this tripProgram quantity isnot available', 404)
           );
@@ -98,7 +98,7 @@ exports.checkAddedItemsAddAvailability = catchAsync(async (req, res, next) => {
       });
       if (
         !availability ||
-        availability.availableSeats - cartItem.quantity < 1 ||
+        availability.availableSeats - cartItem.quantity < 0 ||
         availability.date < cartItem.date
       ) {
         return next(new AppError('this tour isnot available', 404));
@@ -110,7 +110,7 @@ exports.checkAddedItemsAddAvailability = catchAsync(async (req, res, next) => {
       });
       if (
         !availability ||
-        availability.availableSeats - cartItem.quantity < 1 ||
+        availability.availableSeats - cartItem.quantity < 0 ||
         availability.date < cartItem.date
       ) {
         return next(new AppError('this tripProgram isnot available', 404));
