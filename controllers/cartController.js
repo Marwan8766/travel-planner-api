@@ -22,14 +22,14 @@ exports.addToCart = catchAsync(async (req, res, next) => {
     return next(new AppError('Error adding this item to the cart', 400));
 
   // update item availablity
-  const availability = await Availability.findOne({
-    tour: cartItem.tour,
-    tripProgram: cartItem.tripProgram,
-    date: cartItem.date,
-  });
+  // const availability = await Availability.findOne({
+  //   tour: cartItem.tour,
+  //   tripProgram: cartItem.tripProgram,
+  //   date: cartItem.date,
+  // });
 
-  availability.availableSeats = availability.availableSeats - cartItem.quantity;
-  await availability.save({ validateModifiedOnly: true });
+  // availability.availableSeats = availability.availableSeats - cartItem.quantity;
+  // await availability.save({ validateModifiedOnly: true });
 
   res.status(200).json({
     status: 'success',
@@ -46,18 +46,18 @@ exports.createCartItems = catchAsync(async (req, res, next) => {
   const cart = await Cart.create({ user: req.user._id, items: cartItems });
   if (!cart) return next(new AppError('Error creating cart', 400));
 
-  cartItems.forEach(async (cartItem) => {
-    // update item availablity
-    const availability = await Availability.findOne({
-      tour: cartItem.tour,
-      tripProgram: cartItem.tripProgram,
-      date: cartItem.date,
-    });
+  // cartItems.forEach(async (cartItem) => {
+  // update item availablity
+  //   const availability = await Availability.findOne({
+  //     tour: cartItem.tour,
+  //     tripProgram: cartItem.tripProgram,
+  //     date: cartItem.date,
+  //   });
 
-    availability.availableSeats =
-      availability.availableSeats - cartItem.quantity;
-    await availability.save({ validateModifiedOnly: true });
-  });
+  //   availability.availableSeats =
+  //     availability.availableSeats - cartItem.quantity;
+  //   await availability.save({ validateModifiedOnly: true });
+  // });
 
   res.status(200).json({
     status: 'success',
