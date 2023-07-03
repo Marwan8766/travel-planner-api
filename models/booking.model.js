@@ -33,7 +33,7 @@ const booking = new mongoose.Schema({
   },
   tripProgram: {
     type: mongoose.Schema.ObjectId,
-    ref: 'tripProgram',
+    ref: 'TripProgram',
     required: false,
   },
   company: {
