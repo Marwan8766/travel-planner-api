@@ -194,5 +194,13 @@ reviewSchema.post(/^findOneAnd/, async function () {
   else rev.constructor.calcAvgRatingsCompany(rev.company);
 });
 
+reviewSchema.pre('find', function (next) {
+  this.populate({
+    path: 'user',
+    select: 'name',
+  });
+  next();
+});
+
 const reviewModel = mongoose.model('reviewModel', reviewSchema);
 module.exports = reviewModel;
