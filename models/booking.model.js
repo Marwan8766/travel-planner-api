@@ -28,22 +28,22 @@ const booking = new mongoose.Schema({
   },
   tour: {
     type: mongoose.Schema.ObjectId,
-    ref: 'Tour',
+    ref: 'tours',
     required: false,
   },
   tripProgram: {
     type: mongoose.Schema.ObjectId,
-    ref: 'TripProgram',
+    ref: 'tripprograms',
     required: false,
   },
   company: {
     type: mongoose.Schema.ObjectId,
-    ref: 'User',
+    ref: 'users',
     required: [true, 'A booking must have a company id'],
   },
   user: {
     type: mongoose.Schema.ObjectId,
-    ref: 'User',
+    ref: 'users',
     required: [true, 'A booking must have a user id'],
   },
   stripePaymentIntentId: String,
