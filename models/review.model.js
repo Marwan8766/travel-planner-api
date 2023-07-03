@@ -202,8 +202,6 @@ reviewSchema.pre('find', function (next) {
     options: { lean: true }, // Add this line if you want the populated user to be a plain JavaScript object
   });
 
-  this.user = this.user.name;
-
   next();
 });
 
