@@ -194,12 +194,22 @@ reviewSchema.post(/^findOneAnd/, async function () {
   else rev.constructor.calcAvgRatingsCompany(rev.company);
 });
 
+// Pre-find middleware to populate user in reviewSchema and select name only
 reviewSchema.pre('find', function (next) {
   this.populate({
     path: 'user',
     select: '-_id name',
     options: { lean: true }, // Add this line if you want the populated user to be a plain JavaScript object
   });
+  this._mongooseOptions.populate = { virtuals: false }; // Exclude virtuals from population
+
+  this._mongooseOptions.transform = (doc, ret) => {
+    if (ret.user && ret.user.name) {
+      ret.user = ret.user.name;
+    }
+    return ret;
+  };
+
   next();
 });
 
