@@ -201,12 +201,8 @@ reviewSchema.pre('find', function (next) {
     select: '-_id name',
     options: { lean: true }, // Add this line if you want the populated user to be a plain JavaScript object
   });
-  this._mongooseOptions.transform = (doc, ret) => {
-    if (ret.user && ret.user.name) {
-      ret.user = ret.user.name;
-    }
-    return ret;
-  };
+
+  this.user = this.user.name;
 
   next();
 });
