@@ -35,6 +35,8 @@ exports.chatbotWebhookHandler = catchAsync(async (req, res, next) => {
     preference,
   } = req.body.queryResult.parameters;
 
+  console.log(`req.body: ${JSON.stringify(req.body)}`);
+
   const sessionId = req.body.session;
 
   if (departureDate && departureDate.length > 0)
@@ -59,7 +61,6 @@ exports.chatbotWebhookHandler = catchAsync(async (req, res, next) => {
   // console.log(`location: ${location}`);
   // console.log(`budget: ${budget}`);
   // console.log(`Date_period: ${Date_period}`);
-  console.log(`req.body: ${JSON.stringify(req.body)}`);
 
   // Extract the intent display name
   const intentDisplayName = req.body.queryResult.intent.displayName;
