@@ -199,7 +199,6 @@ reviewSchema.pre('find', function (next) {
   this.populate({
     path: 'user',
     select: '-_id name',
-    options: { lean: true }, // Add this line if you want the populated user to be a plain JavaScript object
   });
 
   next();
