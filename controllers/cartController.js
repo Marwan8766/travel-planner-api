@@ -28,7 +28,7 @@ exports.addToCart = catchAsync(async (req, res, next) => {
     date: cartItem.date,
   });
 
-  availability.quantity = availability.quantity - cartItem.quantity;
+  availability.availableSeats = availability.availableSeats - cartItem.quantity;
   await availability.save({ validateModifiedOnly: true });
 
   res.status(200).json({
@@ -54,7 +54,8 @@ exports.createCartItems = catchAsync(async (req, res, next) => {
       date: cartItem.date,
     });
 
-    availability.quantity = availability.quantity - cartItem.quantity;
+    availability.availableSeats =
+      availability.availableSeats - cartItem.quantity;
     await availability.save({ validateModifiedOnly: true });
   });
 
