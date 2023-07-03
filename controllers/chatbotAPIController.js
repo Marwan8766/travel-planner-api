@@ -570,11 +570,14 @@ const handleFlightsIntent = async (
   let text = '';
 
   // find the pickup airport code
+  if (!cityNamePickup) return (text = 'Please provide the pickup city name');
   const pickupAirportCode = await getAirportCode(cityNamePickup);
   if (!pickupAirportCode)
     return (text = `Please provide the pickup city name correctly this pickup city name ${cityNamePickup} isnot correct`);
 
   // find the destination airport code
+  if (!cityNameDestination)
+    return (text = 'Please provide the destination city name');
   const destinationAirportCode = await getAirportCode(cityNameDestination);
   if (!destinationAirportCode)
     return (text = `Please provide the destination city name correctly this destination city name ${cityNameDestination} isnot correct`);
