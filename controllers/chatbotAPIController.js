@@ -152,9 +152,7 @@ exports.chatbotWebhookHandler = catchAsync(async (req, res, next) => {
       //   fulfillmentMessages: payload,
       // });
 
-      const payload = {
-        richContent: fulfillmentMessagesList,
-      };
+      const payload = { richContent: [[...fulfillmentMessagesList]] };
 
       res.status(200).json({
         fulfillmentMessages: [payload],
