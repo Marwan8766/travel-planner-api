@@ -153,23 +153,48 @@ exports.chatbotWebhookHandler = catchAsync(async (req, res, next) => {
       // });
 
       // const payload = { richContent: [[...fulfillmentMessagesList]] };
-      const payload = {
-        richContent: [
-          [
-            {
-              type: 'info',
-              title: 'Response Title',
-              subtitle: 'Response Subtitle',
-            },
+      // const payload = {
+      //   richContent: [
+      //     [
+      //       {
+      //         type: 'info',
+      //         title: 'Response Title',
+      //         subtitle: 'Response Subtitle',
+      //       },
+      //     ],
+      //     fulfillmentMessagesList,
+      //   ],
+      // };
+      const payload = [
+        {
+          richContent: [
+            [
+              {
+                type: 'info',
+                title: 'Indiana',
+                subtitle:
+                  '• Indiana\n  Rating: undefined\n  Address: Indiana, USA\n',
+                image: {
+                  src: {
+                    rawUrl:
+                      'https://lh5.googleusercontent.com/p/AF1QipMhqZBmtN50qAShPpwCoTTW64ONqr107pbIUlIH=w533-h240-k-no',
+                  },
+                },
+                actionLink:
+                  'https://www.google.com/maps/place/?q=place_id:ChIJHRv42bxQa4gRcuwyy84vEH4',
+              },
+            ],
           ],
-          fulfillmentMessagesList,
-        ],
-      };
+        },
+      ];
+
+      res.status(200).json({ fulfillmentMessages: payload });
+
       console.log(`payload: ${JSON.stringify([payload])}`);
 
-      res.status(200).json({
-        fulfillmentMessages: [payload],
-      });
+      // res.status(200).json({
+      //   fulfillmentMessages: [payload],
+      // });
 
       return;
 
