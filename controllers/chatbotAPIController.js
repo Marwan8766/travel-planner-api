@@ -897,11 +897,12 @@ const constructAttractionText = (attractions) => {
       type: 'info',
       title: attraction.name,
       subtitle: cardText,
-      // image: {
-      //   src: {
-      //     rawUrl: attraction.photo,
-      //   },
-      // },
+      image: {
+        src: {
+          rawUrl:
+            'https://lh5.googleusercontent.com/p/AF1QipMhqZBmtN50qAShPpwCoTTW64ONqr107pbIUlIH=w533-h240-k-no',
+        },
+      },
       actionLink: attraction.link,
     };
 
