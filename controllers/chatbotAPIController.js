@@ -1220,6 +1220,8 @@ const createCustomizedTripMessage = (days) => {
     const { date, timeline } = day;
     const formattedDate = date.toDateString();
 
+    message += '\n';
+
     message += `Day ${index + 1} - ${formattedDate}\n`;
 
     timeline.forEach((entry) => {
