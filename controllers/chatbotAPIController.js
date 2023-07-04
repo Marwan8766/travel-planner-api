@@ -195,7 +195,6 @@ exports.chatbotWebhookHandler = catchAsync(async (req, res, next) => {
         startDate,
         endDate,
         destination,
-        budget,
         email
       );
 
@@ -1294,7 +1293,6 @@ const handleCustomizedTripIntent = async (
   startDate,
   endDate,
   destination,
-  budget,
   email
 ) => {
   const preferences = {};
