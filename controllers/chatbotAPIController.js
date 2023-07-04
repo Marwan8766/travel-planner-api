@@ -2,6 +2,7 @@ const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 const Tour = require('../models/tourModel');
 const plannedTripController = require('./plannedTripsController');
+const sendMail = require('../utils/email');
 const { query } = require('express');
 const axios = require('axios');
 const { options } = require('../app');
@@ -33,6 +34,21 @@ exports.chatbotWebhookHandler = catchAsync(async (req, res, next) => {
     rooms,
     // Attractions
     preference,
+    // customized trip
+    likes_beaches,
+    likes_museums,
+    likes_nightlife,
+    likes_outdoorActivities,
+    likes_shopping,
+    likes_food,
+    likes_sports,
+    likes_relaxation,
+    likes_familyFriendlyActivities,
+    crowdLevel,
+    startDate,
+    endDate,
+    destination,
+    email,
   } = req.body.queryResult.parameters;
 
   console.log(`req.body: ${JSON.stringify(req.body)}`);
@@ -161,6 +177,30 @@ exports.chatbotWebhookHandler = catchAsync(async (req, res, next) => {
       });
 
       return;
+
+      break;
+
+    case 'customizedTrip':
+      textResponse = await handleCustomizedTripIntent(
+        likes_beaches,
+        likes_museums,
+        likes_nightlife,
+        likes_outdoorActivities,
+        likes_shopping,
+        likes_food,
+        likes_sports,
+        likes_relaxation,
+        likes_familyFriendlyActivities,
+        crowdLevel,
+        startDate,
+        endDate,
+        destination,
+        budget,
+        email
+      );
+
+      if (textResponse.length === 0)
+        textResponse = 'Sorry something went wrong, please try again';
 
       break;
 
@@ -882,41 +922,6 @@ const constructAttractionText = (attractions) => {
     cardText += `  Rating: ${attraction.rating}\n`;
     cardText += `  Address: ${attraction.address}\n`;
 
-    // const cardObj = {
-    //   card: {
-    //     title: attraction.name,
-    //     subtitle: cardText,
-    //     imageUri: attraction.photo,
-    //     buttons: [
-    //       {
-    //         text: `${attraction.name} Link`,
-    //         postback: attraction.link,
-    //       },
-    //     ],
-    //   },
-    // };
-    // {
-    //   "type": "description",
-    //   "title": "Description title",
-    //   "text": [
-    //     "This is text line 1.",
-    //     "This is text line 2."
-    //   ]
-    // }
-    // {
-    //   "type": "button",
-    //   "icon": {
-    //     "type": "chevron_right",
-    //     "color": "#FF9800"
-    //   },
-    //   "text": "Button text",
-    //   "link": "https://example.com",
-    //   "event": {
-    //     "name": "",
-    //     "languageCode": "",
-    //     "parameters": {}
-    //   }
-    // }
     const cardObj = {
       type: 'info',
       title: attraction.name,
@@ -945,4 +950,398 @@ const handleAttractionsIntent = async (location, prefrence) => {
 
   // return the card list
   return fulfillmentMessagesList;
+};
+
+////////////////////////////////////////////////
+////////////////////////////////////////////////
+////////////////////////////////////////////////
+
+async function searchPlacesByPreferences(
+  preferences,
+  startDate,
+  endDate,
+  location
+) {
+  try {
+    const {
+      likes_beaches,
+      likes_museums,
+      likes_nightlife,
+      likes_outdoorActivities,
+      likes_shopping,
+      likes_food,
+      likes_sports,
+      likes_relaxation,
+      likes_familyFriendlyActivities,
+    } = preferences;
+
+    const types = [];
+
+    if (likes_beaches) types.push('beach');
+    if (likes_museums) types.push('museum');
+    if (likes_nightlife) types.push('night_club');
+    if (likes_outdoorActivities) types.push('park');
+    if (likes_shopping) types.push('shopping_mall');
+    if (likes_food) types.push('restaurant');
+    if (likes_sports) types.push('stadium');
+    if (likes_relaxation) types.push('spa');
+    if (likes_familyFriendlyActivities) types.push('amusement_park');
+
+    const apiKey = process.env.GOOGLE_MAPS_API_KEY; // Replace with your Google Places API key
+
+    const baseUrl =
+      'https://maps.googleapis.com/maps/api/place/textsearch/json';
+
+    const query = `${types.join('|')} ${location}`;
+
+    let url = `${baseUrl}?key=${apiKey}&query=${query}`;
+
+    let numberOfDays = 5;
+
+    if (startDate && endDate)
+      numberOfDays = getNumberOfDays(startDate, endDate);
+    const desiredNumberOfPlaces = Math.min(5 * numberOfDays, 70); // Maximum 5 places per day for a maximum of 14 days
+
+    let places = [];
+    let nextPageToken = null;
+
+    while (places.length < desiredNumberOfPlaces) {
+      if (nextPageToken) {
+        url += `&pagetoken=${nextPageToken}`;
+        console.log(`pagetoken: ${nextPageToken}`);
+      }
+
+      const response = await axios.get(url);
+      const results = response.data.results;
+      console.log(`response.nextPage: ${response.data.next_page_token}`);
+
+      // Extract only the required fields from the results
+      const filteredResults = results.map((result) => {
+        const { name, rating, geometry, formatted_address, photos, place_id } =
+          result;
+        return {
+          name,
+          rating,
+          placeId: place_id,
+          link: `https://www.google.com/maps/place/?q=place_id:${place_id}`,
+          coordinates: [geometry.location.lng, geometry.location.lat],
+          address: formatted_address,
+          photo: photos && photos.length > 0 ? photos[0].photo_reference : null,
+        };
+      });
+
+      places = places.concat(filteredResults);
+
+      if (response.data.next_page_token) {
+        nextPageToken = response.data.next_page_token;
+
+        console.log(`nextpagetoken: ${nextPageToken}`);
+
+        // Introduce a delay before fetching the next page of results
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+      } else {
+        break;
+      }
+    }
+
+    return places;
+  } catch (error) {
+    console.error('Error retrieving places from Google Maps:', error);
+    return [];
+  }
+}
+
+function getNumberOfDays(startDate, endDate) {
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  const timeDiff = Math.abs(end.getTime() - start.getTime());
+  const numberOfDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
+  return Math.min(numberOfDays, 14);
+}
+
+const findMatchingTours = async (location, startDate, endDate) => {
+  const locationCoordinates = await plannedTripController.getCityRadius(
+    location
+  );
+  if (!locationCoordinates) return [];
+  const numberOfDays = getNumberOfDays(startDate, endDate);
+  const desiredNumberOfTours = 3 * numberOfDays;
+
+  const tours = await Tour.find({
+    'startLocations.coordinates': {
+      $geoWithin: {
+        $centerSphere: [
+          [locationCoordinates.lng, locationCoordinates.lat],
+          locationCoordinates.radius,
+        ],
+      },
+    },
+  }).limit(desiredNumberOfTours);
+
+  return tours;
+};
+
+// Helper function to compare two dates
+const areDatesEqual = (date1, date2) => {
+  return (
+    date1.getFullYear() === date2.getFullYear() &&
+    date1.getMonth() === date2.getMonth() &&
+    date1.getDate() === date2.getDate()
+  );
+};
+
+// Helper function to generate a random time within a day
+const getRandomTime = (date) => {
+  const startTime = new Date(date);
+  startTime.setHours(Math.floor(Math.random() * 24));
+  startTime.setMinutes(Math.floor(Math.random() * 60));
+  startTime.setSeconds(0);
+  return startTime;
+};
+
+const createTripDays = async (
+  attractions,
+  matchedTours,
+  startDate,
+  endDate,
+  crowdLevel
+) => {
+  const numberOfDays = getNumberOfDays(startDate, endDate);
+  const days = [];
+
+  for (let i = 0; i < numberOfDays; i++) {
+    const date = new Date(startDate.getTime() + i * 24 * 60 * 60 * 1000);
+
+    // Filter the matched tours based on availability, available seats, and date
+    const filteredTours = await Promise.all(
+      matchedTours.map(async (tour) => {
+        const availability = await Availability.findOne({
+          tour: tour._id,
+          date: date,
+          availableSeats: { $gte: 1 },
+        });
+        return availability && availability.availableSeats >= 1 ? tour : null;
+      })
+    );
+
+    const dayTours = filteredTours.filter((tour) => tour !== null);
+    const timeline = [];
+
+    let maxAttractions;
+    let maxTours;
+
+    if (crowdLevel === 'busy') {
+      maxAttractions = 5;
+      maxTours = 2;
+    } else if (crowdLevel === 'moderate') {
+      maxAttractions = 4;
+      maxTours = 1;
+    } else if (crowdLevel === 'quiet') {
+      maxAttractions = 1;
+      maxTours = 1;
+    }
+
+    // Allocate tours with availability to the timeline based on their available dates
+    for (const tour of dayTours) {
+      const tourAvailability = await Availability.findOne({
+        tour: tour._id,
+        date: date,
+        availableSeats: { $gte: 1 },
+      });
+
+      if (tourAvailability) {
+        const startTime = getRandomTime(date);
+        const endTime = getRandomTime(date);
+        const tourTimeRange = { startTime, endTime };
+
+        timeline.push({
+          tour: tour._id,
+          startTime,
+          endTime,
+        });
+
+        if (timeline.length >= maxTours) {
+          break;
+        }
+      }
+    }
+
+    // Allocate attractions to the timeline
+    while (
+      attractions.length > 0 &&
+      (timeline.length < maxAttractions ||
+        timeline.length < maxTours + maxAttractions)
+    ) {
+      const startTime = getRandomTime(date);
+      const endTime = getRandomTime(date);
+      const attractionTimeRange = { startTime, endTime };
+
+      timeline.push({
+        attraction: {
+          coordinates: attractions[0].coordinates,
+          name: attractions[0].name,
+          link: attractions[0].link,
+          rating: attractions[0].rating,
+          description: attractions[0].description,
+          image: attractions[0].photo,
+          address: attractions[0].address,
+          placeId: attractions[0].placeId,
+        },
+        startTime,
+        endTime,
+      });
+      attractions.shift();
+    }
+
+    // Sort the timeline entries by start time
+    timeline.sort((a, b) => a.startTime - b.startTime);
+
+    // Repair overlapping times
+    for (let j = 1; j < timeline.length; j++) {
+      const previousEndTime = timeline[j - 1].endTime;
+      const currentStartTime = timeline[j].startTime;
+
+      if (previousEndTime > currentStartTime) {
+        timeline[j].startTime = previousEndTime;
+        timeline[j].endTime = getRandomTime(date);
+      }
+    }
+
+    days.push({ date, timeline });
+  }
+
+  console.log(`days: ${JSON.stringify(days)}`);
+  return days;
+};
+
+const createCustomizedTripMessage = (days) => {
+  let message = '';
+
+  days.forEach((day, index) => {
+    const { date, timeline } = day;
+    const formattedDate = date.toDateString();
+
+    message += `Day ${index + 1} - ${formattedDate}\n`;
+
+    timeline.forEach((entry) => {
+      if (entry.tour) {
+        const { startTime, endTime } = entry;
+        const formattedStartTime = startTime.toLocaleTimeString([], {
+          hour: '2-digit',
+          minute: '2-digit',
+        });
+        const formattedEndTime = endTime.toLocaleTimeString([], {
+          hour: '2-digit',
+          minute: '2-digit',
+        });
+        const { name, link } = entry.tour;
+
+        message += `• Tour: ${name}\n`;
+        message += `  Time: ${formattedStartTime} - ${formattedEndTime}\n`;
+        message += `  More Info: ${link}\n`;
+      } else if (entry.attraction) {
+        const { startTime, endTime } = entry;
+        const formattedStartTime = startTime.toLocaleTimeString([], {
+          hour: '2-digit',
+          minute: '2-digit',
+        });
+        const formattedEndTime = endTime.toLocaleTimeString([], {
+          hour: '2-digit',
+          minute: '2-digit',
+        });
+        const { name, link, address } = entry.attraction;
+
+        message += `• Attraction: ${name}\n`;
+        message += `  Time: ${formattedStartTime} - ${formattedEndTime}\n`;
+        message += `  Address: ${address}\n`;
+        message += `  More Info: ${link}\n`;
+      }
+    });
+
+    message += '\n'; // Add a line break after each day's information
+  });
+
+  return message;
+};
+
+const sendCustomizedTripMail = async (email, message) => {
+  const html = `
+    <h1>Your Customized Planned Trip</h1>
+    <p>${message}</p>
+    <h2>Thanks for using our auto trip planner, TRAVEL GATE</h2>
+  `;
+
+  const optionsObj = {
+    email,
+    subject: 'Your Customized Planned Trip',
+    html,
+  };
+
+  await sendMail(optionsObj);
+};
+
+const handleCustomizedTripIntent = async (
+  likes_beaches,
+  likes_museums,
+  likes_nightlife,
+  likes_outdoorActivities,
+  likes_shopping,
+  likes_food,
+  likes_sports,
+  likes_relaxation,
+  likes_familyFriendlyActivities,
+  crowdLevel,
+  startDate,
+  endDate,
+  destination,
+  budget,
+  email
+) => {
+  const preferences = {};
+  let message = '';
+
+  if (likes_beaches && likes_beaches.length > 0)
+    preferences['likes_beaches'] = true;
+  if (likes_museums && likes_museums.length > 0)
+    preferences['likes_museums'] = true;
+  if (likes_nightlife && likes_nightlife.length > 0)
+    preferences['likes_nightlife'] = true;
+  if (likes_outdoorActivities && likes_outdoorActivities.length > 0)
+    preferences['likes_outdoorActivities'] = true;
+  if (likes_shopping && likes_shopping.length > 0)
+    preferences['likes_shopping'] = true;
+  if (likes_food && likes_food.length > 0) preferences['likes_food'] = true;
+  if (likes_sports && likes_sports.length > 0)
+    preferences['likes_sports'] = true;
+  if (likes_relaxation && likes_relaxation.length > 0)
+    preferences['likes_relaxation'] = true;
+  if (
+    likes_familyFriendlyActivities &&
+    likes_familyFriendlyActivities.length > 0
+  )
+    preferences['likes_familyFriendlyActivities'] = true;
+
+  // get attractions from google maps
+  const attractions = await searchPlacesByPreferences(
+    preferences,
+    startDate,
+    endDate,
+    destination
+  );
+
+  const matchedTours = await findMatchingTours(destination, startDate, endDate);
+
+  const days = await createTripDays(
+    attractions,
+    matchedTours,
+    new Date(startDate),
+    new Date(endDate),
+    crowdLevel
+  );
+
+  message = createCustomizedTripMessage(days);
+
+  if (email && email.length > 0) await sendCustomizedTripMail(email, message);
+
+  return message;
 };
