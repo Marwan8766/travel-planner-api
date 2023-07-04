@@ -180,7 +180,7 @@ exports.chatbotWebhookHandler = catchAsync(async (req, res, next) => {
 
       break;
 
-    case 'Customized itenerary':
+    case 'Customizeditenerary':
       textResponse = await handleCustomizedTripIntent(
         likes_beaches,
         likes_museums,
