@@ -147,8 +147,11 @@ exports.chatbotWebhookHandler = catchAsync(async (req, res, next) => {
       );
 
       res.status(200).json({
-        payload: { richContent: [[...fulfillmentMessagesList]] },
+        richContent: [[...fulfillmentMessagesList]],
       });
+      // res.status(200).json({
+      //   payload: { richContent: [[...fulfillmentMessagesList]] },
+      // });
 
       return;
 
@@ -892,6 +895,20 @@ const constructAttractionText = (attractions) => {
     //     "This is text line 1.",
     //     "This is text line 2."
     //   ]
+    // }
+    // {
+    //   "type": "button",
+    //   "icon": {
+    //     "type": "chevron_right",
+    //     "color": "#FF9800"
+    //   },
+    //   "text": "Button text",
+    //   "link": "https://example.com",
+    //   "event": {
+    //     "name": "",
+    //     "languageCode": "",
+    //     "parameters": {}
+    //   }
     // }
     const cardObj = {
       type: 'info',
