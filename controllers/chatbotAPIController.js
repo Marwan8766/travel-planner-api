@@ -157,7 +157,7 @@ exports.chatbotWebhookHandler = catchAsync(async (req, res, next) => {
       console.log(`payload: ${JSON.stringify([payload])}`);
 
       res.status(200).json({
-        fulfillmentMessages: [payload],
+        fulfillmentMessages: [{ payload }],
       });
 
       return;
