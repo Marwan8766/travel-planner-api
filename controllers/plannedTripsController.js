@@ -107,7 +107,7 @@ async function searchPlacesByPreferences(
           name,
           rating,
           placeId: place_id,
-          link: `https://maps.google.com/?q=${geometry.location.lng},${geometry.location.lat}`,
+          link: `https://www.google.com/maps/place/?q=place_id:${place_id}`,
           coordinates: [geometry.location.lng, geometry.location.lat],
           address: formatted_address,
           photo: photos && photos.length > 0 ? photos[0].photo_reference : null,

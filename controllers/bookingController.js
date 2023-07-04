@@ -93,8 +93,14 @@ exports.getAllbooks = catchAsync(async (req, res, next) => {
     .find({ user: req.user._id, status: 'reserved', paid: true })
     .sort({ updatedAt: -1 })
     .populate({ path: 'company', select: 'name' })
-    .populate({ path: 'tour', select: 'name ratingsAverage image' })
-    .populate({ path: 'tripProgram', select: 'name ratingsAverage image' })
+    .populate({
+      path: 'tour',
+      select: '-description name ratingsAverage image',
+    })
+    .populate({
+      path: 'tripProgram',
+      select: '-tour -description name ratingsAverage image',
+    })
     .select('date price paid')
     .skip(skip)
     .limit(limit);
