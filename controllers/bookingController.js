@@ -406,12 +406,13 @@ exports.updateBooking_stripe_webhook = async (
       </html>
     `;
 
-    // send email with the item buyed name, price, and quantity
-    await sendMail({
-      to: booking.user.email,
-      subject: 'Booking Confirmation',
+    const optionsObj = {
+      email: booking.user.email,
+      subject: 'Your Customized Planned Trip',
       html: emailContent,
-    });
+    };
+    // send email with the item buyed name, price, and quantity
+    await sendMail(optionsObj);
 
     const cart = await cartModel.findOne({ user: booking.user });
     cart.items = [];
@@ -501,13 +502,14 @@ exports.updateBooking_stripe_webhook_fail = async (
         </body>
       </html>
     `;
-
-    // send email to the client
-    await sendMail({
-      to: booking.user.email,
+    const optionsObj = {
+      email: booking.user.email,
       subject: 'Payment Unsuccessful',
       html: emailContent,
-    });
+    };
+    // send email with the item buyed name, price, and quantity
+    await sendMail(optionsObj);
+    // send email to the client
   } catch (err) {
     console.log(`updateBooking_stripe_webhook_fail ${paymentIntentId}`, err);
   }
