@@ -357,7 +357,8 @@ exports.updateBooking_stripe_webhook = async (
       .findById(bookingId)
       .populate({ path: 'tour', select: '-_id name' })
       .populate({ path: 'tripProgram', select: '-_id name' })
-      .populate({ path: 'user', select: '-_id name email' });
+      .populate({ path: 'user', select: '-_id name email' })
+      .populate({ path: 'company', select: '-_id name email' });
 
     // update the booking
     booking.stripePaymentIntentId = paymentIntentId;
@@ -367,52 +368,39 @@ exports.updateBooking_stripe_webhook = async (
 
     const updatedBooking = await booking.save({ validateModifiedOnly: true });
 
-    // Prepare the email HTML content
-    const emailContent = `
-      <html>
-        <head>
-          <style>
-            .container {
-              font-family: Arial, sans-serif;
-              margin: 20px;
-              padding: 20px;
-              border: 1px solid #ccc;
-            }
-            h1 {
-              color: #333;
-            }
-            h2 {
-              color: #666;
-              margin-top: 20px;
-            }
-            p {
-              color: #777;
-              margin: 10px 0;
-            }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <h1>Booking Confirmation</h1>
-            <h2>Thank you for your booking, ${booking.user.name}!</h2>
-            <p>You have successfully purchased the following item:</p>
-            <p><strong>Name:</strong> ${
-              booking.tour ? booking.tour.name : booking.tripProgram.name
-            }</p>
-            <p><strong>Price:</strong> ${booking.price}</p>
-            <p><strong>Quantity:</strong> ${booking.quantity}</p>
-          </div>
-        </body>
-      </html>
+    // send email to the user with the item bought name, price, and quantity
+    const userEmailContent = `
+      <h1>Your Payment was Successful</h1>
+      <p>Thank you for your payment. We have successfully received your payment for the following item:</p>
+      <p>Item Name: ${booking.item.name}</p>
+      <p>Price: ${booking.item.price}</p>
+      <p>Quantity: ${booking.quantity}</p>
+      <p>For any questions or concerns, please contact our support team.</p>
+      <h2>Thank you for choosing our service.</h2>
     `;
 
-    const optionsObj = {
+    await sendMail({
       email: booking.user.email,
       subject: 'Your Payment was Successful, Thanks for choosing Travel Gate',
-      html: emailContent,
-    };
-    // send email with the item buyed name, price, and quantity
-    await sendMail(optionsObj);
+      html: userEmailContent,
+    });
+
+    // send email to the company with the purchase details
+    const companyEmailContent = `
+      <h1>New Purchase Notification</h1>
+      <p>A user has successfully purchased the following item:</p>
+      <p>Item Name: ${booking.item.name}</p>
+      <p>Price: ${booking.item.price}</p>
+      <p>Quantity: ${booking.quantity}</p>
+      <p>User Name: ${booking.user.name}</p>
+      <p>User Email: ${booking.user.email}</p>
+    `;
+
+    await sendMail({
+      email: booking.company.email,
+      subject: 'New Purchase Notification',
+      html: companyEmailContent,
+    });
 
     const cart = await cartModel.findOne({ user: booking.user });
     cart.items = [];
@@ -425,6 +413,85 @@ exports.updateBooking_stripe_webhook = async (
     return 'error';
   }
 };
+
+// exports.updateBooking_stripe_webhook = async (
+//   paymentIntentId,
+//   bookingId,
+//   bookedItemDate
+// ) => {
+//   try {
+//     const booking = await bookingModel
+//       .findById(bookingId)
+//       .populate({ path: 'tour', select: '-_id name' })
+//       .populate({ path: 'tripProgram', select: '-_id name' })
+//       .populate({ path: 'user', select: '-_id name email' });
+
+//     // update the booking
+//     booking.stripePaymentIntentId = paymentIntentId;
+//     booking.paid = true;
+//     booking.status = 'reserved';
+//     booking.date = bookedItemDate;
+
+//     const updatedBooking = await booking.save({ validateModifiedOnly: true });
+
+//     // Prepare the email HTML content
+//     const emailContent = `
+//       <html>
+//         <head>
+//           <style>
+//             .container {
+//               font-family: Arial, sans-serif;
+//               margin: 20px;
+//               padding: 20px;
+//               border: 1px solid #ccc;
+//             }
+//             h1 {
+//               color: #333;
+//             }
+//             h2 {
+//               color: #666;
+//               margin-top: 20px;
+//             }
+//             p {
+//               color: #777;
+//               margin: 10px 0;
+//             }
+//           </style>
+//         </head>
+//         <body>
+//           <div class="container">
+//             <h1>Booking Confirmation</h1>
+//             <h2>Thank you for your booking, ${booking.user.name}!</h2>
+//             <p>You have successfully purchased the following item:</p>
+//             <p><strong>Name:</strong> ${
+//               booking.tour ? booking.tour.name : booking.tripProgram.name
+//             }</p>
+//             <p><strong>Price:</strong> ${booking.price}</p>
+//             <p><strong>Quantity:</strong> ${booking.quantity}</p>
+//           </div>
+//         </body>
+//       </html>
+//     `;
+
+//     const optionsObj = {
+//       email: booking.user.email,
+//       subject: 'Your Payment was Successful, Thanks for choosing Travel Gate',
+//       html: emailContent,
+//     };
+//     // send email with the item buyed name, price, and quantity
+//     await sendMail(optionsObj);
+
+//     const cart = await cartModel.findOne({ user: booking.user });
+//     cart.items = [];
+//     await cart.save({ validateModifiedOnly: true });
+
+//     console.log(`updatedSuccessBooking: ${JSON.stringify(updatedBooking)}`);
+//     return 'success';
+//   } catch (err) {
+//     console.log('updateBooking_stripe_webhook error', err);
+//     return 'error';
+//   }
+// };
 
 exports.updateBooking_stripe_webhook_fail = async (
   paymentIntentId,
