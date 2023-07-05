@@ -1213,59 +1213,59 @@ const createTripDays = async (
   return days;
 };
 
-// const createCustomizedTripMessage = (days) => {
-//   let message = '';
-
-//   days.forEach((day, index) => {
-//     const { date, timeline } = day;
-//     const formattedDate = date.toDateString();
-
-//     message += '\n';
-
-//     message += `Day ${index + 1} - ${formattedDate}\n`;
-
-//     timeline.forEach((entry) => {
-//       if (entry.tour) {
-//         const { startTime, endTime } = entry;
-//         const formattedStartTime = startTime.toLocaleTimeString([], {
-//           hour: '2-digit',
-//           minute: '2-digit',
-//         });
-//         const formattedEndTime = endTime.toLocaleTimeString([], {
-//           hour: '2-digit',
-//           minute: '2-digit',
-//         });
-//         const { name, link } = entry.tour;
-
-//         message += `• Tour: ${name}\n`;
-//         message += `  Time: ${formattedStartTime} - ${formattedEndTime}\n`;
-//         message += `  More Info: ${link}\n`;
-//       } else if (entry.attraction) {
-//         const { startTime, endTime } = entry;
-//         const formattedStartTime = startTime.toLocaleTimeString([], {
-//           hour: '2-digit',
-//           minute: '2-digit',
-//         });
-//         const formattedEndTime = endTime.toLocaleTimeString([], {
-//           hour: '2-digit',
-//           minute: '2-digit',
-//         });
-//         const { name, link, address } = entry.attraction;
-
-//         message += `• Attraction: ${name}\n`;
-//         message += `  Time: ${formattedStartTime} - ${formattedEndTime}\n`;
-//         message += `  Address: ${address}\n`;
-//         message += `  More Info: ${link}\n`;
-//       }
-//     });
-
-//     message += '\n'; // Add a line break after each day's information
-//   });
-
-//   return message;
-// };
-
 const createCustomizedTripMessage = (days) => {
+  let message = '';
+
+  days.forEach((day, index) => {
+    const { date, timeline } = day;
+    const formattedDate = date.toDateString();
+
+    message += '\n';
+
+    message += `Day ${index + 1} - ${formattedDate}\n`;
+
+    timeline.forEach((entry) => {
+      if (entry.tour) {
+        const { startTime, endTime } = entry;
+        const formattedStartTime = startTime.toLocaleTimeString([], {
+          hour: '2-digit',
+          minute: '2-digit',
+        });
+        const formattedEndTime = endTime.toLocaleTimeString([], {
+          hour: '2-digit',
+          minute: '2-digit',
+        });
+        const { name, link } = entry.tour;
+
+        message += `• Tour: ${name}\n`;
+        message += `  Time: ${formattedStartTime} - ${formattedEndTime}\n`;
+        message += `  More Info: ${link}\n`;
+      } else if (entry.attraction) {
+        const { startTime, endTime } = entry;
+        const formattedStartTime = startTime.toLocaleTimeString([], {
+          hour: '2-digit',
+          minute: '2-digit',
+        });
+        const formattedEndTime = endTime.toLocaleTimeString([], {
+          hour: '2-digit',
+          minute: '2-digit',
+        });
+        const { name, link, address } = entry.attraction;
+
+        message += `• Attraction: ${name}\n`;
+        message += `  Time: ${formattedStartTime} - ${formattedEndTime}\n`;
+        message += `  Address: ${address}\n`;
+        message += `  More Info: ${link}\n`;
+      }
+    });
+
+    message += '\n'; // Add a line break after each day's information
+  });
+
+  return message;
+};
+
+const createCustomizedTripMessageEmail = (days) => {
   let message = '';
 
   days.forEach((day, index) => {
@@ -1468,7 +1468,10 @@ const handleCustomizedTripIntent = async (
 
   message = createCustomizedTripMessage(days);
 
-  if (email && email.length > 0) await sendCustomizedTripMail(email, message);
+  const emailMessage = createCustomizedTripMessageEmail(days);
+
+  if (email && email.length > 0)
+    await sendCustomizedTripMail(email, emailMessage);
 
   return message;
 };
