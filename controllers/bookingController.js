@@ -400,7 +400,7 @@ exports.updateBooking_stripe_webhook = async (
             <p><strong>Name:</strong> ${
               booking.tour ? booking.tour.name : booking.tripProgram.name
             }</p>
-            <p><strong>Price:</strong> ${booking.item.price}</p>
+            <p><strong>Price:</strong> ${booking.price}</p>
             <p><strong>Quantity:</strong> ${booking.quantity}</p>
           </div>
         </body>
@@ -448,7 +448,7 @@ exports.updateBooking_stripe_webhook = async (
             <p><strong>Item Name:</strong> ${
               booking.tour ? booking.tour.name : booking.tripProgram.name
             }</p>
-            <p><strong>Price:</strong> ${booking.item.price}</p>
+            <p><strong>Price:</strong> ${booking.price}</p>
             <p><strong>Quantity:</strong> ${booking.quantity}</p>
           </div>
         </body>
