@@ -408,7 +408,7 @@ exports.updateBooking_stripe_webhook = async (
 
     const optionsObj = {
       email: booking.user.email,
-      subject: 'Your Customized Planned Trip',
+      subject: 'Your Payment was Successful, Thanks for choosing Travel Gate',
       html: emailContent,
     };
     // send email with the item buyed name, price, and quantity
