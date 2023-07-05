@@ -51,6 +51,7 @@ router.get(
 ////////////////////////////////////////
 // all routes after this middleware is for authienticated users only
 router.use(authController.protect);
+router.use(authController.restrictTo('user'));
 
 router.get('/', bookingController.getAllbooks);
 
