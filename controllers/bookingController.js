@@ -407,7 +407,7 @@ const updateBooking_stripe_webhook = async (
     `;
 
     // send email with the item buyed name, price, and quantity
-    await sendEmail({
+    await sendMail({
       to: booking.user.email,
       subject: 'Booking Confirmation',
       html: emailContent,
@@ -503,7 +503,7 @@ const updateBooking_stripe_webhook_fail = async (
     `;
 
     // send email to the client
-    await sendEmail({
+    await sendMail({
       to: booking.user.email,
       subject: 'Payment Unsuccessful',
       html: emailContent,
