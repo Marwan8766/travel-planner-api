@@ -41,6 +41,101 @@ exports.getPlannedTripById = catchAsync(async (req, res, next) => {
   });
 });
 
+// async function searchPlacesByPreferences(
+//   preferences,
+//   startDate,
+//   endDate,
+//   location
+// ) {
+//   try {
+//     const {
+//       likes_beaches,
+//       likes_museums,
+//       likes_nightlife,
+//       likes_outdoorActivities,
+//       likes_shopping,
+//       likes_food,
+//       likes_sports,
+//       likes_relaxation,
+//       likes_familyFriendlyActivities,
+//     } = preferences;
+
+//     const types = [];
+
+//     if (likes_beaches) types.push('beach');
+//     if (likes_museums) types.push('museum');
+//     if (likes_nightlife) types.push('night_club');
+//     if (likes_outdoorActivities) types.push('park');
+//     if (likes_shopping) types.push('shopping_mall');
+//     if (likes_food) types.push('restaurant');
+//     if (likes_sports) types.push('stadium');
+//     if (likes_relaxation) types.push('spa');
+//     if (likes_familyFriendlyActivities) types.push('amusement_park');
+
+//     const apiKey = process.env.GOOGLE_MAPS_API_KEY; // Replace with your Google Places API key
+
+//     const baseUrl =
+//       'https://maps.googleapis.com/maps/api/place/textsearch/json';
+
+//     const query = `${types.join('|')} ${location}`;
+
+//     let url = `${baseUrl}?key=${apiKey}&query=${query}`;
+
+//     let numberOfDays = 5;
+
+//     if (startDate && endDate)
+//       numberOfDays = getNumberOfDays(startDate, endDate);
+//     const desiredNumberOfPlaces = Math.min(5 * numberOfDays, 70); // Maximum 5 places per day for a maximum of 14 days
+
+//     let places = [];
+//     let nextPageToken = null;
+
+//     while (places.length < desiredNumberOfPlaces) {
+//       if (nextPageToken) {
+//         url += `&pagetoken=${nextPageToken}`;
+//         console.log(`pagetoken: ${nextPageToken}`);
+//       }
+
+//       const response = await axios.get(url);
+//       const results = response.data.results;
+//       console.log(`response.nextPage: ${response.data.next_page_token}`);
+
+//       // Extract only the required fields from the results
+//       const filteredResults = results.map((result) => {
+//         const { name, rating, geometry, formatted_address, photos, place_id } =
+//           result;
+//         return {
+//           name,
+//           rating,
+//           placeId: place_id,
+//           link: `https://www.google.com/maps/place/?q=place_id:${place_id}`,
+//           coordinates: [geometry.location.lng, geometry.location.lat],
+//           address: formatted_address,
+//           photo: photos && photos.length > 0 ? photos[0].photo_reference : null,
+//         };
+//       });
+
+//       places = places.concat(filteredResults);
+
+//       if (response.data.next_page_token) {
+//         nextPageToken = response.data.next_page_token;
+
+//         console.log(`nextpagetoken: ${nextPageToken}`);
+
+//         // Introduce a delay before fetching the next page of results
+//         await new Promise((resolve) => setTimeout(resolve, 2000));
+//       } else {
+//         break;
+//       }
+//     }
+
+//     return places;
+//   } catch (error) {
+//     console.error('Error retrieving places from Google Maps:', error);
+//     return [];
+//   }
+// }
+
 async function searchPlacesByPreferences(
   preferences,
   startDate,
@@ -100,22 +195,13 @@ async function searchPlacesByPreferences(
       const results = response.data.results;
       console.log(`response.nextPage: ${response.data.next_page_token}`);
 
-      // Extract only the required fields from the results
-      const filteredResults = results.map((result) => {
-        const { name, rating, geometry, formatted_address, photos, place_id } =
-          result;
-        return {
-          name,
-          rating,
-          placeId: place_id,
-          link: `https://www.google.com/maps/place/?q=place_id:${place_id}`,
-          coordinates: [geometry.location.lng, geometry.location.lat],
-          address: formatted_address,
-          photo: photos && photos.length > 0 ? photos[0].photo_reference : null,
-        };
-      });
+      for (const result of results) {
+        const { place_id } = result;
+        const details = await getPlaceDetails(place_id, apiKey);
+        if (!details) continue;
 
-      places = places.concat(filteredResults);
+        places.push(details);
+      }
 
       if (response.data.next_page_token) {
         nextPageToken = response.data.next_page_token;
@@ -123,7 +209,7 @@ async function searchPlacesByPreferences(
         console.log(`nextpagetoken: ${nextPageToken}`);
 
         // Introduce a delay before fetching the next page of results
-        await new Promise((resolve) => setTimeout(resolve, 2000));
+        // await new Promise((resolve) => setTimeout(resolve, 2000));
       } else {
         break;
       }
@@ -133,6 +219,29 @@ async function searchPlacesByPreferences(
   } catch (error) {
     console.error('Error retrieving places from Google Maps:', error);
     return [];
+  }
+}
+
+async function getPlaceDetails(placeId, apiKey) {
+  const detailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?key=${apiKey}&place_id=${placeId}`;
+
+  try {
+    const response = await axios.get(detailsUrl);
+    const { name, rating, geometry, formatted_address, photos } =
+      response.data.result;
+
+    return {
+      name,
+      rating,
+      placeId,
+      link: `https://www.google.com/maps/place/?q=place_id:${placeId}`,
+      coordinates: [geometry.location.lng, geometry.location.lat],
+      address: formatted_address,
+      photo: photos && photos.length > 0 ? photos[0].photo_reference : null,
+    };
+  } catch (error) {
+    console.error('Error retrieving place details from Google Maps:', error);
+    return null;
   }
 }
 

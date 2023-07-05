@@ -1037,7 +1037,7 @@ async function searchPlacesByPreferences(
         console.log(`nextpagetoken: ${nextPageToken}`);
 
         // Introduce a delay before fetching the next page of results
-        await new Promise((resolve) => setTimeout(resolve, 2000));
+        // await new Promise((resolve) => setTimeout(resolve, 2000));
       } else {
         break;
       }
