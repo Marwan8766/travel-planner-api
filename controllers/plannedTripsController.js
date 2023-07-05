@@ -230,6 +230,12 @@ async function getPlaceDetails(placeId, apiKey) {
     const { name, rating, geometry, formatted_address, photos } =
       response.data.result;
 
+    let photoUrl = null;
+    if (photos && photos.length > 0) {
+      const photoReference = photos[0].photo_reference;
+      photoUrl = `https://maps.googleapis.com/maps/api/place/photo?key=${apiKey}&photoreference=${photoReference}&maxwidth=400`;
+    }
+
     return {
       name,
       rating,
@@ -237,7 +243,7 @@ async function getPlaceDetails(placeId, apiKey) {
       link: `https://www.google.com/maps/place/?q=place_id:${placeId}`,
       coordinates: [geometry.location.lng, geometry.location.lat],
       address: formatted_address,
-      photo: photos && photos.length > 0 ? photos[0].photo_reference : null,
+      photo: photoUrl,
     };
   } catch (error) {
     console.error('Error retrieving place details from Google Maps:', error);
