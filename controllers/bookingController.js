@@ -347,7 +347,7 @@ exports.createStripePaymentSession = catchAsync(async (req, res, next) => {
 //   }
 // };
 
-const updateBooking_stripe_webhook = async (
+exports.updateBooking_stripe_webhook = async (
   paymentIntentId,
   bookingId,
   bookedItemDate
@@ -425,7 +425,7 @@ const updateBooking_stripe_webhook = async (
   }
 };
 
-const updateBooking_stripe_webhook_fail = async (
+exports.updateBooking_stripe_webhook_fail = async (
   paymentIntentId,
   bookingId,
   itemDate
