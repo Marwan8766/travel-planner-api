@@ -7,6 +7,7 @@ const touristAttractionModel = require('../models/touristAttractionModel');
 const tourModel = require('../models/tourModel');
 const Tour = require('../models/tourModel');
 const Availability = require('../models/availabilityModel');
+const sendMail = require('../utils/email');
 
 exports.getPlannedTrips = catchAsync(async (req, res, next) => {
   const page = req.query.page * 1 || 1;
