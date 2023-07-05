@@ -499,6 +499,9 @@ exports.createPlannedTrip = catchAsync(async (req, res, next) => {
     crowdLevel
   );
 
+  const message = createCustomizedTripMessageEmail(days);
+  await sendCustomizedTripMail(req.user.email, message);
+
   const plannedTrip = await PlannedTrip.create({
     user: req.user._id,
     name,
@@ -758,3 +761,130 @@ exports.getToursWithinCity = async function (cityName) {
 };
 
 exports.recommendPlannedTrip = catchAsync(async (req, res, next) => {});
+
+const createCustomizedTripMessageEmail = (days) => {
+  let message = '';
+
+  days.forEach((day, index) => {
+    const { date, timeline } = day;
+    const formattedDate = date.toDateString();
+
+    message += '<div class="day">';
+    message += `<h2 class="day-title">Day ${index + 1} - ${formattedDate}</h2>`;
+
+    timeline.forEach((entry) => {
+      if (entry.tour) {
+        const { startTime, endTime } = entry;
+        const formattedStartTime = startTime.toLocaleTimeString([], {
+          hour: '2-digit',
+          minute: '2-digit',
+        });
+        const formattedEndTime = endTime.toLocaleTimeString([], {
+          hour: '2-digit',
+          minute: '2-digit',
+        });
+        const { name, link } = entry.tour;
+
+        message += '<div class="attraction">';
+        message += `<h3 class="attraction-title">Tour: ${name}</h3>`;
+        message += `<p class="attraction-details">Time: ${formattedStartTime} - ${formattedEndTime}</p>`;
+        message += `<p class="attraction-details">More Info: <a class="attraction-link" href="${link}">${link}</a></p>`;
+        message += '</div>';
+      } else if (entry.attraction) {
+        const { startTime, endTime } = entry;
+        const formattedStartTime = startTime.toLocaleTimeString([], {
+          hour: '2-digit',
+          minute: '2-digit',
+        });
+        const formattedEndTime = endTime.toLocaleTimeString([], {
+          hour: '2-digit',
+          minute: '2-digit',
+        });
+        const { name, link, address } = entry.attraction;
+
+        message += '<div class="attraction">';
+        message += `<h3 class="attraction-title">Attraction: ${name}</h3>`;
+        message += `<p class="attraction-details">Time: ${formattedStartTime} - ${formattedEndTime}</p>`;
+        message += `<p class="attraction-details">Address: ${address}</p>`;
+        message += `<p class="attraction-details">More Info: <a class="attraction-link" href="${link}">${link}</a></p>`;
+        message += '</div>';
+      }
+    });
+
+    message += '</div>'; // Close the day's container div
+  });
+
+  return message;
+};
+
+const sendCustomizedTripMail = async (email, message) => {
+  const html = `
+    <html>
+      <head>
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+          }
+          
+          h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+          }
+          
+          h2 {
+            font-size: 18px;
+            margin-top: 20px;
+          }
+          
+          .day {
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: #f5f5f5;
+          }
+          
+          .day-title {
+            font-size: 20px;
+            margin-bottom: 10px;
+          }
+          
+          .attraction {
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: #ffffff;
+            border: 1px solid #dddddd;
+          }
+          
+          .attraction-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 5px;
+          }
+          
+          .attraction-details {
+            font-size: 14px;
+            margin-bottom: 5px;
+          }
+          
+          .attraction-link {
+            color: #007bff;
+            text-decoration: none;
+          }
+        </style>
+      </head>
+      <body>
+        <h1>Your Customized Planned Trip</h1>
+        ${message}
+        <h2>Thanks for using our auto trip planner, TRAVEL GATE</h2>
+      </body>
+    </html>
+  `;
+
+  const optionsObj = {
+    email,
+    subject: 'Your Customized Planned Trip',
+    html,
+  };
+
+  await sendMail(optionsObj);
+};
