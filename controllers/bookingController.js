@@ -358,7 +358,7 @@ exports.updateBooking_stripe_webhook = async (
       .populate({ path: 'tour', select: '-_id name' })
       .populate({ path: 'tripProgram', select: '-_id name' })
       .populate({ path: 'user', select: '-_id name email' })
-      .populate({ path: 'company', select: '-_id name email' });
+      .populate({ path: 'company', select: 'name email' });
 
     // update the booking
     booking.stripePaymentIntentId = paymentIntentId;
@@ -368,39 +368,100 @@ exports.updateBooking_stripe_webhook = async (
 
     const updatedBooking = await booking.save({ validateModifiedOnly: true });
 
-    // send email to the user with the item bought name, price, and quantity
+    // Prepare the email HTML content for the user
     const userEmailContent = `
-      <h1>Your Payment was Successful</h1>
-      <p>Thank you for your payment. We have successfully received your payment for the following item:</p>
-      <p>Item Name: ${booking.item.name}</p>
-      <p>Price: ${booking.item.price}</p>
-      <p>Quantity: ${booking.quantity}</p>
-      <p>For any questions or concerns, please contact our support team.</p>
-      <h2>Thank you for choosing our service.</h2>
+      <html>
+        <head>
+          <style>
+            .container {
+              font-family: Arial, sans-serif;
+              margin: 20px;
+              padding: 20px;
+              border: 1px solid #ccc;
+            }
+            h1 {
+              color: #333;
+            }
+            h2 {
+              color: #666;
+              margin-top: 20px;
+            }
+            p {
+              color: #777;
+              margin: 10px 0;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <h1>Booking Confirmation</h1>
+            <h2>Thank you for your booking, ${booking.user.name}!</h2>
+            <p>You have successfully purchased the following item:</p>
+            <p><strong>Name:</strong> ${
+              booking.tour ? booking.tour.name : booking.tripProgram.name
+            }</p>
+            <p><strong>Price:</strong> ${booking.item.price}</p>
+            <p><strong>Quantity:</strong> ${booking.quantity}</p>
+          </div>
+        </body>
+      </html>
     `;
 
-    await sendMail({
+    // Send email to the user
+    const userOptions = {
       email: booking.user.email,
       subject: 'Your Payment was Successful, Thanks for choosing Travel Gate',
       html: userEmailContent,
-    });
+    };
+    await sendMail(userOptions);
 
-    // send email to the company with the purchase details
+    // Prepare the email HTML content for the company
     const companyEmailContent = `
-      <h1>New Purchase Notification</h1>
-      <p>A user has successfully purchased the following item:</p>
-      <p>Item Name: ${booking.item.name}</p>
-      <p>Price: ${booking.item.price}</p>
-      <p>Quantity: ${booking.quantity}</p>
-      <p>User Name: ${booking.user.name}</p>
-      <p>User Email: ${booking.user.email}</p>
+      <html>
+        <head>
+          <style>
+            .container {
+              font-family: Arial, sans-serif;
+              margin: 20px;
+              padding: 20px;
+              border: 1px solid #ccc;
+            }
+            h1 {
+              color: #333;
+            }
+            h2 {
+              color: #666;
+              margin-top: 20px;
+            }
+            p {
+              color: #777;
+              margin: 10px 0;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <h1>New Booking Notification</h1>
+            <h2>A customer has successfully booked a tour/trip!</h2>
+            <p><strong>User:</strong> ${booking.user.name}</p>
+            <p><strong>Email:</strong> ${booking.user.email}</p>
+            <p><strong>Item Name:</strong> ${
+              booking.tour ? booking.tour.name : booking.tripProgram.name
+            }</p>
+            <p><strong>Price:</strong> ${booking.item.price}</p>
+            <p><strong>Quantity:</strong> ${booking.quantity}</p>
+          </div>
+        </body>
+      </html>
     `;
 
-    await sendMail({
+    // Send email to the company
+    const companyOptions = {
       email: booking.company.email,
-      subject: 'New Purchase Notification',
+      subject: 'New Booking Notification - Tour/Trip Sold',
       html: companyEmailContent,
-    });
+    };
+    await sendMail(companyOptions);
 
     const cart = await cartModel.findOne({ user: booking.user });
     cart.items = [];
