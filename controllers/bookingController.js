@@ -7,6 +7,7 @@ const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 const Factory = require('./handlerFactory');
 const cartModel = require('../models/cartModel');
+const sendMail = require('../utils/email');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 exports.createTourBook = catchAsync(async (req, res, next) => {
@@ -312,13 +313,51 @@ exports.createStripePaymentSession = catchAsync(async (req, res, next) => {
   res.status(200).json({ url: session.url });
 });
 
-exports.updateBooking_stripe_webhook = async (
+// exports.updateBooking_stripe_webhook = async (
+//   paymentIntentId,
+//   bookingId,
+//   bookedItemDate
+// ) => {
+//   try {
+//     const booking = await bookingModel
+//       .findById(bookingId)
+//       .populate({ path: 'tour', select: '-_id name' })
+//       .populate({ path: 'tripProgram', select: '-_id name' })
+//       .populate({ path: 'user', select: '-_id name email' });
+
+//     // update the booking
+//     booking.stripePaymentIntentId = paymentIntentId;
+//     booking.paid = true;
+//     booking.status = 'reserved';
+//     booking.date = bookedItemDate;
+
+//     const updatedBooking = await booking.save({ validateModifiedOnly: true });
+
+//     // send email with the item buyed name and price and quantity
+
+//     const cart = await cartModel.findOne({ user: booking.user });
+//     cart.items = [];
+//     await cart.save({ validateModifiedOnly: true });
+
+//     console.log(`updatedSuccessBooking: ${JSON.stringify(updatedBooking)}`);
+//     return 'success';
+//   } catch (err) {
+//     console.log('updateBooking_stripe_webhook error', err);
+//     return 'error';
+//   }
+// };
+
+const updateBooking_stripe_webhook = async (
   paymentIntentId,
   bookingId,
   bookedItemDate
 ) => {
   try {
-    const booking = await bookingModel.findById(bookingId);
+    const booking = await bookingModel
+      .findById(bookingId)
+      .populate({ path: 'tour', select: '-_id name' })
+      .populate({ path: 'tripProgram', select: '-_id name' })
+      .populate({ path: 'user', select: '-_id name email' });
 
     // update the booking
     booking.stripePaymentIntentId = paymentIntentId;
@@ -327,6 +366,52 @@ exports.updateBooking_stripe_webhook = async (
     booking.date = bookedItemDate;
 
     const updatedBooking = await booking.save({ validateModifiedOnly: true });
+
+    // Prepare the email HTML content
+    const emailContent = `
+      <html>
+        <head>
+          <style>
+            .container {
+              font-family: Arial, sans-serif;
+              margin: 20px;
+              padding: 20px;
+              border: 1px solid #ccc;
+            }
+            h1 {
+              color: #333;
+            }
+            h2 {
+              color: #666;
+              margin-top: 20px;
+            }
+            p {
+              color: #777;
+              margin: 10px 0;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <h1>Booking Confirmation</h1>
+            <h2>Thank you for your booking, ${booking.user.name}!</h2>
+            <p>You have successfully purchased the following item:</p>
+            <p><strong>Name:</strong> ${
+              booking.tour ? booking.tour.name : booking.tripProgram.name
+            }</p>
+            <p><strong>Price:</strong> ${booking.price}</p>
+            <p><strong>Quantity:</strong> ${booking.quantity}</p>
+          </div>
+        </body>
+      </html>
+    `;
+
+    // send email with the item buyed name, price, and quantity
+    await sendEmail({
+      to: booking.user.email,
+      subject: 'Booking Confirmation',
+      html: emailContent,
+    });
 
     const cart = await cartModel.findOne({ user: booking.user });
     cart.items = [];
@@ -340,13 +425,15 @@ exports.updateBooking_stripe_webhook = async (
   }
 };
 
-exports.updateBooking_stripe_webhook_fail = async (
+const updateBooking_stripe_webhook_fail = async (
   paymentIntentId,
   bookingId,
   itemDate
 ) => {
   try {
-    const booking = await bookingModel.findById(bookingId);
+    const booking = await bookingModel
+      .findById(bookingId)
+      .populate({ path: 'user', select: 'name email' });
 
     let availability;
     if (booking.tour) {
@@ -373,10 +460,96 @@ exports.updateBooking_stripe_webhook_fail = async (
     await cart.save({ validateModifiedOnly: true });
 
     await bookingModel.findByIdAndDelete(bookingId);
+
+    // Prepare the email HTML content
+    const emailContent = `
+      <html>
+        <head>
+          <style>
+            .container {
+              font-family: Arial, sans-serif;
+              margin: 20px;
+              padding: 20px;
+              border: 1px solid #ccc;
+            }
+            h1 {
+              color: #333;
+            }
+            h2 {
+              color: #666;
+              margin-top: 20px;
+            }
+            p {
+              color: #777;
+              margin: 10px 0;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <h1>Payment Unsuccessful</h1>
+            <h2>Dear ${booking.user.name},</h2>
+            <p>We are sorry to inform you that your payment was not successful for the following item:</p>
+            <p><strong>Booking ID:</strong> ${bookingId}</p>
+            <p><strong>Item Name:</strong> ${
+              booking.tour ? booking.tour.name : booking.tripProgram.name
+            }</p>
+            <p><strong>Item Date:</strong> ${itemDate}</p>
+            <p>Please review your payment details and try again. If you have any questions or need assistance, feel free to contact us.</p>
+            <p>We apologize for any inconvenience caused.</p>
+          </div>
+        </body>
+      </html>
+    `;
+
+    // send email to the client
+    await sendEmail({
+      to: booking.user.email,
+      subject: 'Payment Unsuccessful',
+      html: emailContent,
+    });
   } catch (err) {
     console.log(`updateBooking_stripe_webhook_fail ${paymentIntentId}`, err);
   }
 };
+
+// exports.updateBooking_stripe_webhook_fail = async (
+//   paymentIntentId,
+//   bookingId,
+//   itemDate
+// ) => {
+//   try {
+//     const booking = await bookingModel.findById(bookingId);
+
+//     let availability;
+//     if (booking.tour) {
+//       availability = await availabilityModel.findOne({
+//         tour: booking.tour,
+//         date: itemDate,
+//       });
+//     } else if (booking.tripProgram === 'tripProgram') {
+//       availability = await availabilityModel.findOne({
+//         tripProgram: booking.tripProgram,
+//         date: itemDate,
+//       });
+//     }
+
+//     availability.availableSeats =
+//       availability.availableSeats + booking.quantity;
+
+//     await availability.save({ validateModifiedOnly: true });
+
+//     console.log(`itemBooking.Id fail: ${bookingId}`);
+
+//     const cart = await cartModel.findOne({ user: booking.user });
+//     cart.items = [];
+//     await cart.save({ validateModifiedOnly: true });
+
+//     await bookingModel.findByIdAndDelete(bookingId);
+//   } catch (err) {
+//     console.log(`updateBooking_stripe_webhook_fail ${paymentIntentId}`, err);
+//   }
+// };
 
 /////////////////////////////////////////////
 /////////////////////////////////////////////
